@@ -14,17 +14,63 @@ Options for the dataset retreaval
 - RNA-RNA interactions in E. coli using Clash https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-017-3725-3. maybe intersting for later
 - https://academic.oup.com/bioinformatics/article/33/7/988/2557685
 - https://onlinelibrary.wiley.com/doi/full/10.1002/wrna.1600
--https://academic.oup.com/bioinformatics/article/35/16/2862/5262219
+- https://academic.oup.com/bioinformatics/article/35/16/2862/5262219
 - https://academic.oup.com/bioinformatics/article/35/17/3199/5298307
 - https://www.sciencedirect.com/science/article/pii/S109727651630106X
 - https://www.sciencedirect.com/science/article/pii/S0092867418309486
 
-? [RNA STRAND v2.0](http://www.rnasoft.ca/strand/) The RNA secondary STRucture and statistical ANalysis Database? Not so intersting for us.
 
+#### RNAInter
+1. **Downlad** All RNA-RNA interactions gives a file with follwoing colums:
+- RNAInter ID: unique identifier for each entry in RNAInter database
+- Interactor1: interactor1 in current entry
+- ID1: ID of interactor1
+- Category1: category of interactor1
+- Species1: organism name of interactor1
+- Interactor2: interactor2 in current entry
+- ID2: ID of interactor2
+- Category2: category of interactor2
+- Species2: organism name of interactor2
+- Score: the integrative confidence score of the current entry
+2. **Browse** folders RRI sorted by RNA e.g. mRNA, miRNA.. or species. Files have the follwoing colums:
+- RNAInter_ID	
+- Interactor1	
+- Category1	
+- Species1	
+- Interactor2	
+- Category2	
+- Species2	
+- Score
+3. **Search** can do a search based on a keyword Categry interactiontype ... Problem is that we need a keyword!
+The same file columes, but in the online version you have the coulms Details. 
 
 RIscoper- tool for RRI extraction from literature (RNAInter)
 
+
+
+
+#### Criteons to select data:
+- Do we need Direct Duplex Detection (DDD) methods data to increas our trainingssets? Methods are LIGR-seq PARIS and SPLASH. Or new method  RIC-seq
+
+
+
+
 ### select features
+
+- nucleotied-contens, nucleodited-skews and sequence complexety measurs
+- featurs for lncRNAs: more cis than trans binding (https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0150353)
+
+
+Feature from RNAz:
+- G+C content, 
+- the A/(A+U) ratio, 
+- the C/(C+G) ratio, 
+- all 16 dinucleotide frequencies
+- the length of the sequence scaled to the interval [0,1]
+
+- regression for estimating the mean free energy was trained to learn energy per nucleotide
+- standard grid search approach was used to find optimal combinations for SVM parameters.
+
 
 
 ### select ML-Method
