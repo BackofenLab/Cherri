@@ -61,6 +61,14 @@ RIscoper- tool for RRI extraction from literature (RNAInter)
 - featurs for lncRNAs: more cis than trans binding (https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0150353)
 
 
+Features according to the Antrag: 
+- composition of the predicted duplex (such as interaction energy, number of
+intramolecular base pairs, number of unpaired bases, maximum loop length, seed length,
+average/maximum position-wise probability of an interaction etc). 
+We will also use
+- information about absolute and relative (compared to the context) conservation of the
+associated binding sites as well as the p-value to get a hit in the genome that has a higher
+energy (i.e., against the background of possible interactions for the considered RNA) 
 Feature from RNAz:
 - G+C content, 
 - the A/(A+U) ratio, 
