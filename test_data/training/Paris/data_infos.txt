@@ -1,0 +1,11 @@
+Data summary Paris:
+
+
+sample ids | chira tag | organism 
+-------------------------------
+SRR2814763 GSM1917755 | HEK293T_1 | Homo sapiens
+SRR2814764 GSM1917756 | HEK293T_2 | Homo sapiens
+SRR2814765 GSM1917757 | HEK293T_3 | Homo sapiens
+SRR2814766 GSM1917758 | mES_1 | Mus musculus
+SRR2814767 GSM1917759 | mES_1 | Mus musculus
+SRR2814768 GSM1917760 | mES_1 | Mus musculus
