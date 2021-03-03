@@ -164,7 +164,7 @@ def build_interlap_for_replicat(df_interactions):
             both_keys = first_key + ';' + second_key
             inter_rep[both_keys].add((row['start_seq_2end_side'], row['stop_seq_2end_side'], both_keys,
                                     [row['start_seq_1st_side'],row['stop_seq_1st_side']],
-                                    ['swap',row['IntaRNA_prediction'], row['energy']], row))
+                                    ['swap',row['IntaRNA_prediction'], row['energy']], [row]))
         elif chrom_1_index <= chrom_2_index:
             first_key = str(chrom_1) + ':' + str(chrom_2)
             second_key = row['strand_seq_1st_side'] + ':' + row['strand_seq_2end_side']
@@ -376,7 +376,7 @@ def calculate_overlap(s1,e1,s2,e2):
     overlap_seq2 = overlap_len/seq2_len
     # print(overlap_seq2)
     # compinde_overlap = (overlap_seq1 + overlap_seq2)/2
-    # select overlap of shorter sequence: 
+    # select overlap of shorter sequence:
     compinde_overlap = max([overlap_seq1, overlap_seq2])
     # print(compinde_overlap)
     return compinde_overlap
@@ -595,15 +595,15 @@ def get_numbers_nan(no_replicats, trusted_rri_list):
     return instances_just_nan_list, instances_also_nan_list, instances_no_nan_list
 
 
-def get_enegy_seqlen(trusted_rri_list):
+def get_seq_IntaRNA_calls(trusted_rri_list):
     """
-    finding the interacitons, where the enegry value for some or all
-    interaction could not be computed. Mening no IntaRNA prediciton is
-    avalable.
+    collect all
 
         Parameters
         ----------
-        trusted_rri_list : ....
+        trusted_rri_list : list of trusted rris! each rri is a list of
+        [inter_instance rep1, [list overlapping second rep]...,
+        [list overlapping last rep]]
 
         Raises
         ------
@@ -612,14 +612,47 @@ def get_enegy_seqlen(trusted_rri_list):
         Returns
         -------
         instances_just_nan_list
-
-
         """
+
+    nan_seq_list = []
+    for rep_list in trusted_rri_list:
+        for rep_instans in rep_list:
+            enegy = rep_instans[4][2]
+            if str(enegy) == 'nan':
+                print(rep_instans[5][0])
+                nan_seq_list.append(rep_instans[5][0])
+
+    return nan_seq_list
+
+
+def get_enegy_seqlen(trusted_rri_list):
+    """
+    finding the interacitons, where the enegry value for some or all
+    interaction could not be computed. Mening no IntaRNA prediciton is
+    avalable.
+
+        Parameters
+        ----------
+        trusted_rri_list : list of trusted rris! each rri is a list of
+        [inter_instance rep1, [list overlapping second rep]...,
+        [list overlapping last rep]]
+
+        Raises
+        ------
+        nothing
+
+        Returns
+        -------
+        instances_just_nan_list
+        """
+
     enegy_list = []
     interaction_length = []
+    final_output_list = []
 
     for rep_list in trusted_rri_list:
         enegy_temp_list = []
+
         #print(rep_list)
         for rep_instans in rep_list:
             enegy = rep_instans[4][2]
@@ -632,13 +665,82 @@ def get_enegy_seqlen(trusted_rri_list):
         min_enegry_index = enegy_temp_list.index(min_enegry)
         min_enegy_rep = rep_list[min_enegry_index]
         #print(min_enegy_rep)
+        #print(min_enegy_rep[5])
+        instance = min_enegy_rep[5][0]
+        #print(instance)
+        if isinstance(min_enegy_rep[5][0], int):
+            #print('Instance is int: %i'%instance)
+            #rint(min_enegy_rep[5])
+            instance = min_enegy_rep[5]
+        else:
+            instance = min_enegy_rep[5][0]
+        #print('Instance element\n: %s\n'%instance)
+        final_output_list.append(instance)
+        interaction_length = get_seq_lengths(min_enegy_rep, interaction_length)
         enegy_list.append(min_enegy_rep[4][2])
-        s1, e1, s2, e2 = rep_seq_pos(min_enegy_rep)
-        sequence1_len = sequence_length(s1, e1)
-        sequence2_len = sequence_length(s2, e2)
-        interaction_length.append((sequence1_len, sequence2_len))
 
-    return enegy_list, interaction_length
+    df_output = concat_series_objects(final_output_list)
+    #print(df_output.info())
+    return enegy_list, interaction_length, df_output
+
+
+def get_seq_lengths(min_enegy_rep, interaction_length):
+    """
+    concatinate all series instances with on list. Since the series objects are
+    the content of one row the dataframe is transposed
+        Parameters
+        ----------
+        min_enegy_rep : Inter instance containing all sequence positons
+        interaction_length: list with length of the two interaction RNAs so far
+
+        Raises
+        ------
+        nothing
+
+        Returns
+        -------
+        interaction_length:
+            list where the length of the two interaction RNAs are appendend
+
+        """
+    s1, e1, s2, e2 = rep_seq_pos(min_enegy_rep)
+    sequence1_len = sequence_length(s1, e1)
+    sequence2_len = sequence_length(s2, e2)
+    interaction_length.append((sequence1_len, sequence2_len))
+    return interaction_length
+
+
+
+
+def concat_series_objects(list_of_series):
+    """
+    concatinate all series instances with on list. Since the series objects are
+    the content of one row the dataframe is transposed
+        Parameters
+        ----------
+        list_of_series : list of seris objects containing the row information
+        of the choosen trusted RRI
+
+        Raises
+        ------
+        nothing
+
+        Returns
+        -------
+        df_output:
+            dataframe containg all
+
+    >>> s1 = pd.Series([1, 2], index=['A', 'B'], name='s1')
+    >>> s2 = pd.Series([3, 4], index=['A', 'B'], name='s2')
+    >>> concat_series_objects([s1, s2])
+
+        """
+    #for i in list_of_series:
+        #print(i[0])
+    df_temp = pd.concat(list_of_series, axis=1)
+    df_output = df_temp.T
+    return df_output
+
 
 
 
@@ -690,7 +792,11 @@ def main():
     #print(list_of_replicats)
     overlap_th = args.overlap_th
 
+
     plot_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/RNA_RNA_binding_evaluation/plots/'
+    output_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/'
+    output_tag = 'paris_HEK293T'
+    output_name = output_tag + '_overlap_' + str(overlap_th) + '.cvs'
 
     plot_path_full = plot_path + '_' + str(overlap_th) + '_'
 
@@ -701,9 +807,12 @@ def main():
     print(len_smalles_replicat)
     no_relayble_rri, trusted_rri_list, no_replicats = find_relayble_replicats(inter_replicat_list, overlap_th, no_replicats)
     instances_just_nan_list, instances_also_nan_list, instances_no_nan_list = get_numbers_nan(no_replicats, trusted_rri_list)
-    enegy_list, interaction_length = get_enegy_seqlen(instances_no_nan_list)
-    enegy_list_also_nan, interaction_length_also_nan = get_enegy_seqlen(instances_also_nan_list)
+    enegy_list, interaction_length, df_output_temp = get_enegy_seqlen(instances_no_nan_list)
+    enegy_list_also_nan, interaction_length_also_nan, df_output_nan_temp = get_enegy_seqlen(instances_also_nan_list)
+    out_for_IntaRNA_calls = get_seq_IntaRNA_calls(instances_no_nan_list)
 
+    df_final_output = pd.concat([df_output_temp, df_output_nan_temp])
+    df_final_output.to_csv(output_path + output_name, index=False)
 
     percentage_trustable_rri_all = no_relayble_rri/len_smalles_replicat
 
@@ -713,30 +822,31 @@ def main():
     print('Number of only nan RRI: %i'%len(instances_just_nan_list))
     print('Number of some nan RRI: %i'%len(instances_also_nan_list))
     print('Number of no nan RRI: %i'%len(instances_no_nan_list))
-    print(no_relayble_rri)
-    print(len_smalles_replicat)
+    #print(no_relayble_rri)
+    #print(len_smalles_replicat)
     print('######')
 
+
+
+    #### Plotting ######
+
     #histogrom enegy
-    fig1 = plt.figure()
-    bins = np.arange(min(enegy_list), max(enegy_list), 5)
+    #fig1 = plt.figure()
+    #bins = np.arange(min(enegy_list), max(enegy_list), 5)
 
-    plt.hist(enegy_list, bins=bins)
-    fig1.savefig(plot_path + "histogram_enegy.pdf", bbox_inches='tight')
+    #plt.hist(enegy_list, bins=bins)
+    #fig1.savefig(plot_path + "histogram_enegy.pdf", bbox_inches='tight')
 
+    #seq1_len_list = [len[0] for len in interaction_length_also_nan]
+    #seq2_len_list = [len[1] for len in interaction_length_also_nan]
 
-    #
+    #d = {'rri_seq1': seq1_len_list, 'rri_seq2': seq2_len_list}
+    #df_rri_len = pd.DataFrame(data=d)
 
-    seq1_len_list = [len[0] for len in interaction_length_also_nan]
-    seq2_len_list = [len[1] for len in interaction_length_also_nan]
+    #myFig = plt.figure()
+    #boxplot = df_rri_len.boxplot(column=['rri_seq1', 'rri_seq2'])
 
-    d = {'rri_seq1': seq1_len_list, 'rri_seq2': seq2_len_list}
-    df_rri_len = pd.DataFrame(data=d)
-
-    myFig = plt.figure()
-    boxplot = df_rri_len.boxplot(column=['rri_seq1', 'rri_seq2'])
     #myFig.savefig(plot_path + "boxplot_rri_len_seq.pdf", bbox_inches='tight')
-
 
     # input_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/RNA_RNA_binding_evaluation/data/training/Paris/'
     # list_of_replicats = ['test_rep1.tabular', 'test_rep2.tabular', 'test_rep3.tabular']
