@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import pandas as pd
 import math
 import matplotlib as mpl
@@ -618,11 +619,19 @@ def get_seq_IntaRNA_calls(trusted_rri_list):
     for rep_list in trusted_rri_list:
         for rep_instans in rep_list:
             enegy = rep_instans[4][2]
+            #print(enegy)
             if str(enegy) == 'nan':
-                print(rep_instans[5][0])
-                nan_seq_list.append(rep_instans[5][0])
+                #print(rep_instans[5][0])
+                if isinstance(rep_instans[5][0], int):
+                    #print('\nInterger: %i\n'%rep_instans[5][0])
+                    nan_seq_list.append(rep_instans[5])
+                else:
+                    nan_seq_list.append(rep_instans[5][0])
+                    #print('\nshould be series:')
+                    #print(rep_instans[5][0])
+    df_output = concat_series_objects(nan_seq_list)
 
-    return nan_seq_list
+    return df_output
 
 
 def get_enegy_seqlen(trusted_rri_list):
@@ -795,7 +804,7 @@ def main():
 
     plot_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/RNA_RNA_binding_evaluation/plots/'
     output_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/'
-    output_tag = 'paris_HEK293T'
+    output_tag = 'PARIS_mES'
     output_name = output_tag + '_overlap_' + str(overlap_th) + '.cvs'
 
     plot_path_full = plot_path + '_' + str(overlap_th) + '_'
@@ -809,10 +818,15 @@ def main():
     instances_just_nan_list, instances_also_nan_list, instances_no_nan_list = get_numbers_nan(no_replicats, trusted_rri_list)
     enegy_list, interaction_length, df_output_temp = get_enegy_seqlen(instances_no_nan_list)
     enegy_list_also_nan, interaction_length_also_nan, df_output_nan_temp = get_enegy_seqlen(instances_also_nan_list)
-    out_for_IntaRNA_calls = get_seq_IntaRNA_calls(instances_no_nan_list)
+    out_for_IntaRNA_calls_df = get_seq_IntaRNA_calls(instances_also_nan_list)
+    #print(out_for_IntaRNA_calls)
+
+    # print(df_output_temp.info())
+    # print(df_output_nan_temp.info())
 
     df_final_output = pd.concat([df_output_temp, df_output_nan_temp])
     df_final_output.to_csv(output_path + output_name, index=False)
+    out_for_IntaRNA_calls_df.to_csv(output_path + 'NAN_' + output_name, index=False)
 
     percentage_trustable_rri_all = no_relayble_rri/len_smalles_replicat
 
