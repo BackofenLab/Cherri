@@ -17,7 +17,7 @@ import os
 import time
 
 
-def shuffle_sequence(seq, times):
+def shuffle_sequence(seq, times, kind_of_shuffel):
     """
     shuffle on given sequence x times
 
@@ -25,6 +25,7 @@ def shuffle_sequence(seq, times):
         ----------
         seq: sequence
         times: amount of shuffeling
+        kind_of_shuffel: 1 -> Mononucleotide; 2 -> Dinucleotide
 
         Raises
         ------
@@ -39,8 +40,8 @@ def shuffle_sequence(seq, times):
     #seq_list= []
 
     call = "ushuffle -s " + str(seq) + " -n " \
-                       + str(times) + " -k 2"
-    #print(call)
+                       + str(times) + " -k " + str(kind_of_shuffel)
+    print(call)
     p = subprocess.Popen(call, stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE, shell=True,)
     stdout, stderr = p.communicate()
@@ -125,17 +126,15 @@ def Intarna_call(seq1, seq2,df):
 
         """
     #print(df)
-    temp_out_cvs_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/test_IntaRNA/test.csv'
-    #call = 'IntaRNA -t ' + seq1 + ' -q ' + seq2 + ' --out ' + temp_out_cvs_path + ' --outMode C'
-    call = 'IntaRNA -t ' + seq1 + ' -q ' + seq2 + ' --outMode C'
-    print(call)
+    call = 'IntaRNA -t ' + seq1 + ' -q ' + seq2 + ' --outMode C --seedBP 5 --seedMinPu 0 --accW 150 --acc N --temperature=37'
+    #print(call)
     process = subprocess.Popen(call, stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE, shell=True)
     for idx, line in enumerate(process.stdout):
         line = line.decode("utf-8").strip().split(';')
         #line = line.strip()
         #line = line.split(';')
-        print(line)
+        #print(line)
         if idx == 0:
             col = line
             result = 'empty'
@@ -145,11 +144,14 @@ def Intarna_call(seq1, seq2,df):
         else:
             print('error IntaRNA output has unexpected number of rows')
         #print(line)
+    #print(result)
     if result == 'empty':
-        values = ['nan','nan','nan','nan','nan','nan','nan','nan','nan', 'nan', 'nan'])
+        no_values = ['nan','nan','nan','nan','nan','nan','nan',
+                 'nan','nan']
+        df_one_result = pd.DataFrame([no_values], columns=col)
+    elif result == 'exists':
         df_one_result = pd.DataFrame([values], columns=col)
 
-    df_one_result = pd.DataFrame([values], columns=col)
     df_one_result['target'] = seq1
     df_one_result['query'] = seq2
     df_result = pd.concat([df, df_one_result])
@@ -177,10 +179,25 @@ def main():
     parser.add_argument("-i", "--input_file", action="store", dest="input_file",
                         required=True,
                         help= "path to file storing all positve trusted RRIs")
+    parser.add_argument("-d", "--output_path", action="store", dest="output_path",
+                        required=True,
+                        help= "path output reposetory")
+    parser.add_argument("-n", "--experiment_name", action="store",
+                        dest="experiment_name", required=True,
+                        help= "name of the datasoruce of positve trusted RRIs")
+    parser.add_argument("-k", "--kind_of_shuffel",  nargs='?',
+                        dest="kind_of_shuffel",  default=2,
+                        help= "mono (1) or denucleotide (2) shuffeling")
+
+
 
 
     args = parser.parse_args()
     input_file = args.input_file
+    output_path = args.output_path
+    experiment_name = args.experiment_name
+    kind_of_shuffel = args.kind_of_shuffel
+    #output_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/'
 
     df_pos_RRIs_result = inial_df()
     df_neg_RRIs_result = inial_df()
@@ -201,9 +218,9 @@ def main():
         df_pos = Intarna_call(target, query, df_initial_pos_result)
 
         # temp neg data
-        shuffled_target_list = shuffle_sequence(target, test_no_seq)
+        shuffled_target_list = shuffle_sequence(target, test_no_seq, kind_of_shuffel)
         #print(shuffled_target_list)
-        shuffled_query_list = shuffle_sequence(query, test_no_seq)
+        shuffled_query_list = shuffle_sequence(query, test_no_seq, kind_of_shuffel)
         #print(shuffled_query_list)
         df_initial_neg_result = inial_df()
         for idx2, neg_target in enumerate(shuffled_target_list):
@@ -219,6 +236,8 @@ def main():
         df_neg_entry = get_neg_instance(df_pos, df_neg)
         df_pos_RRIs_result = pd.concat([df_pos_RRIs_result, df_pos])
         df_neg_RRIs_result = pd.concat([df_neg_RRIs_result, df_neg_entry])
+        df_neg_RRIs_result.to_csv(output_path + experiment_name + '_neg_RRI_dataset.csv', index=False)
+        df_pos_RRIs_result.to_csv(output_path + experiment_name + '_pos_RRI_dataset.csv', index=False)
 
 
 if __name__ == '__main__':

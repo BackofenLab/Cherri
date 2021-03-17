@@ -793,6 +793,12 @@ def main():
     parser.add_argument("-o", "--overlap_th", action="store",  type=float,
                         dest="overlap_th", required=True,
                         help= "overlap threshold to find relyable RRIs")
+    parser.add_argument("-d", "--output_path", action="store", dest="output_path",
+                        required=True,
+                        help= "path output reposetory")
+    parser.add_argument("-n", "--experiment_name", action="store",
+                        dest="experiment_name", required=True,
+                        help= "name of the datasoruce of positve trusted RRIs")
 
 
     args = parser.parse_args()
@@ -800,12 +806,14 @@ def main():
     list_of_replicats = args.list_of_replicats
     #print(list_of_replicats)
     overlap_th = args.overlap_th
+    output_path = args.output_path
+    experiment_name = args.experiment_name
 
 
     plot_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/RNA_RNA_binding_evaluation/plots/'
-    output_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/'
-    output_tag = 'PARIS_mES'
-    output_name = output_tag + '_overlap_' + str(overlap_th) + '.cvs'
+    #output_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/'
+    #output_tag = 'PARIS_mES'
+    output_name = experiment_name + '_overlap_' + str(overlap_th) + '.cvs'
 
     plot_path_full = plot_path + '_' + str(overlap_th) + '_'
 
