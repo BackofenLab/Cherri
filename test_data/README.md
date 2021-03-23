@@ -1,5 +1,13 @@
 # Benchmarkdata
 
+## training data:
+- Paris downloaded data from [ChiRA analysis history](https://rna.usegalaxy.eu/u/videmp/h/paris-analysis)
+  - 3 replicat of mouse ES, human HEK293T celline
+- Possible other are: Splash and Liga-Seq 
+
+
+
+
 ## What we want:
 - ID 
 - Interaction region
