@@ -236,7 +236,7 @@ def extention_df(df):
 
         """
     # add RRI number as ID
-    df['interaction_no'] = np.arange(len(df_paris_test))
+    df['interaction_no'] = np.arange(len(df))
     #add ids to the df
     df['ID1']=  df['chrom_1st'].astype(str) + ':' + df['start_1st'].astype(str)+ ':' + df['end_1st'].astype(str)+ ':' + df['strand_1st'].astype(str)+ ':' + df['interaction_no'].astype(str)
     df['ID2']=  df['chrom_2end'].astype(str) + ':' + df['start_2end'].astype(str)+ ':' + df['end_2end'].astype(str)+ ':' + df['strand_2end'].astype(str)+ ':' + df['interaction_no'].astype(str)
@@ -289,7 +289,7 @@ def get_context(seq_tag, df, out_dir, in_2bit_file, context):
         print('error: please specify the parameter seq_tag with target or query')
     df_context.to_csv(out_bed, sep="\t", index=False, header=False)
     seqs_dic = bed_extract_sequences_from_2bit(out_bed, out_fa, in_2bit_file,lc_repeats=False, convert_to_rna=True)
-    print()
+    #print()
     for seq_id in seqs_dic:
         #print(seq_id)
         df.loc[df[col_id] == seq_id, [col_name]] = seqs_dic[seq_id]
@@ -345,9 +345,9 @@ def check_context_extention(df, context):
 
         """
     # check if context is fully added:
-    df_query['seq_len'] = df_query['ineraction_side_1st'].astype(str).map(len)
-    df_query['seq_con_len'] = df_query['con_target'].astype(str).map(len)
-    assert ((df_query['seq_len']+(2*context)) == df_query['seq_con_len']).all(), 'context was not fully added'
+    df['seq_len'] = df['ineraction_side_1st'].astype(str).map(len)
+    df['seq_con_len'] = df['con_target'].astype(str).map(len)
+    assert ((df['seq_len']+(2*context)) == df['seq_con_len']).all(), 'context was not fully added'
 
 
 
@@ -474,7 +474,7 @@ def Intarna_call(seq1, seq2,df):
     #print(seq1)
     #print(seq2)
     call = 'IntaRNA -t ' + seq1 + ' -q ' + seq2 + ' --outMode C --seedBP 5 --seedMinPu 0 --accW 150 --acc N --temperature=37'
-    print(call)
+    #print(call)
 
     process = subprocess.Popen(call, stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE, shell=True)
@@ -644,6 +644,41 @@ def bp_suffeling(hybrid_seq, IntaRNA_prediction,times):
 
 
 
+def predict_hybrid_for_neg_seq(shuffled_target_list, shuffled_query_list):
+    """
+    predict hybrid for neg seq
+
+        Parameters
+        ----------
+        shuffled_target_list: list of negative sequences
+
+        Raises
+        ------
+        nothing
+
+        Returns
+        -------
+        df_neg
+            df having IntRNA prediction results
+
+        """
+    df_initial_neg_result = inial_df()
+    for idx2, neg_target in enumerate(shuffled_target_list):
+        neg_query = shuffled_query_list[idx2]
+        if idx2 == 0:
+            #print('if')
+            df_neg = Intarna_call(neg_target, neg_query, df_initial_neg_result)
+        else:
+            #print('else')
+            df_neg = Intarna_call(neg_target, neg_query, df_neg)
+
+    return df_neg
+
+
+
+
+
+
 def main():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument("-i", "--input_file", action="store", dest="input_file",
@@ -675,7 +710,7 @@ def main():
     #output_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/'
     #print(type(kind_of_shuffel))
     # context_method = 'non', 'separat', 'together'
-    context_method = ''
+    context_method = 'non'
     context = 10
     #out_dir= '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/'
     in_2bit_file = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/data/genomes/hg38_UCSC_20210318.2bit'
@@ -695,11 +730,34 @@ def main():
     check_context_extention(df_context, context)
 
     #if context_method == 'non':
-    df_RRIs['hybrid_seq'] = df_RRIs['ineraction_side_1st'] + '&' + df_RRIs['ineraction_side_2end']
-    hybrid_seq_list = df_RRIs.hybrid_seq.tolist()
-    IntaRNA_prediction_list = df_RRIs.IntaRNA_prediction.tolist()
-    target_seq_list = df_RRIs.ineraction_side_1st.tolist()
-    query_seq_list = df_RRIs.ineraction_side_2end.tolist()
+    #df_RRIs['hybrid_seq'] = df_RRIs['ineraction_side_1st'] + '&' + df_RRIs['ineraction_side_2end']
+    #hybrid_seq_list = df_RRIs.hybrid_seq.tolist()
+    #IntaRNA_prediction_list = df_RRIs.IntaRNA_prediction.tolist()
+    #target_seq_list = df_RRIs.ineraction_side_1st.tolist()
+    #query_seq_list = df_RRIs.ineraction_side_2end.tolist()
+
+###############Build sequence lists ####################################################
+    if context_method == 'non':
+        df_RRIs['hybrid_seq'] = df_RRIs['ineraction_side_1st'] + '&' + df_RRIs['ineraction_side_2end']
+        hybrid_seq_list = df_RRIs.hybrid_seq.tolist()
+        IntaRNA_prediction_list = df_RRIs.IntaRNA_prediction.tolist()
+        target_seq_list = df_RRIs.ineraction_side_1st.tolist()
+        query_seq_list = df_RRIs.ineraction_side_2end.tolist()
+    elif context_method == 'separat':
+        df_RRIs['hybrid_seq'] = df_RRIs['ineraction_side_1st'] + '&' + df_RRIs['ineraction_side_2end']
+        hybrid_seq_list = df_RRIs.hybrid_seq.tolist()
+        IntaRNA_prediction_list = df_RRIs.IntaRNA_prediction.tolist()
+        target_seq_list = df_RRIs.ineraction_side_1st.tolist()
+        query_seq_list = df_RRIs.ineraction_side_2end.tolist()
+    elif context_method == 'together':
+        df_RRIs['hybrid_seq'] = df_RRIs['ineraction_side_1st'] + '&' + df_RRIs['ineraction_side_2end']
+        hybrid_seq_list = df_RRIs.hybrid_seq.tolist()
+        IntaRNA_prediction_list = df_RRIs.IntaRNA_prediction.tolist()
+        target_seq_list = df_RRIs.ineraction_side_1st.tolist()
+        query_seq_list = df_RRIs.ineraction_side_2end.tolist()
+    else:
+        print('error: please specify only non, separat or together as context method')
+
 
 
 
@@ -710,7 +768,7 @@ def main():
         # intarna call to get pos enegy
         df_pos = Intarna_call(target, query, df_initial_pos_result)
 
-##################Suffeling
+##################Suffeling#####################################################
         if kind_of_shuffel == '3':
             #print(IntaRNA_prediction_list[idx])
             #print(hybrid_seq_list[idx])
@@ -726,27 +784,22 @@ def main():
         else:
             print('Error: please provied a kind of shuffleing 1, 2 or 3')
 
-###########################################################################
+##############Call IntaRNA to select the negevie sequence#######################
 
-        df_initial_neg_result = inial_df()
-        for idx2, neg_target in enumerate(shuffled_target_list):
-            neg_query = shuffled_query_list[idx2]
-            if idx2 == 0:
-                #print('if')
-                df_neg = Intarna_call(neg_target, neg_query, df_initial_neg_result)
-            else:
-                #print('else')
-                df_neg = Intarna_call(neg_target, neg_query, df_neg)
-        #print(df_pos)
-        #print(df_neg)
+        df_neg =  predict_hybrid_for_neg_seq(shuffled_target_list, shuffled_query_list)
+
+#########select the negativ instance closes to the pos energy###################
         df_neg_entry, count_nan_neg = get_neg_instance(df_pos, df_neg)
+        #### save positive and negativ instance in result df
         df_pos_RRIs_result = pd.concat([df_pos_RRIs_result, df_pos])
         df_neg_RRIs_result = pd.concat([df_neg_RRIs_result, df_neg_entry])
-        df_neg_RRIs_result.to_csv(output_path + experiment_name + '_neg_RRI_dataset.csv', index=False)
-        df_pos_RRIs_result.to_csv(output_path + experiment_name + '_pos_RRI_dataset.csv', index=False)
 
-        if count_nan_neg > 0:
-            print('for %i postivie instances no negative instance was found' % count_nan_neg)
+    ################################################################
+    df_neg_RRIs_result.to_csv(output_path + experiment_name + '_neg_RRI_dataset.csv', index=False)
+    df_pos_RRIs_result.to_csv(output_path + experiment_name + '_pos_RRI_dataset.csv', index=False)
+
+    if count_nan_neg > 0:
+        print('for %i postivie instances no negative instance was found' % count_nan_neg)
 
 
 if __name__ == '__main__':
