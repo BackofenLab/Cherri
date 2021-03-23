@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 import pandas as pd
 import math
-import matplotlib as mpl
-import matplotlib.pyplot as plt
+#import matplotlib as mpl
+#import matplotlib.pyplot as plt
 from collections import defaultdict
 from interlap import InterLap
 import sys
 import argparse
 import numpy as np
+import rrieval.lib as rl
 
 
 def read_data(in_file, header='no'):
@@ -330,59 +331,6 @@ def check_last_position(pos_replicat, inter_list, trusted_rri_temp,
     #print(trusted_rri_temp)
     return trusted_rri_temp, pair_position, max_overlap
 
-def calculate_overlap(s1,e1,s2,e2):
-    """
-    Building for each replicat a inter object
-
-        Parameters
-        ----------
-        s1: start of one sequence of the first replicat
-        e1: end of one sequence of the first replicat
-        s2: start of one sequence of the current replicat
-        e2: end of one sequence of the current replicat
-
-
-        Raises
-        ------
-        nothing
-
-        Returns
-        -------
-        compinde_overlap
-            the combined overlap of sequence 1 and sequence 2
-
-        """
-    # print(s1,e1,s2,e2)
-    if s1 <= s2:
-        s_overlap = s2
-        if e1 <= e2:
-            e_overlap = e1
-        elif e2 < e1:
-            e_overlap = e2
-        else:
-            print('error: somthing is not overlaping hier')
-    elif s2 < s1:
-        s_overlap = s1
-        if e1 <= e2:
-            e_overlap = e1
-        elif e2 < e1:
-            e_overlap = e2
-        else:
-            print('error: somthing is not overlaping hier')
-    overlap_len = e_overlap - s_overlap +1
-    seq1_len = e1 - s1 + 1
-    seq2_len = e2 - s2 + 1
-    overlap_seq1 = overlap_len/seq1_len
-    # print(overlap_seq1)
-    overlap_seq2 = overlap_len/seq2_len
-    # print(overlap_seq2)
-    # compinde_overlap = (overlap_seq1 + overlap_seq2)/2
-    # select overlap of shorter sequence:
-    compinde_overlap = max([overlap_seq1, overlap_seq2])
-    # print(compinde_overlap)
-    return compinde_overlap
-
-
 
 def compare_overlap(overlap_pairs_list, overlap_th, no_replicats):
     """
@@ -426,8 +374,8 @@ def compare_overlap(overlap_pairs_list, overlap_th, no_replicats):
                     (rep1_s2 <= s2 and rep1_e2 >= s2)):
 
                     # test if the overlap is big enaghe to continue!
-                    overlap_rep1_rep2_seq1 = calculate_overlap(rep1_s1,rep1_e1,s1,e1)
-                    overlap_rep1_rep2_seq2 = calculate_overlap(rep1_s2,rep1_e2,s2,e2)
+                    overlap_rep1_rep2_seq1 = rl.calculate_overlap(rep1_s1,rep1_e1,s1,e1)
+                    overlap_rep1_rep2_seq2 = rl.calculate_overlap(rep1_s2,rep1_e2,s2,e2)
                     #print(overlap_rep1_rep2_seq2, overlap_rep1_rep2_seq1)
                     #print(overlap_th)
                     if ((overlap_rep1_rep2_seq2 < overlap_th) or (overlap_rep1_rep2_seq1 < overlap_th)):
