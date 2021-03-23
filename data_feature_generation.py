@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 import pandas as pd
 import math
-import matplotlib as mpl
-import matplotlib.pyplot as plt
+#import matplotlib as mpl
+#import matplotlib.pyplot as plt
 from collections import defaultdict
 from interlap import InterLap
 import sys
 import argparse
 import numpy as np
-import rrieval.libary as rl
+import rrieval.lib as rl
 
 
 def read_data(in_file, header='no'):
