@@ -49,3 +49,5 @@ def calculate_overlap(s1,e1,s2,e2):
     compinde_overlap = max([overlap_seq1, overlap_seq2])
     # print(compinde_overlap)
     return compinde_overlap
+
+#Functions for model training
