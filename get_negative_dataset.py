@@ -10,7 +10,6 @@ import argparse
 #import csv
 #import collections
 #from operator import itemgetter
-#import sys
 import subprocess
 import random
 import re
@@ -540,6 +539,8 @@ def encode_hybrid_by_BPs(dot_bracked, seq):
         tup_list
 
         """
+    # Test:    seq = 'ACCCACCCCCAA&AAGGAAGGGGGGA' hybrid = '.(((.(((((..&..))..)))))).'
+    # result: [('A', '-'), ('-', 'A'), ('C', 'G'), ('C', 'G'), ('C', 'G'), ('A', '-'), ('C', 'G'), ('C', 'G'), ('C', 'G'), ('-', 'A'), ('-', 'A'), ('C', 'G'), ('C', 'G'), ('A', '-'), ('-', 'A'), ('A', '-'), ('-', 'A')]
     dot_bracked_list = list(dot_bracked)
     seq_list = list(seq)
 
@@ -550,10 +551,11 @@ def encode_hybrid_by_BPs(dot_bracked, seq):
     tup_list = []
     for idx, start in enumerate(dot_bracked_list):
         end = dot_bracked_list[idx_end]
-        if start == '&' or end == '&':
+        start = dot_bracked_list[idx_start]
+        if start == '&' and end == '&':
             break
         elif start == '(' and end == ')':
-            tup_list.append((seq_list[idx],seq_list[idx_end]))
+            tup_list.append((seq_list[idx_start],seq_list[idx_end]))
             idx_end -= 1
             idx_start += 1
         elif start == '.' and end == '.':
@@ -633,6 +635,7 @@ def bp_suffeling(hybrid_seq, IntaRNA_prediction,times):
     shuffled_query_list = []
 
     tup_list = encode_hybrid_by_BPs(IntaRNA_prediction, hybrid_seq)
+    print(tup_list)
     # randomize the list with tuples where each tuple is a bp or bulge
     for i in range(times):
         suffled_list = random.sample(tup_list, k=len(tup_list))
@@ -675,7 +678,98 @@ def predict_hybrid_for_neg_seq(shuffled_target_list, shuffled_query_list):
     return df_neg
 
 
+def choose_shuffling(hybrid_seq, hybrid, target, query,
+                               shuffle_no_seq, kind_of_shuffel):
+    """
+    choose shuffling method. This sequence is calling the shuffleing method
+    based on the kind of shuffeling parameter.
 
+        Parameters
+        ----------
+        shuffled_target_list: list of negative sequences
+
+        Raises
+        ------
+        nothing
+
+        Returns
+        -------
+        shuffled_target_list
+            shuffled target sequence list
+        shuffled_query_list
+            shuffled target sequence list
+        """
+    if kind_of_shuffel == '3':
+        shuffled_target_list, shuffled_query_list = bp_suffeling(hybrid_seq,
+                                                         hybrid, shuffle_no_seq)
+    elif kind_of_shuffel == '2' or kind_of_shuffel == '1':
+        shuffled_target_list = shuffle_sequence(target, shuffle_no_seq,
+                                                kind_of_shuffel)
+        shuffled_query_list = shuffle_sequence(query, shuffle_no_seq,
+                                               kind_of_shuffel)
+    else:
+        print('Error: please provied a kind of shuffleing 1, 2 or 3')
+
+    return shuffled_target_list, shuffled_query_list
+
+def get_shuffled_context(context, kind_of_shuffel):
+    """
+    get_shuffled_context
+
+        Parameters
+        ----------
+        context: context sequenes sepatated with a &
+        kind_of_shuffel: suffeling kind [1 or 2 or 4]
+            4 means no shuffeling
+
+        Raises
+        ------
+        nothing
+
+        Returns
+        -------
+        con_shuffl_1
+            shuffled 5' context sequence string
+        con_shuffl_2
+            shuffled 3' context sequence string
+        """
+
+    context_list = context.split("&")
+    if kind_of_shuffel == 4:
+        con_shuffl_1 = context_list[0]
+        con_shuffl_2 = context_list[1]
+    else:
+        con_shuffl_1_list = shuffle_sequence(context_list[0], 1, kind_of_shuffel)
+        con_shuffl_2_list = shuffle_sequence(context_list[1], 1, kind_of_shuffel)
+        con_shuffl_1 = con_shuffl_1_list[0]
+        con_shuffl_2 = con_shuffl_2_list[0]
+    return con_shuffl_1, con_shuffl_2
+
+
+def get_seq_with_context(shuffled_list, con_sh_1, con_sh_2):
+    """
+    get_shuffled_context
+
+        Parameters
+        ----------
+        shuffled_list: list of shuffled sequences
+        con_sh_1: suffeling kind [1 or 2]
+
+        Raises
+        ------
+        nothing
+
+        Returns
+        -------
+        seq_con_list
+            shuffled sequences including sequencing
+        """
+    seq_con_list = []
+    for seq in shuffled_list:
+        seq_con = con_sh_1 + seq + con_sh_2
+        seq_con_list.append(seq_con)
+
+    return seq_con_list
 
 
 
@@ -710,8 +804,8 @@ def main():
     #output_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/'
     #print(type(kind_of_shuffel))
     # context_method = 'non', 'separat', 'together'
-    context_method = 'non'
-    context = 10
+    context_method = 'together'
+    context = 4
     #out_dir= '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/'
     in_2bit_file = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/data/genomes/hg38_UCSC_20210318.2bit'
 
@@ -727,62 +821,78 @@ def main():
     df_target = get_context('target', df_RRIs, output_path, in_2bit_file, context)
     df_context = get_context('query', df_target, output_path, in_2bit_file, context)
 
+    # print(df_context['con_seq_only_target'])
+
     check_context_extention(df_context, context)
 
-    #if context_method == 'non':
+    print('context method %s with shuffeling method %s' %(context_method, kind_of_shuffel))
+
+    if context_method == 'separat':
+        if kind_of_shuffel != 1 and kind_of_shuffel != 2:
+            print('error: for shuffeling method separat please only choose 1 or 2 as kind of shuffling')
+            sys.exit()
+
+
     #df_RRIs['hybrid_seq'] = df_RRIs['ineraction_side_1st'] + '&' + df_RRIs['ineraction_side_2end']
     #hybrid_seq_list = df_RRIs.hybrid_seq.tolist()
     #IntaRNA_prediction_list = df_RRIs.IntaRNA_prediction.tolist()
     #target_seq_list = df_RRIs.ineraction_side_1st.tolist()
     #query_seq_list = df_RRIs.ineraction_side_2end.tolist()
 
-###############Build sequence lists ####################################################
-    if context_method == 'non':
-        df_RRIs['hybrid_seq'] = df_RRIs['ineraction_side_1st'] + '&' + df_RRIs['ineraction_side_2end']
-        hybrid_seq_list = df_RRIs.hybrid_seq.tolist()
-        IntaRNA_prediction_list = df_RRIs.IntaRNA_prediction.tolist()
-        target_seq_list = df_RRIs.ineraction_side_1st.tolist()
-        query_seq_list = df_RRIs.ineraction_side_2end.tolist()
-    elif context_method == 'separat':
-        df_RRIs['hybrid_seq'] = df_RRIs['ineraction_side_1st'] + '&' + df_RRIs['ineraction_side_2end']
-        hybrid_seq_list = df_RRIs.hybrid_seq.tolist()
-        IntaRNA_prediction_list = df_RRIs.IntaRNA_prediction.tolist()
-        target_seq_list = df_RRIs.ineraction_side_1st.tolist()
-        query_seq_list = df_RRIs.ineraction_side_2end.tolist()
-    elif context_method == 'together':
-        df_RRIs['hybrid_seq'] = df_RRIs['ineraction_side_1st'] + '&' + df_RRIs['ineraction_side_2end']
-        hybrid_seq_list = df_RRIs.hybrid_seq.tolist()
-        IntaRNA_prediction_list = df_RRIs.IntaRNA_prediction.tolist()
-        target_seq_list = df_RRIs.ineraction_side_1st.tolist()
-        query_seq_list = df_RRIs.ineraction_side_2end.tolist()
-    else:
-        print('error: please specify only non, separat or together as context method')
 
+    for index, row in df_context.iterrows():
+        target = row['ineraction_side_1st']
+        query = row['ineraction_side_2end']
+        hybrid_seq = target + '&' + query
+        hybrid = row['IntaRNA_prediction']
 
-
-
-    for idx, target in enumerate(target_seq_list):
-        query = query_seq_list[idx]
-        # inital df for output
+        #pos sequence
         df_initial_pos_result = inial_df()
-        # intarna call to get pos enegy
         df_pos = Intarna_call(target, query, df_initial_pos_result)
 
-##################Suffeling#####################################################
-        if kind_of_shuffel == '3':
-            #print(IntaRNA_prediction_list[idx])
-            #print(hybrid_seq_list[idx])
-            shuffled_target_list, shuffled_query_list = bp_suffeling(hybrid_seq_list[idx], IntaRNA_prediction_list[idx], shuffle_no_seq)
-            #print(shuffled_target_list)
-            #print(shuffled_query_list)
-        elif kind_of_shuffel == '2' or kind_of_shuffel == '1':
-            # temp neg data
-            shuffled_target_list = shuffle_sequence(target, shuffle_no_seq, kind_of_shuffel)
-            #print(shuffled_target_list)
-            shuffled_query_list = shuffle_sequence(query, shuffle_no_seq, kind_of_shuffel)
-            #print(shuffled_query_list)
+        if context_method == 'non':
+            shuffled_target_list, shuffled_query_list = choose_shuffling(hybrid_seq, hybrid,
+                                                                         target, query,
+                                                                         shuffle_no_seq,
+                                                                         kind_of_shuffel)
+        elif context_method == 'separat':
+            seq_sh_target_list, seq_sh_query_list = choose_shuffling(hybrid_seq, hybrid,
+                                                                         target, query,
+                                                                         shuffle_no_seq,
+                                                                         kind_of_shuffel)
+            print(row['con_seq_only_target'])
+            target_con_sh_1, target_con_sh_2 = get_shuffled_context(row['con_seq_only_target'], kind_of_shuffel)
+            query_con_sh_1, query_con_sh_2 = get_shuffled_context(row['con_seq_only_query'], kind_of_shuffel)
+            # concatinate context to sequences:
+            print('shufled con 1: %s and 2: %s'%(target_con_sh_1, target_con_sh_2))
+            shuffled_target_list = get_seq_with_context(seq_sh_target_list, target_con_sh_1, target_con_sh_2)
+            print(shuffled_target_list[0])
+            shuffled_query_list = get_seq_with_context(seq_sh_query_list, query_con_sh_1, query_con_sh_2)
+
+        elif context_method == 'together':
+            # get sequences including context and than apply
+            print(row['con_seq_only_target'])
+            target_con_sh_1, target_con_sh_2 = get_shuffled_context(row['con_seq_only_target'], 4)
+            query_con_sh_1, query_con_sh_2 = get_shuffled_context(row['con_seq_only_query'], 4)
+            print('not shufled con 1: %s and 2: %s'%(target_con_sh_1, target_con_sh_2))
+
+            target_con = target_con_sh_1 + target + target_con_sh_2
+            query_con = query_con_sh_1 + query + query_con_sh_2
+            hybrid_seq_con = target_con + '&' + query_con
+            print(target_con)
+            print(query_con)
+            print(hybrid_seq_con)
+            hybrid_target, hybrid_query = get_shuffled_context(hybrid, 4)
+            con_hybrid = "." * context
+            hybrid_con = con_hybrid + hybrid_target + con_hybrid + '&' +con_hybrid + hybrid_query + con_hybrid
+            print(hybrid_con)
+            shuffled_target_list, shuffled_query_list = choose_shuffling(hybrid_seq_con, hybrid_con,
+                                                                         target_con, query_con,
+                                                                         shuffle_no_seq,
+                                                                         kind_of_shuffel)
         else:
-            print('Error: please provied a kind of shuffleing 1, 2 or 3')
+            print('error: please specify only non, separat or together as context method')
+
 
 ##############Call IntaRNA to select the negevie sequence#######################
 
