@@ -406,22 +406,29 @@ def get_neg_instance(df_pos, df_neg):
         """
     count_nan_neg = 0
     E_pos_RRI = float(df_pos.E.tolist()[0])
-    #print(E_pos_RRI)
+    print(E_pos_RRI)
     E_neg_RRI_list = [float(i) for i in df_neg.E.tolist()]
     E_neg_RRI_clean_list = [x for x in E_neg_RRI_list if str(x) != 'nan']
-    #print(E_neg_RRI_clean_list)
+    print(E_neg_RRI_clean_list)
 
 
     if len(E_neg_RRI_clean_list) != 0:
+        #(lambda x: x*x)(x)
+        substrced_list = [abs(x-E_pos_RRI) for x in E_neg_RRI_clean_list]
+        print(substrced_list)
         closest_E = min(E_neg_RRI_clean_list, key=lambda x:abs(x-E_pos_RRI))
     elif len(E_neg_RRI_clean_list) == 0:
         # did not find a negative sample
         closest_E = 'nan'
         count_nan_neg += 1
-    #print(closest_E)
+    print(closest_E)
 
-    df_neg_entry = df_neg[df_neg['E'] == str(closest_E)]
-    #print(df_neg_entry['query'])
+    # df_neg = df_neg.astype({'E': 'float'}).dtypes
+    df_neg['E'] = df_neg['E'].astype(float)
+    print(df_neg)
+
+    df_neg_entry = df_neg[df_neg['E'] == float(closest_E)]
+    print(df_neg_entry)
     return df_neg_entry, count_nan_neg
 
 
@@ -445,11 +452,11 @@ def inial_df():
 
         """
     df_inital = pd.DataFrame(columns=['id1','start1','end1','id2','start2',
-                                      'end2','subseqDP','hybridDP','E', 'target', 'query'])
+                                      'end2','subseqDP','hybridDP','E', 'target', 'query', 'id_target', 'id_query'])
     return df_inital
 
 
-def Intarna_call(seq1, seq2,df):
+def Intarna_call(seq1, seq2,df, id_target, id_query):
     """
     Intarna_call
 
@@ -473,7 +480,7 @@ def Intarna_call(seq1, seq2,df):
     #print(seq1)
     #print(seq2)
     call = 'IntaRNA -t ' + seq1 + ' -q ' + seq2 + ' --outMode C --seedBP 5 --seedMinPu 0 --accW 150 --acc N --temperature=37'
-    #print(call)
+    # print(call)
 
     process = subprocess.Popen(call, stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE, shell=True)
@@ -501,6 +508,8 @@ def Intarna_call(seq1, seq2,df):
 
     df_one_result['target'] = seq1
     df_one_result['query'] = seq2
+    df_one_result['id_target'] = id_target
+    df_one_result['id_query'] = id_query
     df_result = pd.concat([df, df_one_result])
 
     #time.sleep(15)
@@ -635,7 +644,7 @@ def bp_suffeling(hybrid_seq, IntaRNA_prediction,times):
     shuffled_query_list = []
 
     tup_list = encode_hybrid_by_BPs(IntaRNA_prediction, hybrid_seq)
-    print(tup_list)
+    #print(tup_list)
     # randomize the list with tuples where each tuple is a bp or bulge
     for i in range(times):
         suffled_list = random.sample(tup_list, k=len(tup_list))
@@ -647,7 +656,7 @@ def bp_suffeling(hybrid_seq, IntaRNA_prediction,times):
 
 
 
-def predict_hybrid_for_neg_seq(shuffled_target_list, shuffled_query_list):
+def predict_hybrid_for_neg_seq(shuffled_target_list, shuffled_query_list, id_target, id_query):
     """
     predict hybrid for neg seq
 
@@ -670,10 +679,10 @@ def predict_hybrid_for_neg_seq(shuffled_target_list, shuffled_query_list):
         neg_query = shuffled_query_list[idx2]
         if idx2 == 0:
             #print('if')
-            df_neg = Intarna_call(neg_target, neg_query, df_initial_neg_result)
+            df_neg = Intarna_call(neg_target, neg_query, df_initial_neg_result, id_target, id_query)
         else:
             #print('else')
-            df_neg = Intarna_call(neg_target, neg_query, df_neg)
+            df_neg = Intarna_call(neg_target, neg_query, df_neg, id_target, id_query)
 
     return df_neg
 
@@ -788,8 +797,14 @@ def main():
                         dest="kind_of_shuffel",  default=2,
                         help= "seqence mononucleotide (1) or sequence denucleotide (2) or bp mononucleotide (3) shuffeling")
     parser.add_argument("-s", "--shuffle_no_seq",  nargs='?',
-                        dest="shuffle_no_seq",  default=5,
+                        dest="shuffle_no_seq",  default=5, type=int,
                         help= "how often is the positive sequence shuffled")
+    parser.add_argument("-cm", "--context_method",  nargs='?',
+                        dest="context_method",  default='non',
+                        help= "select the context method  if context should not be added (non), if it should be shuffled sepatatly (separat), or together (together) with the sequence")
+    parser.add_argument("-c", "--context",  nargs='?', type=int,
+                        dest="context",  default=5,
+                        help= "how much context should be added at left an right of the sequence")
 
 
 
@@ -801,13 +816,17 @@ def main():
     experiment_name = args.experiment_name
     kind_of_shuffel = args.kind_of_shuffel
     shuffle_no_seq = args.shuffle_no_seq
+    context_method = args.context_method
+    context = args.context
     #output_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/'
     #print(type(kind_of_shuffel))
     # context_method = 'non', 'separat', 'together'
-    context_method = 'together'
-    context = 4
+    #context_method = 'together'
+    #context = 4
     #out_dir= '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/'
     in_2bit_file = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/data/genomes/hg38_UCSC_20210318.2bit'
+
+    #print(type(shuffle_no_seq))
 
 
     df_pos_RRIs_result = inial_df()
@@ -821,11 +840,17 @@ def main():
     df_target = get_context('target', df_RRIs, output_path, in_2bit_file, context)
     df_context = get_context('query', df_target, output_path, in_2bit_file, context)
 
+    #print(df_context.info())
+    #print(df_context['ID1'])
+    #print(df_context['ID2'])
+
+
     # print(df_context['con_seq_only_target'])
 
     check_context_extention(df_context, context)
 
     print('context method %s with shuffeling method %s' %(context_method, kind_of_shuffel))
+    context_info = '_context_method_' + context_method + '_shuffeling_method_' + kind_of_shuffel
 
     if context_method == 'separat':
         if kind_of_shuffel != 1 and kind_of_shuffel != 2:
@@ -848,7 +873,9 @@ def main():
 
         #pos sequence
         df_initial_pos_result = inial_df()
-        df_pos = Intarna_call(target, query, df_initial_pos_result)
+        df_pos = Intarna_call(target, query, df_initial_pos_result, row['ID1'], row['ID2'])
+
+
 
         if context_method == 'non':
             shuffled_target_list, shuffled_query_list = choose_shuffling(hybrid_seq, hybrid,
@@ -860,32 +887,32 @@ def main():
                                                                          target, query,
                                                                          shuffle_no_seq,
                                                                          kind_of_shuffel)
-            print(row['con_seq_only_target'])
+            #print(row['con_seq_only_target'])
             target_con_sh_1, target_con_sh_2 = get_shuffled_context(row['con_seq_only_target'], kind_of_shuffel)
             query_con_sh_1, query_con_sh_2 = get_shuffled_context(row['con_seq_only_query'], kind_of_shuffel)
             # concatinate context to sequences:
-            print('shufled con 1: %s and 2: %s'%(target_con_sh_1, target_con_sh_2))
+            #print('shufled con 1: %s and 2: %s'%(target_con_sh_1, target_con_sh_2))
             shuffled_target_list = get_seq_with_context(seq_sh_target_list, target_con_sh_1, target_con_sh_2)
-            print(shuffled_target_list[0])
+            #print(shuffled_target_list[0])
             shuffled_query_list = get_seq_with_context(seq_sh_query_list, query_con_sh_1, query_con_sh_2)
 
         elif context_method == 'together':
             # get sequences including context and than apply
-            print(row['con_seq_only_target'])
+            #print(row['con_seq_only_target'])
             target_con_sh_1, target_con_sh_2 = get_shuffled_context(row['con_seq_only_target'], 4)
             query_con_sh_1, query_con_sh_2 = get_shuffled_context(row['con_seq_only_query'], 4)
-            print('not shufled con 1: %s and 2: %s'%(target_con_sh_1, target_con_sh_2))
+            #print('not shufled con 1: %s and 2: %s'%(target_con_sh_1, target_con_sh_2))
 
             target_con = target_con_sh_1 + target + target_con_sh_2
             query_con = query_con_sh_1 + query + query_con_sh_2
             hybrid_seq_con = target_con + '&' + query_con
-            print(target_con)
-            print(query_con)
-            print(hybrid_seq_con)
+            #print(target_con)
+            #print(query_con)
+            #print(hybrid_seq_con)
             hybrid_target, hybrid_query = get_shuffled_context(hybrid, 4)
             con_hybrid = "." * context
             hybrid_con = con_hybrid + hybrid_target + con_hybrid + '&' +con_hybrid + hybrid_query + con_hybrid
-            print(hybrid_con)
+            #print(hybrid_con)
             shuffled_target_list, shuffled_query_list = choose_shuffling(hybrid_seq_con, hybrid_con,
                                                                          target_con, query_con,
                                                                          shuffle_no_seq,
@@ -895,18 +922,21 @@ def main():
 
 
 ##############Call IntaRNA to select the negevie sequence#######################
-
-        df_neg =  predict_hybrid_for_neg_seq(shuffled_target_list, shuffled_query_list)
+        print(df_pos)
+        df_neg =  predict_hybrid_for_neg_seq(shuffled_target_list, shuffled_query_list, row['ID1'], row['ID2'])
+        #print(df_neg)
 
 #########select the negativ instance closes to the pos energy###################
         df_neg_entry, count_nan_neg = get_neg_instance(df_pos, df_neg)
+        #print(df_neg_entry)
+
         #### save positive and negativ instance in result df
         df_pos_RRIs_result = pd.concat([df_pos_RRIs_result, df_pos])
         df_neg_RRIs_result = pd.concat([df_neg_RRIs_result, df_neg_entry])
 
     ################################################################
-    df_neg_RRIs_result.to_csv(output_path + experiment_name + '_neg_RRI_dataset.csv', index=False)
-    df_pos_RRIs_result.to_csv(output_path + experiment_name + '_pos_RRI_dataset.csv', index=False)
+    df_neg_RRIs_result.to_csv(output_path + experiment_name +  context_info + '_neg_RRI_dataset.csv', index=False)
+    df_pos_RRIs_result.to_csv(output_path + experiment_name + context_info +'_pos_RRI_dataset.csv', index=False)
 
     if count_nan_neg > 0:
         print('for %i postivie instances no negative instance was found' % count_nan_neg)
