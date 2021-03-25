@@ -329,7 +329,7 @@ def separate_context_seq(seq, context):
     #print(context_seq)
     return context_seq
 
-def check_context_extention(df, context):
+def check_context_extention(df, context, output_path):
     """
     assert if the full context was added for all sequences.
 
@@ -337,6 +337,7 @@ def check_context_extention(df, context):
         ----------
         df: dataframe holding the extended context sequences
         context: amount of nt added on both sides
+        output_path:
 
         Raises
         ------
@@ -346,7 +347,21 @@ def check_context_extention(df, context):
     # check if context is fully added:
     df['seq_len'] = df['ineraction_side_1st'].astype(str).map(len)
     df['seq_con_len'] = df['con_target'].astype(str).map(len)
-    assert ((df['seq_len']+(2*context)) == df['seq_con_len']).all(), 'context was not fully added'
+    #df_test = df[(df['seq_len']+(2*context)) != (df['seq_con_len'].all())]
+    df['con_seq_only_target'] = df['con_seq_only_target'].replace('', np.nan)
+    df['con_seq_only_query'] = df['con_seq_only_query'].replace('', np.nan)
+    #null_col_target = df['con_seq_only_target'].isnull().sum()
+    #null_col_query = df['con_seq_only_query'].isnull().sum()
+
+    df_filtered_target = df.dropna(axis=0, subset=['con_seq_only_target'])
+    df_filtered_query = df_filtered_target.dropna(axis=0, subset=['con_seq_only_query'])
+    # print(len(df))
+    # print(len(df_filtered_query))
+    null_col = len(df)-len(df_filtered_query)
+
+    if null_col > 0:
+        print('warning: context was not fully added for %i RRIs' %(null_col))
+    return df_filtered_query
 
 
 
@@ -358,7 +373,7 @@ def shuffle_sequence(seq, times, kind_of_shuffel):
         Parameters
         ----------
         seq: sequence
-        times: amount of shuffeling
+        times: amount of shuffling
         kind_of_shuffel: 1 -> Mononucleotide; 2 -> Dinucleotide
 
         Raises
@@ -406,29 +421,29 @@ def get_neg_instance(df_pos, df_neg):
         """
     count_nan_neg = 0
     E_pos_RRI = float(df_pos.E.tolist()[0])
-    print(E_pos_RRI)
+    #print(E_pos_RRI)
     E_neg_RRI_list = [float(i) for i in df_neg.E.tolist()]
     E_neg_RRI_clean_list = [x for x in E_neg_RRI_list if str(x) != 'nan']
-    print(E_neg_RRI_clean_list)
+    #print(E_neg_RRI_clean_list)
 
 
     if len(E_neg_RRI_clean_list) != 0:
         #(lambda x: x*x)(x)
         substrced_list = [abs(x-E_pos_RRI) for x in E_neg_RRI_clean_list]
-        print(substrced_list)
+        #print(substrced_list)
         closest_E = min(E_neg_RRI_clean_list, key=lambda x:abs(x-E_pos_RRI))
     elif len(E_neg_RRI_clean_list) == 0:
         # did not find a negative sample
         closest_E = 'nan'
         count_nan_neg += 1
-    print(closest_E)
+    #print(closest_E)
 
     # df_neg = df_neg.astype({'E': 'float'}).dtypes
     df_neg['E'] = df_neg['E'].astype(float)
-    print(df_neg)
+    #print(df_neg)
 
     df_neg_entry = df_neg[df_neg['E'] == float(closest_E)]
-    print(df_neg_entry)
+    #print(df_neg_entry)
     return df_neg_entry, count_nan_neg
 
 
@@ -691,7 +706,7 @@ def choose_shuffling(hybrid_seq, hybrid, target, query,
                                shuffle_no_seq, kind_of_shuffel):
     """
     choose shuffling method. This sequence is calling the shuffleing method
-    based on the kind of shuffeling parameter.
+    based on the kind of shuffling parameter.
 
         Parameters
         ----------
@@ -729,7 +744,7 @@ def get_shuffled_context(context, kind_of_shuffel):
         ----------
         context: context sequenes sepatated with a &
         kind_of_shuffel: suffeling kind [1 or 2 or 4]
-            4 means no shuffeling
+            4 means no shuffling
 
         Raises
         ------
@@ -795,7 +810,9 @@ def main():
                         help= "name of the datasoruce of positve trusted RRIs")
     parser.add_argument("-k", "--kind_of_shuffel",  nargs='?',
                         dest="kind_of_shuffel",  default=2,
-                        help= "seqence mononucleotide (1) or sequence denucleotide (2) or bp mononucleotide (3) shuffeling")
+                        help= "seqence mononucleotide (1) or sequence denucleotide (2) or bp mononucleotide (3) shuffling")
+    parser.add_argument("-g", "--genome_file", action="store", dest="genome_file",
+                        required=True, help= "path to 2bit genome file")
     parser.add_argument("-s", "--shuffle_no_seq",  nargs='?',
                         dest="shuffle_no_seq",  default=5, type=int,
                         help= "how often is the positive sequence shuffled")
@@ -810,11 +827,14 @@ def main():
 
 
 
+
+
     args = parser.parse_args()
     input_file = args.input_file
     output_path = args.output_path
     experiment_name = args.experiment_name
     kind_of_shuffel = args.kind_of_shuffel
+    genome_file = args.genome_file
     shuffle_no_seq = args.shuffle_no_seq
     context_method = args.context_method
     context = args.context
@@ -824,7 +844,7 @@ def main():
     #context_method = 'together'
     #context = 4
     #out_dir= '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/'
-    in_2bit_file = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/data/genomes/hg38_UCSC_20210318.2bit'
+    #in_2bit_file = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/data/genomes/hg38_UCSC_20210318.2bit'
 
     #print(type(shuffle_no_seq))
 
@@ -837,8 +857,8 @@ def main():
 
     # adding context by including infors into the df
     df_RRIs = extention_df(df_RRIs)
-    df_target = get_context('target', df_RRIs, output_path, in_2bit_file, context)
-    df_context = get_context('query', df_target, output_path, in_2bit_file, context)
+    df_target = get_context('target', df_RRIs, output_path, genome_file, context)
+    df_context = get_context('query', df_target, output_path, genome_file, context)
 
     #print(df_context.info())
     #print(df_context['ID1'])
@@ -847,14 +867,14 @@ def main():
 
     # print(df_context['con_seq_only_target'])
 
-    check_context_extention(df_context, context)
+    df_filted_RRIs = check_context_extention(df_context, context, output_path)
 
-    print('context method %s with shuffeling method %s' %(context_method, kind_of_shuffel))
-    context_info = '_context_method_' + context_method + '_shuffeling_method_' + kind_of_shuffel
+    print('context method %s with shuffling method %s' %(context_method, kind_of_shuffel))
+    context_info = '_context_method_' + context_method + '_shuffling_method_' + kind_of_shuffel
 
     if context_method == 'separat':
         if kind_of_shuffel != 1 and kind_of_shuffel != 2:
-            print('error: for shuffeling method separat please only choose 1 or 2 as kind of shuffling')
+            print('error: for shuffling method separat please only choose 1 or 2 as kind of shuffling')
             sys.exit()
 
 
@@ -865,7 +885,7 @@ def main():
     #query_seq_list = df_RRIs.ineraction_side_2end.tolist()
 
 
-    for index, row in df_context.iterrows():
+    for index, row in df_filted_RRIs.iterrows():
         target = row['ineraction_side_1st']
         query = row['ineraction_side_2end']
         hybrid_seq = target + '&' + query
@@ -922,7 +942,7 @@ def main():
 
 
 ##############Call IntaRNA to select the negevie sequence#######################
-        print(df_pos)
+        #print(df_pos)
         df_neg =  predict_hybrid_for_neg_seq(shuffled_target_list, shuffled_query_list, row['ID1'], row['ID2'])
         #print(df_neg)
 
