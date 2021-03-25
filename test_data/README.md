@@ -1,10 +1,14 @@
-# Benchmarkdata
+# Data Retreval
 
 ## training data:
 - Paris downloaded data from [ChiRA analysis history](https://rna.usegalaxy.eu/u/videmp/h/paris-analysis)
   - 3 replicat of mouse ES, human HEK293T celline
-- Possible other are: Splash and Liga-Seq 
+- Possible other are: Splash and Liga-Seq
 
+
+ 
+## Validation with CopomuS dataset:
+- Compensatory mutations validates the correct interaction prediction postiton. 
 
 
 
@@ -13,8 +17,8 @@
 - Interaction region
 - secondary sturcture (would be good)
 
-### Dataset retreaval
-Options for the dataset retreaval
+### Dataset literature search:
+There are several databases contining RRIs. However, they are not all based on experimetaly validated data but singaly on prediction. 
 1. intraRNA benchmark: It has 149 validated sRNA-mRNA interactions. Find in in the [IntaRNA-benchmark](https://github.com/BackofenLab/IntaRNA-benchmark). The varified interaction.tsv holds lists the sRNA-mRNA including there sorce publication and if known compensatory mutaions. 
 2. RNA Interaction Database [RNAInter](http://www.rna-society.org/rnainter/). It contains RNA-RNA interaction data only for homo sapiens for stong interaction and 2254 week experimantaly verfiyed interactions. RRI included for the follwing dbs: RISE, LncRNA2Target v2.0, VIRmiRNA, LncACTdb 2.0, NPInter v3.0, OncomiRDB, ncRDeathDB, miR2Disease, sRNATarBase, MNDR v2.0, LncRNADisease 2.0, VmiReg. Thea came to have 6 007974 RRIs. (Table 1. Overview of curated interaction data from 35 resources)
 3. [RISE](http://rise.life.tsinghua.edu.cn/downloads.html) databas contains RRI from human, mouse, yeast, E.coli, S.enteria, or 10 different cell lines. The data is stored in BEDPE file format. (-> data included in RNAInter) 
@@ -99,8 +103,5 @@ GcvB_NC_003197 STM3930_NC_003197_-200+100 U84G&A-15C,G85A&C-16U,U86A&A-17U ,U87C
 
 
 
-
-#### Criteons to select data:
-- Do we need Direct Duplex Detection (DDD) methods data to increas our trainingssets? Methods are LIGR-seq PARIS and SPLASH. Or new method  RIC-seq
 
 
