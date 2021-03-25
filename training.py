@@ -6,17 +6,11 @@ import rrieval.lib as rl
 
 def main():
     parser = argparse.ArgumentParser(description='Trains models for RRIeval')
-    parser.add_argument("-i", "--in_positive_data_filepath", action="store", dest="input_path",
-                        required=True,
-                        help= "path to folder storing all input data")
-    parser.add_argument("-i", "--in_positive_data_filepath", action="store", dest="input_path",
-                        required=True,
-                        help= "path to folder storing all input data")
-    parser.add_argument("-d", "--output_path", action="store", dest="output_path",
-                        required=True,
-                        help= "path output reposetory")
-
+    parser.add_argument("-i", "--in_positive_data_filepath", required=True, help= "Path to positive dataset")
+    parser.add_argument("-n", "--in_negative_data_filepath", required=True, help= "Path to negative dataset")
+    parser.add_argument("-d", "--output_path", required=True, help= "Path to output directory")
     args = parser.parse_args()
+    rl.train_model(args.in_positive_data_filepath,args.out_positive_data_filepath,args.output_path)
 
 if __name__ == '__main__':
     main()
