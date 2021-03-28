@@ -51,3 +51,6 @@ def calculate_overlap(s1,e1,s2,e2):
     return compinde_overlap
 
 #Functions for model training
+train_model(args.in_positive_data_filepath,args.out_positive_data_filepath,args.output_path):
+
+    return ""
