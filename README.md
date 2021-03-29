@@ -36,15 +36,15 @@ energy (i.e., against the background of possible interactions for the considered
 
 #### Sebastians Feature selection
 - MFE
-- maximal length of the two interacting subsequence
-- number of base pairs within the top 1 RRI as predicte
-- maximal length of an interacting subsequence normalized by thenumber of base pairs within the top 1 RRI
-- number of base pairs within the interaction vs. the normalizedmaximal length of the top 1 RRI
-- maximal energyEDto make one of the interacting subsequencesof the top 1 RRI 
--  GC-content within the top 1 RRI as predicte
-- minimum free energy and GC-content of thetop 1 RRI 
-- requencies of the minimum free energy normalizedby the GC-content
-- number of possible seeds within the top 1 RRI
+- Maximal length of the two interacting subsequence
+- Number of base pairs within the top 1 RRI 
+- Maximal length of an interacting subsequence normalized by the number of base pairs within the top 1 RRI
+- Number of base pairs within the interaction vs. the normalizedmaximal length of the top 1 RRI
+- Maximal energy ED to make one of the interacting subsequencesof the top 1 RRI 
+- GC-content within interaction side
+- Minimum free energy vs. GC-content 
+- Requencies of the minimum free energy normalizedby the GC-content
+- Number of possible seeds
 
 
 
