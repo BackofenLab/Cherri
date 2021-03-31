@@ -1,4 +1,15 @@
+#general imports
+
 import pandas as pd
+
+# training imports
+
+import csv
+import pandas as pd
+import pandas_profiling
+import sklearn as sk
+
+###
 
 def read_chira_data(in_file, header='no'):
     """
