@@ -1,16 +1,51 @@
 # Data Retreval
 
 ## training data:
+
+### RNA-Interactomes without protein involvment
 - Paris downloaded data from [ChiRA analysis history](https://rna.usegalaxy.eu/u/videmp/h/paris-analysis)
   - 3 replicat of mouse ES, human HEK293T celline
 - Possible other are: Splash and Liga-Seq
 
 
- 
+### Clip-like RNA-Interactome data for global sRNA Interactome
+
+
+
 ## Validation with CopomuS dataset:
-- Compensatory mutations validates the correct interaction prediction postiton. 
+- Compensatory mutations validates the correct interaction prediction postiton.
+
+## Postprocessing of ChiRA output
+Chira outputs a RRIs within a tabular format without a header. 
+This output is first filterd and than RRIs pairs are traced over all replicats using a overlap trashold.
+
+The filter by only take RRIs with a score of 1. Score is based on relative abundances of the interacting loci. If the score is 1 the reads are uniquely mapped.
+Next for each replicat a Interlab datastucture is build, to fastly compare the first interacting RNA. The first RNA is the one placed on the lower chormosome. In this way we order the interactions of each replicat and ensure that no interaction is missed because of its order of the RNAs within the output file.
+Staring from the replicat with the lowest amount of interaction, for each Interaction a partner is seache in the other replicats. Possible partners are fastly found using the Intelap dataseturctre. For all of this potental candidates the exact overlap for interaction sides of both RNA sequences is calculated. If the overlap is greater then a threshold one pair is found. If there is a pair possible partneres are searched within the next replicat until one RRI in each replicat is found fullfilling the Treshold.
+The overlap between the fist and the ith replicat the overlap between the interactiong sides, shoren by IS1 and IS2, are first calculated separat. First the length of the overlaping positions (#OP) for each IS is computed. :
+
+overlap_IS1_1 = #OP/ len(IS1_1)
+overlap_IS1_i = #OP/ len(IS1_i)
+
+overlap_IS1 = max(overlap_IS1_1, overlap_IS1_i) 
+overlap_IS2 = max(overlap_IS2_1, overlap_IS2_i) 
+
+And they are than both IS are combined by:
+
+overlap = (overlap_IS1 + overlap_IS2)/2
+
+The output are the all RRI's which have tracable partners in all replicats.
+
+## Generation of the negative data set
+
+There are several ways to generate a the negative dataset.
+
+### Negative data by context extension an shuffelin of the positive data
 
 
+
+
+## Here are collections of infromations which do not have a place for now!
 
 ## What we want:
 - ID 
