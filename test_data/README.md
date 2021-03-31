@@ -1,20 +1,59 @@
-# Benchmarkdata
+# Data Retreval
 
 ## training data:
+
+### RNA-Interactomes without protein involvment
 - Paris downloaded data from [ChiRA analysis history](https://rna.usegalaxy.eu/u/videmp/h/paris-analysis)
   - 3 replicat of mouse ES, human HEK293T celline
-- Possible other are: Splash and Liga-Seq 
+- Possible other are: Splash and Liga-Seq
+
+
+### Clip-like RNA-Interactome data for global sRNA Interactome
 
 
 
+## Validation with CopomuS dataset:
+- Compensatory mutations validates the correct interaction prediction postiton.
+
+## Postprocessing of ChiRA output
+Chira outputs a RRIs within a tabular format without a header. 
+This output is first filterd and than RRIs pairs are traced over all replicats using a overlap trashold.
+
+The filter by only take RRIs with a score of 1. Score is based on relative abundances of the interacting loci. If the score is 1 the reads are uniquely mapped.
+Next for each replicat a Interlab datastucture is build, to fastly compare the first interacting RNA. The first RNA is the one placed on the lower chormosome. In this way we order the interactions of each replicat and ensure that no interaction is missed because of its order of the RNAs within the output file.
+Staring from the replicat with the lowest amount of interaction, for each Interaction a partner is seache in the other replicats. Possible partners are fastly found using the Intelap dataseturctre. For all of this potental candidates the exact overlap for interaction sides of both RNA sequences is calculated. If the overlap is greater then a threshold one pair is found. If there is a pair possible partneres are searched within the next replicat until one RRI in each replicat is found fullfilling the Treshold.
+The overlap between the fist and the ith replicat the overlap between the interactiong sides, shoren by IS1 and IS2, are first calculated separat. First the length of the overlaping positions (#OP) for each IS is computed. :
+
+overlap_IS1_1 = #OP/ len(IS1_1)
+overlap_IS1_i = #OP/ len(IS1_i)
+
+overlap_IS1 = max(overlap_IS1_1, overlap_IS1_i) 
+overlap_IS2 = max(overlap_IS2_1, overlap_IS2_i) 
+
+And they are than both IS are combined by:
+
+overlap = (overlap_IS1 + overlap_IS2)/2
+
+The output are the all RRI's which have tracable partners in all replicats.
+
+## Generation of the negative data set
+
+There are several ways to generate a the negative dataset.
+
+### Negative data by context extension an shuffelin of the positive data
+
+
+
+
+## Here are collections of infromations which do not have a place for now!
 
 ## What we want:
 - ID 
 - Interaction region
 - secondary sturcture (would be good)
 
-### Dataset retreaval
-Options for the dataset retreaval
+### Dataset literature search:
+There are several databases contining RRIs. However, they are not all based on experimetaly validated data but singaly on prediction. 
 1. intraRNA benchmark: It has 149 validated sRNA-mRNA interactions. Find in in the [IntaRNA-benchmark](https://github.com/BackofenLab/IntaRNA-benchmark). The varified interaction.tsv holds lists the sRNA-mRNA including there sorce publication and if known compensatory mutaions. 
 2. RNA Interaction Database [RNAInter](http://www.rna-society.org/rnainter/). It contains RNA-RNA interaction data only for homo sapiens for stong interaction and 2254 week experimantaly verfiyed interactions. RRI included for the follwing dbs: RISE, LncRNA2Target v2.0, VIRmiRNA, LncACTdb 2.0, NPInter v3.0, OncomiRDB, ncRDeathDB, miR2Disease, sRNATarBase, MNDR v2.0, LncRNADisease 2.0, VmiReg. Thea came to have 6 007974 RRIs. (Table 1. Overview of curated interaction data from 35 resources)
 3. [RISE](http://rise.life.tsinghua.edu.cn/downloads.html) databas contains RRI from human, mouse, yeast, E.coli, S.enteria, or 10 different cell lines. The data is stored in BEDPE file format. (-> data included in RNAInter) 
@@ -99,8 +138,5 @@ GcvB_NC_003197 STM3930_NC_003197_-200+100 U84G&A-15C,G85A&C-16U,U86A&A-17U ,U87C
 
 
 
-
-#### Criteons to select data:
-- Do we need Direct Duplex Detection (DDD) methods data to increas our trainingssets? Methods are LIGR-seq PARIS and SPLASH. Or new method  RIC-seq
 
 

@@ -11,43 +11,6 @@ import numpy as np
 import rrieval.lib as rl
 
 
-def read_data(in_file, header='no'):
-    """
-    Read RRI tabular file and convert to a dataframe including a header
-
-        Parameters
-        ----------
-        in_file : tabular file with output of chira RRI results
-
-        Raises
-        ------
-        nothing
-
-        Returns
-        -------
-        df_interactions
-            dataframe listing all interactions
-
-        """
-    df_temp = pd.read_table(in_file, header=None, sep="\t")
-    # inclued header
-    if header == 'no':
-        header = ['#reads','chrom_1st','start_1st','end_1st', 'strand_1st',
-                'chrom_2end','start_2end','end_2end', 'strand_2end',
-                'ineraction_side_1st', 'ineraction_side_2end',
-                'IntaRNA_prediction', 'energy',
-                'seq_1st_ineraction_side', 'seq_2end_ineraction_side',
-                'start_interaction',
-                'chrom_seq_1st_side', 'start_seq_1st_side',
-                'stop_seq_1st_side','strand_seq_1st_side',
-                'chrom_seq_2end_side', 'start_seq_2end_side',
-                'stop_seq_2end_side','strand_seq_2end_side',
-                'TPM_seq_1st_side', 'TPM_seq_2end_side', 'TPM_summary',
-                'score_seq_1st_side', 'score_seq_2end_side','score_product',
-                'biotype_region_1st', 'biotype_region_2end', 'ID_1st','ID_2end']
-    # len(header)
-    df_interactions = pd.DataFrame(df_temp.values, columns=header)
-    return df_interactions
 
 def filter_score(df_interactions):
     """
@@ -207,7 +170,7 @@ def build_replicat_library_to_compare(input_path, list_of_replicats):
     rep_size_list = []
     for file in list_of_replicats:
         in_file = input_path + '/' + file
-        df_replicat = read_data(in_file)
+        df_replicat = rl.read_chira_data(in_file)
         df_filtered_replicat = filter_score(df_replicat)
         rep_size = len(df_filtered_replicat)
         rep_size_list.append(rep_size)
@@ -577,6 +540,8 @@ def get_seq_IntaRNA_calls(trusted_rri_list):
                     nan_seq_list.append(rep_instans[5][0])
                     #print('\nshould be series:')
                     #print(rep_instans[5][0])
+    #print('in get IntaRNA calls')
+    #print(nan_seq_list)
     df_output = concat_series_objects(nan_seq_list)
 
     return df_output
@@ -635,7 +600,8 @@ def get_enegy_seqlen(trusted_rri_list):
         final_output_list.append(instance)
         interaction_length = get_seq_lengths(min_enegy_rep, interaction_length)
         enegy_list.append(min_enegy_rep[4][2])
-
+    print('final output list')
+    #print(final_output_list)
     df_output = concat_series_objects(final_output_list)
     #print(df_output.info())
     return enegy_list, interaction_length, df_output
@@ -772,17 +738,14 @@ def main():
     print(len_smalles_replicat)
     no_relayble_rri, trusted_rri_list, no_replicats = find_relayble_replicats(inter_replicat_list, overlap_th, no_replicats)
     instances_just_nan_list, instances_also_nan_list, instances_no_nan_list = get_numbers_nan(no_replicats, trusted_rri_list)
-    enegy_list, interaction_length, df_output_temp = get_enegy_seqlen(instances_no_nan_list)
-    enegy_list_also_nan, interaction_length_also_nan, df_output_nan_temp = get_enegy_seqlen(instances_also_nan_list)
-    out_for_IntaRNA_calls_df = get_seq_IntaRNA_calls(instances_also_nan_list)
-    #print(out_for_IntaRNA_calls)
+    enegy_list, interaction_length, df_final_output = get_enegy_seqlen(instances_no_nan_list)
 
-    # print(df_output_temp.info())
-    # print(df_output_nan_temp.info())
-
-    df_final_output = pd.concat([df_output_temp, df_output_nan_temp])
+    if len(instances_also_nan_list) > 0:
+        enegy_list_also_nan, interaction_length_also_nan, df_output_nan_temp = get_enegy_seqlen(instances_also_nan_list)
+        out_for_IntaRNA_calls_df = get_seq_IntaRNA_calls(instances_also_nan_list)
+        df_final_output = pd.concat([df_final_output, df_output_nan_temp])
+        out_for_IntaRNA_calls_df.to_csv(output_path + 'NAN_' + output_name, index=False)
     df_final_output.to_csv(output_path + output_name, index=False)
-    out_for_IntaRNA_calls_df.to_csv(output_path + 'NAN_' + output_name, index=False)
 
     percentage_trustable_rri_all = no_relayble_rri/len_smalles_replicat
 
