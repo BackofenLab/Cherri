@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import pandas as pd
 import sys
 import argparse
 import rrieval.lib as rl

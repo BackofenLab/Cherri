@@ -1,7 +1,3 @@
-import csv
-import pandas as pd
-import pandas_profiling
-
 def calculate_overlap(s1,e1,s2,e2):
     """
     Building for each replicat a inter object
@@ -58,6 +54,9 @@ def calculate_overlap(s1,e1,s2,e2):
 def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path):
     pos_df = pd.read_csv(in_positive_data_filepath, sep=',')
     neg_df = pd.read_csv(in_negative_data_filepath, sep=',')
+    #Inject labels
+    pos_df['label'] = 1
+    neg_df['label'] = 0
     #Dataset initial characterisation
     pos_report=pandas_profiling.ProfileReport(pos_df,title="Positive data Report")
     neg_report=pandas_profiling.ProfileReport(neg_df,title="Negative data Report")
@@ -67,6 +66,9 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
     print(neg_df.dtypes)
     print(pd.get_dummies(pos_df))
     print(pd.get_dummies(neg_df))
-    #print(pos_df)
-    #print(neg_df)
+    #Concat datasets
+    ia_df = pd.concat(pos_df,neg_df)
+    y = ia_df.label
+    X = ia_df.drop(columns="label")
+
     return ""
