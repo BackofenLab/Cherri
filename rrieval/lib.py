@@ -90,3 +90,26 @@ def calculate_overlap(s1,e1,s2,e2):
     compinde_overlap = max([overlap_seq1, overlap_seq2])
     # print(compinde_overlap)
     return compinde_overlap
+
+#Functions for model training
+def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path):
+    pos_df = pd.read_csv(in_positive_data_filepath, sep=',')
+    neg_df = pd.read_csv(in_negative_data_filepath, sep=',')
+    #Inject labels
+    pos_df['label'] = 1
+    neg_df['label'] = 0
+    #Dataset initial characterisation
+    pos_report=pandas_profiling.ProfileReport(pos_df,title="Positive data Report")
+    neg_report=pandas_profiling.ProfileReport(neg_df,title="Negative data Report")
+    pos_report.to_file("positive_report.html")
+    neg_report.to_file("negative_report.html")
+    print(pos_df.dtypes)
+    print(neg_df.dtypes)
+    print(pd.get_dummies(pos_df))
+    print(pd.get_dummies(neg_df))
+    #Concat datasets
+    ia_df = pd.concat(pos_df,neg_df)
+    y = ia_df.label
+    X = ia_df.drop(columns="label")
+
+    return ""
