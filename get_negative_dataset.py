@@ -870,7 +870,10 @@ def main():
     df_filted_RRIs = check_context_extention(df_context, context, output_path)
 
     print('context method %s with shuffling method %s' %(context_method, kind_of_shuffel))
+    print('***\ncontext is appende negative data generation by suffeling is starting:\n****')
     context_info = '_context_method_' + context_method + '_shuffling_method_' + kind_of_shuffel
+
+
 
     if context_method == 'separat':
         if kind_of_shuffel != 1 and kind_of_shuffel != 2:
@@ -884,12 +887,30 @@ def main():
     #target_seq_list = df_RRIs.ineraction_side_1st.tolist()
     #query_seq_list = df_RRIs.ineraction_side_2end.tolist()
 
+    ### Generate report steps:
+    data_100 = len(df_filted_RRIs)
+    data_25 = int(data_100*25/100)
+    data_50 = int(data_100*50/100)
+    date_75 = int(data_100*75/100)
+
+
 
     for index, row in df_filted_RRIs.iterrows():
         target = row['ineraction_side_1st']
         query = row['ineraction_side_2end']
         hybrid_seq = target + '&' + query
         hybrid = row['IntaRNA_prediction']
+
+        #print(row)
+
+        if (index+1) == data_100:
+            print('***\n full data (%i sequences)\n****' %(data_100))
+        elif (index+1) == data_25:
+            print('***\n25 percent of the data (%i sequences)\n****' %(data_25))
+        elif (index+1) == data_50:
+            print('***\n50 percent of the data (%i sequences)\n****' %(data_50))
+        elif (index+1) == date_75:
+            print('***\n75 percent of the data (%i sequences)\n****' %(date_75))
 
         #pos sequence
         df_initial_pos_result = inial_df()
@@ -950,13 +971,29 @@ def main():
         df_neg_entry, count_nan_neg = get_neg_instance(df_pos, df_neg)
         #print(df_neg_entry)
 
+
+
         #### save positive and negativ instance in result df
         df_pos_RRIs_result = pd.concat([df_pos_RRIs_result, df_pos])
         df_neg_RRIs_result = pd.concat([df_neg_RRIs_result, df_neg_entry])
 
     ################################################################
-    df_neg_RRIs_result.to_csv(output_path + experiment_name +  context_info + '_neg_RRI_dataset.csv', index=False)
-    df_pos_RRIs_result.to_csv(output_path + experiment_name + context_info +'_pos_RRI_dataset.csv', index=False)
+
+# add all clums of the input data
+    print('negative entry:')
+    print(df_neg_RRIs_result.info())
+    #result = pd.concat([df_neg_entry, row], axis=1, keys=['df_neg_entry', 'row'], names=['id_target', 'ID1'])
+    df_neg_RRIs_all_result = pd.merge(df_neg_RRIs_result, df_filted_RRIs,  how='left', left_on=['id_target','id_query'], right_on = ['ID1','ID2'])
+    df_pos_RRIs_all_result = pd.merge(df_pos_RRIs_result, df_filted_RRIs,  how='left', left_on=['id_target','id_query'], right_on = ['ID1','ID2'])
+
+    #df_filted_RRIs.loc[index]
+    print('appended data:')
+    print(new_df.info())
+
+
+
+    df_neg_RRIs_all_result.to_csv(output_path + experiment_name +  context_info + '_neg_RRI_dataset.csv', index=False)
+    df_pos_RRIs_all_result.to_csv(output_path + experiment_name + context_info +'_pos_RRI_dataset.csv', index=False)
 
     if count_nan_neg > 0:
         print('for %i postivie instances no negative instance was found' % count_nan_neg)
