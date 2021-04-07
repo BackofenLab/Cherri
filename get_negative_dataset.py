@@ -15,6 +15,7 @@ import random
 import re
 import os
 import time
+import rrieval.lib as rl
 
 
 def bed_extract_sequences_from_2bit(in_bed, out_fa, in_2bit,
@@ -59,7 +60,7 @@ def bed_extract_sequences_from_2bit(in_bed, out_fa, in_2bit,
     #print(output)
     if convert_to_rna:
         # Read in tmp_fa into dictionary (this also converts sequences to RNA).
-        seqs_dic = read_fasta_into_dic(out_fa)
+        seqs_dic = rl.read_fasta_into_dic(out_fa)
         # Output RNA sequences.
         #fasta_output_dic(seqs_dic, out_fa, split=True)
     return seqs_dic
@@ -106,88 +107,6 @@ def check_convert_chr_id(chr_id):
     return chr_id
 
 
-def read_fasta_into_dic(fasta_file,
-                        seqs_dic=False,
-                        ids_dic=False,
-                        dna=False,
-                        report=1,
-                        all_uc=False,
-                        skip_data_id="set",
-                        skip_n_seqs=True):
-    """
-    Read in FASTA sequences, store in dictionary and return dictionary.
-    FASTA file can be plain text or gzipped (watch out for .gz ending).
-        Parameters
-        ----------
-        fasta_file: file location of the to be read fasta file
-
-        Raises
-        ------
-        nothing
-
-        Returns
-        -------
-        seqs_dic
-            dictonary with seq id as key and sequence as value
-
-    """
-    if not seqs_dic:
-        seqs_dic = {}
-    seq_id = ""
-
-    # Open FASTA either as .gz or as text file.
-    if re.search(".+\.gz$", fasta_file):
-        f = gzip.open(fasta_file, 'rt')
-    else:
-        f = open(fasta_file, "r")
-    for line in f:
-        if re.search(">.+", line):
-            m = re.search(">(.+)", line)
-            seq_id = m.group(1)
-            assert seq_id not in seqs_dic, "non-unique FASTA header \"%s\" in \"%s\"" % (seq_id, fasta_file)
-            if ids_dic:
-                if seq_id in ids_dic:
-                    seqs_dic[seq_id] = ""
-            else:
-                seqs_dic[seq_id] = ""
-        elif re.search("[ACGTUN]+", line, re.I):
-            m = re.search("([ACGTUN]+)", line, re.I)
-            seq = m.group(1)
-            if seq_id in seqs_dic:
-                if dna:
-                    # Convert to DNA, concatenate sequence.
-                    seq = seq.replace("U","T").replace("u","t")
-                else:
-                    # Convert to RNA, concatenate sequence.
-                    seq = seq.replace("T","U").replace("t","u")
-                if all_uc:
-                    seq = seq.upper()
-                seqs_dic[seq_id] += seq
-    f.close()
-
-    # Check if sequences read in.
-    assert seqs_dic, "no sequences read in (input FASTA file \"%s\" empty or mal-formatted?)" %(fasta_file)
-    # If sequences with N nucleotides should be skipped.
-    c_skipped_n_ids = 0
-    if skip_n_seqs:
-        del_ids = []
-        for seq_id in seqs_dic:
-            seq = seqs_dic[seq_id]
-            if re.search("N", seq, re.I):
-                if report == 1:
-                    print ("WARNING: sequence with seq_id \"%s\" in file \"%s\" contains N nucleotides. Discarding sequence ... " % (seq_id, fasta_file))
-                c_skipped_n_ids += 1
-                del_ids.append(seq_id)
-        for seq_id in del_ids:
-            del seqs_dic[seq_id]
-        assert seqs_dic, "no sequences remaining after deleting N containing sequences (input FASTA file \"%s\")" %(fasta_file)
-        if c_skipped_n_ids:
-            if report == 2:
-                print("# of N-containing %s regions discarded:  %i" %(skip_data_id, c_skipped_n_ids))
-    return seqs_dic
-
-
-
 def add_context(df_bed, context, start, end):
     """
     edding the changing the start and end postion of the sequences
@@ -215,6 +134,7 @@ def add_context(df_bed, context, start, end):
     df_bed[end] = df_bed[end] + context
     #print(df_bed[start])
     return df_bed
+
 
 def extention_df(df):
     """
@@ -366,37 +286,7 @@ def check_context_extention(df, context, output_path):
 
 
 
-def shuffle_sequence(seq, times, kind_of_shuffel):
-    """
-    shuffle on given sequence x times
 
-        Parameters
-        ----------
-        seq: sequence
-        times: amount of shuffling
-        kind_of_shuffel: 1 -> Mononucleotide; 2 -> Dinucleotide
-
-        Raises
-        ------
-        nothing
-
-        Returns
-        -------
-        seq_list
-            list of shuffled sequences
-
-        """
-    #seq_list= []
-
-    call = "ushuffle -s " + str(seq) + " -n " \
-                       + str(times) + " -k " + str(kind_of_shuffel)
-    # print(call)
-    p = subprocess.Popen(call, stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE, shell=True,)
-    stdout, stderr = p.communicate()
-    seq_list = stdout.decode('utf-8').strip().split('\n')
-
-    return seq_list
 
 def get_neg_instance(df_pos, df_neg):
     """
@@ -545,132 +435,6 @@ def Intarna_call(seq1, seq2,df, id_target, id_query):
 
 
 
-def encode_hybrid_by_BPs(dot_bracked, seq):
-    """
-    encode_hybrid_by_BPs
-
-        Parameters
-        ----------
-        dot_bracked:
-        seq: query
-
-        Raises
-        ------
-        nothing
-
-        Returns
-        -------
-        tup_list
-
-        """
-    # Test:    seq = 'ACCCACCCCCAA&AAGGAAGGGGGGA' hybrid = '.(((.(((((..&..))..)))))).'
-    # result: [('A', '-'), ('-', 'A'), ('C', 'G'), ('C', 'G'), ('C', 'G'), ('A', '-'), ('C', 'G'), ('C', 'G'), ('C', 'G'), ('-', 'A'), ('-', 'A'), ('C', 'G'), ('C', 'G'), ('A', '-'), ('-', 'A'), ('A', '-'), ('-', 'A')]
-    dot_bracked_list = list(dot_bracked)
-    seq_list = list(seq)
-
-    assert len(dot_bracked_list) == len(seq_list), 'RRI sequence and dotbracked string do not have the same lenght'
-
-    idx_end = len(seq_list) - 1
-    idx_start = 0
-    tup_list = []
-    for idx, start in enumerate(dot_bracked_list):
-        end = dot_bracked_list[idx_end]
-        start = dot_bracked_list[idx_start]
-        if start == '&' and end == '&':
-            break
-        elif start == '(' and end == ')':
-            tup_list.append((seq_list[idx_start],seq_list[idx_end]))
-            idx_end -= 1
-            idx_start += 1
-        elif start == '.' and end == '.':
-            tup_list.append((seq_list[idx_start],'-'))
-            tup_list.append(('-',seq_list[idx_end]))
-            idx_start += 1
-            idx_end -= 1
-        elif start == '.':
-            tup_list.append((seq_list[idx_start],'-'))
-            idx_start += 1
-        elif end == '.':
-            tup_list.append(('-',seq_list[idx_end]))
-            idx_end -= 1
-        else:
-            print('hybrid encode error: unexpacted case')
-    return tup_list
-
-def make_seq_from_list(suffled_list):
-    """
-    make_seq_from_list
-
-        Parameters
-        ----------
-        suffled_list:
-
-        Raises
-        ------
-        nothing
-
-        Returns
-        -------
-        seq1
-            shuffled target sequences
-        seq_2
-            shuffled query sequence
-
-        """
-    seq1 = ''
-    seq2 = ''
-    for tup in suffled_list:
-        character_seq1 = tup[0]
-        character_seq2 = tup[1]
-        if character_seq1 != '-' and character_seq2 != '-':
-            seq1 = seq1 + character_seq1
-            seq2 = seq2 + character_seq2
-        elif character_seq1 == '-':
-            seq2 = seq2 + character_seq2
-        elif character_seq2 == '-':
-            seq1 = seq1 + character_seq1
-        else:
-            print('hybrid encode error: soemthing went wrong with the encoding')
-
-    return seq1, seq2
-
-def bp_suffeling(hybrid_seq, IntaRNA_prediction,times):
-    """
-    basepair shufelling of the given IntaRNA prediction
-
-        Parameters
-        ----------
-        hybrid_seq: tartet sequence
-        IntaRNA_prediction: query sequence
-
-        Raises
-        ------
-        nothing
-
-        Returns
-        -------
-        target
-            list of shuffled target sequences
-        shuffled_query_list
-            list of shuffled query sequences
-
-        """
-    shuffled_target_list =[]
-    shuffled_query_list = []
-
-    tup_list = encode_hybrid_by_BPs(IntaRNA_prediction, hybrid_seq)
-    #print(tup_list)
-    # randomize the list with tuples where each tuple is a bp or bulge
-    for i in range(times):
-        suffled_list = random.sample(tup_list, k=len(tup_list))
-        traget, query = make_seq_from_list(suffled_list)
-        shuffled_target_list.append(traget)
-        shuffled_query_list.append(query)
-
-    return shuffled_target_list, shuffled_query_list
-
-
-
 def predict_hybrid_for_neg_seq(shuffled_target_list, shuffled_query_list, id_target, id_query):
     """
     predict hybrid for neg seq
@@ -724,12 +488,12 @@ def choose_shuffling(hybrid_seq, hybrid, target, query,
             shuffled target sequence list
         """
     if kind_of_shuffel == '3':
-        shuffled_target_list, shuffled_query_list = bp_suffeling(hybrid_seq,
+        shuffled_target_list, shuffled_query_list = rl.bp_suffeling(hybrid_seq,
                                                          hybrid, shuffle_no_seq)
     elif kind_of_shuffel == '2' or kind_of_shuffel == '1':
-        shuffled_target_list = shuffle_sequence(target, shuffle_no_seq,
+        shuffled_target_list = rl.shuffle_sequence(target, shuffle_no_seq,
                                                 kind_of_shuffel)
-        shuffled_query_list = shuffle_sequence(query, shuffle_no_seq,
+        shuffled_query_list = rl.shuffle_sequence(query, shuffle_no_seq,
                                                kind_of_shuffel)
     else:
         print('Error: please provied a kind of shuffleing 1, 2 or 3')
@@ -763,8 +527,8 @@ def get_shuffled_context(context, kind_of_shuffel):
         con_shuffl_1 = context_list[0]
         con_shuffl_2 = context_list[1]
     else:
-        con_shuffl_1_list = shuffle_sequence(context_list[0], 1, kind_of_shuffel)
-        con_shuffl_2_list = shuffle_sequence(context_list[1], 1, kind_of_shuffel)
+        con_shuffl_1_list = rl.shuffle_sequence(context_list[0], 1, kind_of_shuffel)
+        con_shuffl_2_list = rl.shuffle_sequence(context_list[1], 1, kind_of_shuffel)
         con_shuffl_1 = con_shuffl_1_list[0]
         con_shuffl_2 = con_shuffl_2_list[0]
     return con_shuffl_1, con_shuffl_2
@@ -870,7 +634,10 @@ def main():
     df_filted_RRIs = check_context_extention(df_context, context, output_path)
 
     print('context method %s with shuffling method %s' %(context_method, kind_of_shuffel))
+    print('***\ncontext is appende negative data generation by suffeling is starting:\n****')
     context_info = '_context_method_' + context_method + '_shuffling_method_' + kind_of_shuffel
+
+
 
     if context_method == 'separat':
         if kind_of_shuffel != 1 and kind_of_shuffel != 2:
@@ -884,12 +651,30 @@ def main():
     #target_seq_list = df_RRIs.ineraction_side_1st.tolist()
     #query_seq_list = df_RRIs.ineraction_side_2end.tolist()
 
+    ### Generate report steps:
+    data_100 = len(df_filted_RRIs)
+    data_25 = int(data_100*25/100)
+    data_50 = int(data_100*50/100)
+    date_75 = int(data_100*75/100)
+
+
 
     for index, row in df_filted_RRIs.iterrows():
         target = row['ineraction_side_1st']
         query = row['ineraction_side_2end']
         hybrid_seq = target + '&' + query
         hybrid = row['IntaRNA_prediction']
+
+        #print(row)
+
+        if (index+1) == data_100:
+            print('***\n full data (%i sequences)\n****' %(data_100))
+        elif (index+1) == data_25:
+            print('***\n25 percent of the data (%i sequences)\n****' %(data_25))
+        elif (index+1) == data_50:
+            print('***\n50 percent of the data (%i sequences)\n****' %(data_50))
+        elif (index+1) == date_75:
+            print('***\n75 percent of the data (%i sequences)\n****' %(date_75))
 
         #pos sequence
         df_initial_pos_result = inial_df()
@@ -950,13 +735,29 @@ def main():
         df_neg_entry, count_nan_neg = get_neg_instance(df_pos, df_neg)
         #print(df_neg_entry)
 
+
+
         #### save positive and negativ instance in result df
         df_pos_RRIs_result = pd.concat([df_pos_RRIs_result, df_pos])
         df_neg_RRIs_result = pd.concat([df_neg_RRIs_result, df_neg_entry])
 
     ################################################################
-    df_neg_RRIs_result.to_csv(output_path + experiment_name +  context_info + '_neg_RRI_dataset.csv', index=False)
-    df_pos_RRIs_result.to_csv(output_path + experiment_name + context_info +'_pos_RRI_dataset.csv', index=False)
+
+# add all clums of the input data
+    print('negative entry:')
+    print(df_neg_RRIs_result.info())
+    #result = pd.concat([df_neg_entry, row], axis=1, keys=['df_neg_entry', 'row'], names=['id_target', 'ID1'])
+    df_neg_RRIs_all_result = pd.merge(df_neg_RRIs_result, df_filted_RRIs,  how='left', left_on=['id_target','id_query'], right_on = ['ID1','ID2'])
+    df_pos_RRIs_all_result = pd.merge(df_pos_RRIs_result, df_filted_RRIs,  how='left', left_on=['id_target','id_query'], right_on = ['ID1','ID2'])
+
+    #df_filted_RRIs.loc[index]
+    print('appended data:')
+    print(df_neg_RRIs_all_result.info())
+
+
+
+    df_neg_RRIs_all_result.to_csv(output_path + experiment_name +  context_info + '_neg_RRI_dataset.csv', index=False)
+    df_pos_RRIs_all_result.to_csv(output_path + experiment_name + context_info +'_pos_RRI_dataset.csv', index=False)
 
     if count_nan_neg > 0:
         print('for %i postivie instances no negative instance was found' % count_nan_neg)
