@@ -122,5 +122,13 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
     ia_df = pd.concat(pos_df,neg_df)
     y = ia_df.label
     X = ia_df.drop(columns="label")
+    #Create training and test dataset
+    X_training, X_test, y_training, y_test = model.selection.train_test_split(X, y, test_size=0.3, random_state=42)
+    #comparison dummy model
+    cm = DummyClassifier()
+    cm.fit(X_train, y_train)
+    comparison_score = cm.score(X_test, y_test)
+    print(comparison_score)
+
 
     return ""
