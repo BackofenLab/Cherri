@@ -52,11 +52,91 @@ Building of the background by controling:
 - Number of base pairs within the interaction vs. the normalizedmaximal length of the top 1 RRI
 - Maximal energy ED to make one of the interacting subsequencesof the top 1 RRI 
 - GC-content within interaction side
-- Minimum free energy vs. GC-content 
 - Requencies of the minimum free energy normalizedby the GC-content
 - Number of possible seeds
 
-
-
-
 ### select ML-Method
+
+
+
+## scripts:
+
+### find_trusted_RRI.py
+Here RRIs which can be found in all replicats are selected. The scriped first filted to take only uniquly mapped RRIs and than for each RRI sequence a partner, within a overlap threshold, is searched. Output are the Chira input tables but filterd containing only the trusted RRIs. 
+
+#### example call
+```
+python data_feature_generation.py -i /home/teresa/Dokumente/RNA_RNA_interaction_evaluation/data/data_Chira/training/Paris -r test_rep1.tabular test_rep2.tabular test_rep3.tabular -o 0.6 -d /home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/ -n test_paris
+```
+
+#### Input Parameter
+- input_path: path to folder storing all input data
+- list_of_replicats: list_of_replicats
+- overlap_th: path output reposetory
+- experiment_name: name of the datasoruce of positve trusted RRIs
+
+#### Output 
+- trusted RRIs in tabulat format
+
+
+
+### get_negative_dataset.py
+Generate the positive and negative dataset for the trusted RRIs. A context around the interaction side can be specifeyed and what kinde of shuffeling should be used to generate the negative data. The negative instance is choosen form a random number of options, which has the closed energy to the positive RRIs. 
+
+#### example call
+```
+ python get_negative_dataset.py -i /home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/test_paris_HEK293T_overlap_0.6.cvs -d /home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/ -g /home/teresa/Dokumente/RNA_RNA_interaction_evaluation/data/genomes/hg38_UCSC_20210318.2bit -n test_paris_HEK293T -k 3 -s 5 -cm together -c 10
+```
+
+#### Input Parameter
+- input_file: path to file storing all positve trusted RRIs
+- output_path: path output reposetory
+- experiment_name: name of the datasoruce of positve trusted RRIs
+- kind_of_shuffel: seqence mononucleotide (1) or sequence denucleotide (2) or bp mononucleotide (3) shuffling
+- shuffle_no_seq: how often is the positive sequence shuffled
+- context_method: select the context method  if context should not be added (non), if it should be shuffled sepatatly (separat), or together (together) with the sequence
+- context: how much context should be added at left an right of the sequence
+
+#### Output 
+- Positive and negative datasets stored in tabular format. The table contains the all informatio of the trused RRI instance and the results of the IntaRNA call. 
+
+
+### plot_tRRIs.py
+For the postive and negative datasets overview plots are generated. 
+
+#### example call
+```
+python plot_tRRIs.py -i1 test_paris_HEK293T_context_method_together_shuffling_method_3_pos_RRI_dataset.csv -i2 test_paris_HEK293T_context_method_together_shuffling_method_3_neg_RRI_dataset.csv -i3 /home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/ -o /home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/
+```
+
+#### Input Parameter
+- input_pos: file name of positive dataset in tabular format (, separted)
+- input_neg: file name of negative dataset in tabular format (, separted)
+- save_path: directory where the plots will be stored in a plot folder
+
+#### Output 
+- RNA historam plot
+- Energy distibution plot
+
+
+### get_features.py
+Here for a given input and a given reature set the features, this features are stored in a tabular format. 
+
+#### example call
+```
+python get_features.py -i ../output/paris_HEK293T_06_context_method_together_shuffling_method_2_pos_RRI_dataset.csv -f E no_bps GC_content mfe_normby_GC -o /home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/input_features/2
+```
+
+#### Input Parameter
+- input: path to input file
+- feature_set_list: list of all featurs that should be summarized in the output
+- output_file: file path where the output table should be stored
+
+#### Output 
+- tabular file having all features given via the feature_set_list
+
+
+
+### training.py
+
+
