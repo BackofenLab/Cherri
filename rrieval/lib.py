@@ -8,6 +8,9 @@ import csv
 import pandas as pd
 import pandas_profiling
 import sklearn as sk
+from sklearn import model_selection
+from sklearn.dummy import DummyClassifier
+from sklearn.ensemble import (RandomForestClassifier)
 
 ###
 
@@ -114,21 +117,25 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
     neg_report=pandas_profiling.ProfileReport(neg_df,title="Negative data Report")
     pos_report.to_file("positive_report.html")
     neg_report.to_file("negative_report.html")
-    print(pos_df.dtypes)
-    print(neg_df.dtypes)
-    print(pd.get_dummies(pos_df))
-    print(pd.get_dummies(neg_df))
+    #print(pos_df.dtypes)
+    #print(neg_df.dtypes)
+    #print(pd.get_dummies(pos_df))
+    #print(pd.get_dummies(neg_df))
     #Concat datasets
-    ia_df = pd.concat(pos_df,neg_df)
+    ia_df = pd.concat([pos_df,neg_df])
     y = ia_df.label
     X = ia_df.drop(columns="label")
     #Create training and test dataset
-    X_training, X_test, y_training, y_test = model.selection.train_test_split(X, y, test_size=0.3, random_state=42)
+    X_training, X_test, y_training, y_test = model_selection.train_test_split(X, y, test_size=0.3, random_state=42)
     #comparison dummy model
     cm = DummyClassifier()
-    cm.fit(X_train, y_train)
-    comparison_score = cm.score(X_test, y_test)
-    print(comparison_score)
-
-
+    cm.fit(X_training, y_training)
+    dummy_comparison_score = cm.score(X_test, y_test)
+    print("Dummy score:")
+    print(dummy_comparison_score)
+    random_forest = RandomForestClassifier(n_estimators=100, random_state=42)
+    random_forest.fit(X_training, y_training)
+    random_forest_comparison_score = random_forest.score(X_test, y_test)
+    print("RF score:")
+    print(random_forest_comparison_score)
     return ""
