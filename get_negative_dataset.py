@@ -353,11 +353,14 @@ def inial_df():
         Returns
         -------
         df_inital
-            emty df with just the header (coloum)
+            emty df with just the header (columns)
 
         """
     df_inital = pd.DataFrame(columns=['id1','start1','end1','id2','start2',
-                                      'end2','subseqDP','hybridDP','E', 'target', 'query', 'id_target', 'id_query'])
+                                      'end2','subseqDP','hybridDP','E',
+                                      'seedStart1','seedEnd1','seedStart2',
+                                      'seedEnd2', 'target', 'query',
+                                      'id_target', 'id_query'])
     return df_inital
 
 
@@ -384,7 +387,8 @@ def Intarna_call(seq1, seq2,df, id_target, id_query):
     #print(df)
     #print(seq1)
     #print(seq2)
-    call = 'IntaRNA -t ' + seq1 + ' -q ' + seq2 + ' --outMode C --seedBP 5 --seedMinPu 0 --accW 150 --acc N --temperature=37'
+    output_columns = '--outCsvCols id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E,seedStart1,seedEnd1,seedStart2,seedEnd2'
+    call = 'IntaRNA -t ' + seq1 + ' -q ' + seq2 + ' --outMode C --seedBP 5 --seedMinPu 0 --accW 150 --acc N --temperature=37 ' + output_columns
     # print(call)
 
     process = subprocess.Popen(call, stdout=subprocess.PIPE,
@@ -406,7 +410,8 @@ def Intarna_call(seq1, seq2,df, id_target, id_query):
     #print(result)
     if result == 'empty':
         no_values = ['nan','nan','nan','nan','nan','nan','nan',
-                 'nan','nan']
+                     'nan','nan','nan','nan','nan','nan']
+        #print(col)
         df_one_result = pd.DataFrame([no_values], columns=col)
     elif result == 'exists':
         df_one_result = pd.DataFrame([values], columns=col)
@@ -590,9 +595,6 @@ def main():
 
 
 
-
-
-
     args = parser.parse_args()
     input_file = args.input_file
     output_path = args.output_path
@@ -744,15 +746,15 @@ def main():
     ################################################################
 
 # add all clums of the input data
-    print('negative entry:')
-    print(df_neg_RRIs_result.info())
+    #print('negative entry:')
+    #print(df_neg_RRIs_result.info())
     #result = pd.concat([df_neg_entry, row], axis=1, keys=['df_neg_entry', 'row'], names=['id_target', 'ID1'])
     df_neg_RRIs_all_result = pd.merge(df_neg_RRIs_result, df_filted_RRIs,  how='left', left_on=['id_target','id_query'], right_on = ['ID1','ID2'])
     df_pos_RRIs_all_result = pd.merge(df_pos_RRIs_result, df_filted_RRIs,  how='left', left_on=['id_target','id_query'], right_on = ['ID1','ID2'])
 
     #df_filted_RRIs.loc[index]
-    print('appended data:')
-    print(df_neg_RRIs_all_result.info())
+    #print('appended data:')
+    #print(df_neg_RRIs_all_result.info())
 
 
 
