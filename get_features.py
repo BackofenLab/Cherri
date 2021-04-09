@@ -34,6 +34,129 @@ def sequence_length(hybrid):
 
     return no_bps
 
+def count_number_of_seeds(seed_pos):
+    """
+    compute number of base pairs
+
+        Parameters
+        ----------
+        seed_pos_target : start or end postion of tarted
+        seed_pos_query : start or end postion of query
+
+        Raises
+        ------
+        nothing
+
+        Returns
+        -------
+        no_seed
+            number of seeds
+
+
+        """
+    #seed_pos_target = '1:5:8:10'
+    #seed_pos_query = '2:4:6:8'
+    no_seed = seed_pos.count(':') + 1
+    return no_seed
+
+
+def calc_seq_entropy(seq_l, ntc_dic):
+    """
+    Given a dictionary of nucleotide counts for a sequence ntc_dic and
+    the length of the sequence seq_l, compute the Shannon entropy of
+    the sequence.
+
+    Formula (see CE formula) taken from:
+    https://www.ncbi.nlm.nih.gov/pubmed/15215465
+
+    >>> seq_l = 8
+    >>> ntc_dic = {'A': 8, 'C': 0, 'G': 0, 'U': 0}
+    >>> calc_seq_entropy(seq_l, ntc_dic)
+    0
+    >>> ntc_dic = {'A': 4, 'C': 4, 'G': 0, 'U': 0}
+    >>> calc_seq_entropy(seq_l, ntc_dic)
+    0.5
+    >>> ntc_dic = {'A': 2, 'C': 2, 'G': 2, 'U': 2}
+    >>> calc_seq_entropy(seq_l, ntc_dic)
+    1.0
+
+    """
+    # For DNA or RNA, k = 4.
+    k = 4
+    # Shannon entropy.
+    ce = 0
+    for nt in ntc_dic:
+        c = ntc_dic[nt]
+        if c != 0:
+            ce += (c/seq_l) * math.log((c/seq_l), k)
+    if ce == 0:
+        return 0
+    else:
+        return -1*ce
+
+
+
+def seq_count_nt_freqs(seq,
+                       rna=True,
+                       count_dic=False):
+    """
+    Count nucleotide (character) frequencies in given sequence seq.
+    Return count_dic with frequencies.
+    If count_dic is given, add count to count_dic.
+
+    rna:
+    Instead of DNA dictionary, use RNA dictionary (A,C,G,U) for counting.
+
+    count_dic:
+    Supply a custom dictionary for counting only characters in
+    this dictionary + adding counts to this dictionary.
+
+    >>> seq = 'AAAACCCGGT'
+    >>> seq_count_nt_freqs(seq)
+    {'A': 4, 'C': 3, 'G': 2, 'T': 1}
+    >>> seq = 'acgtacgt'
+    >>> seq_count_nt_freqs(seq)
+    {'A': 0, 'C': 0, 'G': 0, 'T': 0}
+
+    """
+
+    assert seq, "given sequence string seq empty"
+    if not count_dic:
+        count_dic = {'A': 0, 'C': 0, 'G': 0, 'T': 0}
+        if rna:
+            count_dic = {'A': 0, 'C': 0, 'G': 0, 'U': 0}
+    # Conver to list.
+    seq_list = list(seq)
+    for nt in seq_list:
+        if nt in count_dic:
+            count_dic[nt] += 1
+    return count_dic
+
+def comput_complexity(seq):
+    """
+    compute number of base pairs
+
+        Parameters
+        ----------
+        seq: RNA sequence
+
+        Raises
+        ------
+        nothing
+
+        Returns
+        -------
+        GC_content
+            GC_content
+
+
+        """
+    seq_len = len(seq)
+    count_dic = seq_count_nt_freqs(seq)
+    complexity = calc_seq_entropy(seq_len, count_dic)
+
+    return complexity
+
 
 def get_GC_content(interacting_seq):
     """
@@ -111,6 +234,15 @@ def main():
 
     # Minimum free energy normalized by the GC-content
     df_rri['mfe_normby_GC'] = df_rri['E']/df_rri['GC_content']
+
+    # Number of seeds seedStart1
+    df_rri['no_seeds'] = df_rri['seedStart1'].apply(lambda x: count_number_of_seeds(x))
+
+    # sequence complexety shannon entropy
+    df_rri['complex_target'] = df_rri['target'].apply(lambda x: comput_complexity(x))
+    print(df_rri['complex_target'])
+    df_rri['complex_query'] = df_rri['query'].apply(lambda x: comput_complexity(x))
+    print(df_rri['complex_query'])
 
 
 
