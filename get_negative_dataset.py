@@ -637,7 +637,7 @@ def main():
 
     print('context method %s with shuffling method %s' %(context_method, kind_of_shuffel))
     print('***\ncontext is appende negative data generation by suffeling is starting:\n****')
-    context_info = '_context_method_' + context_method + '_shuffling_method_' + kind_of_shuffel + '_with_' + context + '_context_'
+    context_info = '_context_method_' + context_method + '_shuffling_method_' + kind_of_shuffel + '_with_' + str(context) + '_context_'
 
 
 
