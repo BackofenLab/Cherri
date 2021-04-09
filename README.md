@@ -44,7 +44,7 @@ Building of the background by controling:
 3. normalized Shannon entropy H of the alignment as a measure for the content of evolutionary information
 
 
-#### Sebastians Feature selection
+#### Sebastians feature selection
 - MFE
 - Maximal length of the two interacting subsequence
 - Number of base pairs within the top 1 RRI 
@@ -54,6 +54,25 @@ Building of the background by controling:
 - GC-content within interaction side
 - Requencies of the minimum free energy normalizedby the GC-content
 - Number of possible seeds
+
+
+#### Our List of features
+- E : Minimum free energy
+- no_bps : number of base pairs within the interaction
+- GC_content: GC content of the interaction side
+- max_inter_len: the maximum interaction side calculated by the length of the target sequence and query sequence lenght
+- inter_len_normby_bp: the maximum interaction length divided by the number of base pairs with the interaction 
+- bp_normby_inter_len: number of base pairs within the interaction divided by the maximum lenthe at the interaction
+- mfe_normby_GC: MFE devieded by the GC content
+- no_seeds: numbers of possible seeds within the interaction
+- complex_target: sheenon entropy of target sequence
+- complex_query: sheenon entropy of query sequence
+
+featur sets:
+- all: 'E no_bps GC_content max_inter_len inter_len_normby_bp bp_normby_inter_len mfe_normby_GC no_seeds complex_target complex_query'
+- small easy: 'no_bps GC_content max_inter_len'
+- small complex 'bp_normby_inter_len mfe_normby_GC complex_target complex_query'
+
 
 ### select ML-Method
 
