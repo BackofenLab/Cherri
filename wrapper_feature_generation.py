@@ -32,7 +32,10 @@ def main():
     calls_dict = {}
     overview_dict = {}
     counter = 1
-    file_names_list = ['paris_mES_06_context_method_together_shuffling_method_2_with_10_context', 'paris_HEK293T_06_context_method_together_shuffling_method_2_with_10_context']
+    file_names_list = ['paris_mES_06_context_method_together_shuffling_method_1_with_10_context_', 'paris_mES_06_context_method_together_shuffling_method_3_with_10_context_', 'paris_mES_06_context_method_together_shuffling_method_2_with_10_context_', 'paris_mES_06_context_method_separat_shuffling_method_1_with_10_context_', 'paris_mES_06_context_method_separat_shuffling_method_2_with_10_context_', 'paris_HEK293T_context_method_together_shuffling_method_3_with_10_context_', 'paris_HEK293T_context_method_together_shuffling_method_2_with_10_context_', 'paris_HEK293T_context_method_together_shuffling_method_1_with_10_context_', 'paris_HEK293T_context_method_separat_shuffling_method_1_with_10_context_', 'paris_HEK293T_context_method_separat_shuffling_method_2_with_10_context_']
+
+    print(len(file_names_list))
+
 
     for file_name in file_names_list:
         pos_file = input_dir + file_name + '_pos_RRI_dataset.csv'
@@ -49,7 +52,7 @@ def main():
             overview_dict[id_pos]= overview_pos
             overview_dict[id_neg]= overview_pos
             counter+= 1
-    print(overview_dict)
+    #print(overview_dict)
 
     f1 = open(output_dir + "calls.txt", "w")
     f2 = open(output_dir + "overview.tabular", "w")
