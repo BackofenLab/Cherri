@@ -1,6 +1,7 @@
-# RNA_RNA_binding_evaluation
+# :cherries: Cherri (Computationa Help Evaluating RNA-RNA interactions) :cherries:
 
 ## Project Idea:
+Wellcome to 
 Predict if a given RNA-RNA interaction could be a real biolocal one. Generate a ML-Model that can do this prediction. For this we will have the following work plane
 
 
@@ -56,22 +57,9 @@ Building of the background by controling:
 - Number of possible seeds
 
 
-#### Our List of features
-- E : Minimum free energy
-- no_bps : number of base pairs within the interaction
-- GC_content: GC content of the interaction side
-- max_inter_len: the maximum interaction side calculated by the length of the target sequence and query sequence lenght
-- inter_len_normby_bp: the maximum interaction length divided by the number of base pairs with the interaction 
-- bp_normby_inter_len: number of base pairs within the interaction divided by the maximum lenthe at the interaction
-- mfe_normby_GC: MFE devieded by the GC content
-- no_seeds: numbers of possible seeds within the interaction
-- complex_target: sheenon entropy of target sequence
-- complex_query: sheenon entropy of query sequence
 
-featur sets:
-- all: 'E no_bps GC_content max_inter_len inter_len_normby_bp bp_normby_inter_len mfe_normby_GC no_seeds complex_target complex_query'
-- small easy: 'no_bps GC_content max_inter_len'
-- small complex 'bp_normby_inter_len mfe_normby_GC complex_target complex_query'
+
+
 
 
 ### select ML-Method
@@ -141,6 +129,18 @@ python plot_tRRIs.py -i1 test_paris_HEK293T_context_method_together_shuffling_me
 ### get_features.py
 Here for a given input and a given reature set the features, this features are stored in a tabular format. 
 
+#### Our List of features
+- E : Minimum free energy
+- no_bps : number of base pairs within the interaction
+- GC_content: GC content of the interaction side
+- max_inter_len: the maximum interaction side calculated by the length of the target sequence and query sequence lenght
+- inter_len_normby_bp: the maximum interaction length divided by the number of base pairs with the interaction 
+- bp_normby_inter_len: number of base pairs within the interaction divided by the maximum lenthe at the interaction
+- mfe_normby_GC: MFE devieded by the GC content
+- no_seeds: numbers of possible seeds within the interaction
+- complex_target: sheenon entropy of target sequence
+- complex_query: sheenon entropy of query sequence
+
 #### example call
 ```
 python get_features.py -i ../output/paris_HEK293T_06_context_method_together_shuffling_method_2_pos_RRI_dataset.csv -f E no_bps GC_content mfe_normby_GC -o /home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/input_features/2
@@ -156,6 +156,23 @@ python get_features.py -i ../output/paris_HEK293T_06_context_method_together_shu
 
 
 
-### training.py
+### wrapper_feature_generation.py
+Buliding a table and a call.sh script for a combination of different negative data sets and feature combinations. This scipt helps to automatize a grid search to to find the best data and parameters for a ML modle.
 
+#### example call
+```
+python wrapper_feature_generation.py -i /home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/data/ -f 'E no_bps GC_content max_inter_len inter_len_normby_bp bp_normby_inter_len mfe_normby_GC no_seeds complex_target complex_query' 'no_bps GC_content max_inter_len' 'bp_normby_inter_len mfe_normby_GC complex_target complex_query'
+```
+
+#### feature set combiations:
+- all: 'E no_bps GC_content max_inter_len inter_len_normby_bp bp_normby_inter_len mfe_normby_GC no_seeds complex_target complex_query'
+- small easy: 'no_bps GC_content max_inter_len'
+- small complex 'bp_normby_inter_len mfe_normby_GC complex_target complex_query'
+
+#### Input Parameter
+- input_dir: path to input files, the file names are currently stored within the script
+- feature_set_list: list of all featurs combinations, each list should be given in ''
+
+#### Output 
+- tabular file and call.sh file. The tabel will give a overview for the possible combitoantion of feature sets. Once the call.sh file is perfromed, all of the modle input tabels or vectors are generated. They can be used to train different models.
 
