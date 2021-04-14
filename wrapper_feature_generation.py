@@ -43,21 +43,26 @@ def main():
         for featurs in feature_set_list:
             id_pos = str(counter)+'a'
             id_neg = str(counter)+'b'
-            call_pos = 'python get_features.py -i ' + pos_file + ' -f ' + featurs + ' -o ' + output_dir + id_pos + '/'
-            call_neg = 'python get_features.py -i ' + neg_file + ' -f ' + featurs + ' -o ' + output_dir + id_neg + '/'
+            call_pos = 'python get_features.py -i ' + pos_file + ' -f ' + featurs + ' -o ' + output_dir + id_pos
+            call_neg = 'python get_features.py -i ' + neg_file + ' -f ' + featurs + ' -o ' + output_dir + id_neg
             overview_pos = id_pos + ' \t ' + file_name + ' \t ' + ' pos \t ' + featurs + '\n'
             overview_neg = id_neg + ' \t ' + file_name + ' \t ' + ' neg \t ' + featurs + '\n'
             calls_dict[id_pos]= call_pos
             calls_dict[id_neg]= call_neg
             overview_dict[id_pos]= overview_pos
-            overview_dict[id_neg]= overview_pos
+            overview_dict[id_neg]= overview_neg
             counter+= 1
     #print(overview_dict)
 
-    f1 = open(output_dir + "calls.txt", "w")
+    f1 = open(output_dir + "calls.sh", "w")
     f2 = open(output_dir + "overview.tabular", "w")
-    f2.write('id  \t suffeling_id  \t data  \t featurs\n')
+    # write bash script!
+    f1.write('#!/usr/bin/env bash\n\ntrap ctrl_c INT\n\n\n')
+    f1.write('function ctrl_c() {\necho "** Trapped CTRL-C"\nexit\n}\n\n\n\n')
+    # header table
+    f2.write('id\tsuffeling_id\tdata\tfeaturs\n')
     for key in calls_dict:
+        f1.write('# call %s\n'%(key))
         f1.write(calls_dict[key] + '\n')
         f2.write(overview_dict[key])
     f1.close()

@@ -240,9 +240,9 @@ def main():
 
     # sequence complexety shannon entropy
     df_rri['complex_target'] = df_rri['target'].apply(lambda x: comput_complexity(x))
-    print(df_rri['complex_target'])
+    #print(df_rri['complex_target'])
     df_rri['complex_query'] = df_rri['query'].apply(lambda x: comput_complexity(x))
-    print(df_rri['complex_query'])
+    #print(df_rri['complex_query'])
 
 
 
