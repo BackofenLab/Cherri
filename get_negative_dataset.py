@@ -168,7 +168,7 @@ def extention_df(df):
 
 def get_context(seq_tag, df, out_dir, in_2bit_file, context):
     """
-    defining colum with ID and empty colums to store the context sequences
+    defining column with ID and empty colums to store the context sequences
 
         Parameters
         ----------
@@ -353,11 +353,14 @@ def inial_df():
         Returns
         -------
         df_inital
-            emty df with just the header (coloum)
+            emty df with just the header (columns)
 
         """
     df_inital = pd.DataFrame(columns=['id1','start1','end1','id2','start2',
-                                      'end2','subseqDP','hybridDP','E', 'target', 'query', 'id_target', 'id_query'])
+                                      'end2','subseqDP','hybridDP','E',
+                                      'seedStart1','seedEnd1','seedStart2',
+                                      'seedEnd2', 'target', 'query',
+                                      'id_target', 'id_query'])
     return df_inital
 
 
@@ -384,7 +387,8 @@ def Intarna_call(seq1, seq2,df, id_target, id_query):
     #print(df)
     #print(seq1)
     #print(seq2)
-    call = 'IntaRNA -t ' + seq1 + ' -q ' + seq2 + ' --outMode C --seedBP 5 --seedMinPu 0 --accW 150 --acc N --temperature=37'
+    output_columns = '--outCsvCols id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E,seedStart1,seedEnd1,seedStart2,seedEnd2'
+    call = 'IntaRNA -t ' + seq1 + ' -q ' + seq2 + ' --outMode C --seedBP 5 --seedMinPu 0 --accW 150 --acc N --temperature=37 ' + output_columns
     # print(call)
 
     process = subprocess.Popen(call, stdout=subprocess.PIPE,
@@ -406,7 +410,8 @@ def Intarna_call(seq1, seq2,df, id_target, id_query):
     #print(result)
     if result == 'empty':
         no_values = ['nan','nan','nan','nan','nan','nan','nan',
-                 'nan','nan']
+                     'nan','nan','nan','nan','nan','nan']
+        #print(col)
         df_one_result = pd.DataFrame([no_values], columns=col)
     elif result == 'exists':
         df_one_result = pd.DataFrame([values], columns=col)
@@ -590,9 +595,6 @@ def main():
 
 
 
-
-
-
     args = parser.parse_args()
     input_file = args.input_file
     output_path = args.output_path
@@ -613,43 +615,41 @@ def main():
     #print(type(shuffle_no_seq))
 
 
-    df_pos_RRIs_result = inial_df()
-    df_neg_RRIs_result = inial_df()
-
-    # df.columns.tolist()
-    df_RRIs = pd.read_table(input_file, sep=",")
-
-    # adding context by including infors into the df
-    df_RRIs = extention_df(df_RRIs)
-    df_target = get_context('target', df_RRIs, output_path, genome_file, context)
-    df_context = get_context('query', df_target, output_path, genome_file, context)
-
-    #print(df_context.info())
-    #print(df_context['ID1'])
-    #print(df_context['ID2'])
-
-
-    # print(df_context['con_seq_only_target'])
-
-    df_filted_RRIs = check_context_extention(df_context, context, output_path)
+    context_info = '_context_method_' + context_method + '_shuffling_method_' + kind_of_shuffel + '_with_' + str(context) + '_context_'
+    context_file = output_path + experiment_name +  context_info + 'RRI_dataset.csv'
 
     print('context method %s with shuffling method %s' %(context_method, kind_of_shuffel))
-    print('***\ncontext is appende negative data generation by suffeling is starting:\n****')
-    context_info = '_context_method_' + context_method + '_shuffling_method_' + kind_of_shuffel
 
+    if os.path.isfile(context_file):
+        df_filted_RRIs = pd.read_table(context_file, sep=",")
+        df_pos_RRIs_result = inial_df()
+        df_neg_RRIs_result = inial_df()
+        print('used existing context file: %s'%(context_file))
+    else:
+        df_pos_RRIs_result = inial_df()
+        df_neg_RRIs_result = inial_df()
+
+        df_RRIs = pd.read_table(input_file, sep=",")
+
+        # adding context by including infors into the df
+        df_RRIs = extention_df(df_RRIs)
+        df_target = get_context('target', df_RRIs, output_path, genome_file, context)
+        df_context = get_context('query', df_target, output_path, genome_file, context)
+
+        df_filted_RRIs = check_context_extention(df_context, context, output_path)
+        #### context added df saved!
+        df_filted_RRIs.to_csv(context_file, index=False)
+
+        print('***\ncontext is appende negative data generation by suffeling is starting:\n****')
 
 
     if context_method == 'separat':
-        if kind_of_shuffel != 1 and kind_of_shuffel != 2:
+        if int(kind_of_shuffel) != 1 and int(kind_of_shuffel) != 2:
             print('error: for shuffling method separat please only choose 1 or 2 as kind of shuffling')
             sys.exit()
 
+    # print('Kind of shuffeling: %i' % (int(kind_of_shuffel)))
 
-    #df_RRIs['hybrid_seq'] = df_RRIs['ineraction_side_1st'] + '&' + df_RRIs['ineraction_side_2end']
-    #hybrid_seq_list = df_RRIs.hybrid_seq.tolist()
-    #IntaRNA_prediction_list = df_RRIs.IntaRNA_prediction.tolist()
-    #target_seq_list = df_RRIs.ineraction_side_1st.tolist()
-    #query_seq_list = df_RRIs.ineraction_side_2end.tolist()
 
     ### Generate report steps:
     data_100 = len(df_filted_RRIs)
@@ -744,15 +744,15 @@ def main():
     ################################################################
 
 # add all clums of the input data
-    print('negative entry:')
-    print(df_neg_RRIs_result.info())
+    #print('negative entry:')
+    #print(df_neg_RRIs_result.info())
     #result = pd.concat([df_neg_entry, row], axis=1, keys=['df_neg_entry', 'row'], names=['id_target', 'ID1'])
     df_neg_RRIs_all_result = pd.merge(df_neg_RRIs_result, df_filted_RRIs,  how='left', left_on=['id_target','id_query'], right_on = ['ID1','ID2'])
     df_pos_RRIs_all_result = pd.merge(df_pos_RRIs_result, df_filted_RRIs,  how='left', left_on=['id_target','id_query'], right_on = ['ID1','ID2'])
 
     #df_filted_RRIs.loc[index]
-    print('appended data:')
-    print(df_neg_RRIs_all_result.info())
+    #print('appended data:')
+    #print(df_neg_RRIs_all_result.info())
 
 
 
