@@ -5,6 +5,19 @@ import matplotlib as mpl
 import argparse
 import rrieval.lib as rl
 
+
+##### possible features to add:
+# -> sequence based features:
+# - contents and skews https://en.wikipedia.org/wiki/GC_skew
+# - https://github.com/caballero/SeqComplex
+# -  complexity of the sequences: Wootton–Federhen complexity, entropy of the symbols,
+#    entropy of symbols in a Markov model, linguistic complexity:
+#    doi: 10.1093/nar/gku356
+# -> structure based features:
+# - MFE, frequency of MFE, ensemble diversity (ED), thermodynamic z-score and its p-value
+#  DOI: 10.1038/s41598-017-17510-y
+
+
 def sequence_length(hybrid):
     """
     compute number of base pairs
