@@ -1,8 +1,7 @@
-# :cherries: Cherri (Computationa Help Evaluating RNA-RNA interactions) :cherries:
+# :cherries: Cherri (Computational Help Evaluating RNA-RNA interactions) :cherries:
 
-## Project Idea:
-Wellcome to 
-Predict if a given RNA-RNA interaction could be a real biolocal one. Generate a ML-Model that can do this prediction. For this we will have the following work plane
+## Progamm Idea:
+We are developing a tool that distinguishes between biological relevant or real RRIs and RRIs which most likely would not occurs in nature. Giving the tool a RRI prediction it will generate a score like value to which of the two classes the given interaction belongs to.
 
 
 
@@ -58,18 +57,14 @@ Building of the background by controling:
 
 
 
-
-
-
-
 ### select ML-Method
 
 
 
-## scripts:
+## Script explanations:
 
 ### find_trusted_RRI.py
-Here RRIs which can be found in all replicats are selected. The scriped first filted to take only uniquly mapped RRIs and than for each RRI sequence a partner, within a overlap threshold, is searched. Output are the Chira input tables but filterd containing only the trusted RRIs. 
+Here we search for trusted RRIs, so RRIs which can be found in all replicates. In a first filter step only uniquely mapped RRIs are taken. Than RRI sequence partners in all replicas are found, using a overlap threshold. Output are the Chira input tables, now containing only the trusted RRIs. Only one of the sequence RRI pairs is added to the output. 
 
 #### example call
 ```
@@ -78,9 +73,9 @@ python data_feature_generation.py -i /home/teresa/Dokumente/RNA_RNA_interaction_
 
 #### Input Parameter
 - input_path: path to folder storing all input data
-- list_of_replicats: list_of_replicats
+- list_of_replicats: list_of_replicates
 - overlap_th: path output reposetory
-- experiment_name: name of the datasoruce of positve trusted RRIs
+- experiment_name: name of the data soruce of positve trusted RRIs
 
 #### Output 
 - trusted RRIs in tabulat format
@@ -88,7 +83,7 @@ python data_feature_generation.py -i /home/teresa/Dokumente/RNA_RNA_interaction_
 
 
 ### get_negative_dataset.py
-Generate the positive and negative dataset for the trusted RRIs. A context around the interaction side can be specifeyed and what kinde of shuffeling should be used to generate the negative data. The negative instance is choosen form a random number of options, which has the closed energy to the positive RRIs. 
+Generate the positive and negative dataset for the trusted RRIs. A context around the interaction side can be specified and what kind of shuffling should be used to generate the negative data. The negative instance is chosen form a random number of options, which has the closed energy to the positive RRIs. 
 
 #### example call
 ```
@@ -157,7 +152,7 @@ python get_features.py -i ../output/paris_HEK293T_06_context_method_together_shu
 
 
 ### wrapper_feature_generation.py
-Buliding a table and a call.sh script for a combination of different negative data sets and feature combinations. This scipt helps to automatize a grid search to to find the best data and parameters for a ML modle.
+Building a table and a call.sh script for a combination of different negative data sets and feature combinations. This script helps to automatize a grid search to to find the best data and parameters for a ML model.
 
 #### example call
 ```
