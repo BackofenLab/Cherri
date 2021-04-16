@@ -1,2 +1,8 @@
 pandas-profiling
 scikit-learn
+pandas  Version: 1.2.3  
+seaborn Version: 0.11.1
+ushuffle  Version: 1.2.2
+numpy Version: 1.19.2
+intarna Version:3.2.0
+interlap  Version: 0.2.7 
