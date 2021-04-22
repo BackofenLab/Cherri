@@ -6,3 +6,4 @@ ushuffle  Version: 1.2.2
 numpy Version: 1.19.2
 intarna Version:3.2.0
 interlap  Version: 0.2.7 
+xgboost
