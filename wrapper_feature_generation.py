@@ -26,13 +26,15 @@ def main():
     feature_set_list = args.feature_set_list
 
     print(feature_set_list)
-    output_dir = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/input_features_test/'
+    output_dir = '/vol/scratch/data/feature_input_HEK293T/'
 
 
     calls_dict = {}
     overview_dict = {}
     counter = 1
-    file_names_list = ['paris_mES_06_context_method_together_shuffling_method_1_with_10_context_', 'paris_mES_06_context_method_together_shuffling_method_3_with_10_context_', 'paris_mES_06_context_method_together_shuffling_method_2_with_10_context_', 'paris_mES_06_context_method_separat_shuffling_method_1_with_10_context_', 'paris_mES_06_context_method_separat_shuffling_method_2_with_10_context_', 'paris_HEK293T_context_method_together_shuffling_method_3_with_10_context_', 'paris_HEK293T_context_method_together_shuffling_method_2_with_10_context_', 'paris_HEK293T_context_method_together_shuffling_method_1_with_10_context_', 'paris_HEK293T_context_method_separat_shuffling_method_1_with_10_context_', 'paris_HEK293T_context_method_separat_shuffling_method_2_with_10_context_']
+    #file_names_list = ['paris_mES_06_context_method_together_shuffling_method_1_with_10_context_', 'paris_mES_06_context_method_together_shuffling_method_3_with_10_context_', 'paris_mES_06_context_method_together_shuffling_method_2_with_10_context_', 'paris_mES_06_context_method_separat_shuffling_method_1_with_10_context_', 'paris_mES_06_context_method_separat_shuffling_method_2_with_10_context_', 'paris_HEK293T_context_method_together_shuffling_method_3_with_10_context_', 'paris_HEK293T_context_method_together_shuffling_method_2_with_10_context_', 'paris_HEK293T_context_method_together_shuffling_method_1_with_10_context_', 'paris_HEK293T_context_method_separat_shuffling_method_1_with_10_context_', 'paris_HEK293T_context_method_separat_shuffling_method_2_with_10_context_']
+
+    file_names_list = ['paris_HEK293T_context_method_together_shuffling_method_3_with_10_context_', 'paris_HEK293T_context_method_together_shuffling_method_2_with_10_context_', 'paris_HEK293T_context_method_together_shuffling_method_1_with_10_context_', 'paris_HEK293T_context_method_separat_shuffling_method_1_with_10_context_', 'paris_HEK293T_context_method_separat_shuffling_method_2_with_10_context_']
 
     print(len(file_names_list))
 

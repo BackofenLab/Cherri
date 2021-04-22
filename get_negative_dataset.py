@@ -92,6 +92,7 @@ def check_convert_chr_id(chr_id):
 
     """
     assert chr_id, "given chr_id empty"
+    chr_id = str(chr_id)
 
     if re.search("^chr", chr_id):
         if not re.search("^chr[\dMXY]+$", chr_id):
@@ -192,6 +193,7 @@ def get_context(seq_tag, df, out_dir, in_2bit_file, context):
     out_fa = out_dir + seq_tag + '_out.fa'
     if seq_tag == 'target':
         df_bed = df[['chrom_1st', 'start_1st', 'end_1st', 'ID1', 'interaction_no', 'strand_1st']].copy()
+        print(df_bed.tail())
         df_bed['chrom_1st'] = df_bed['chrom_1st'].apply(lambda x: check_convert_chr_id(x))
         df_context =  add_context(df_bed, context, 'start_1st', 'end_1st')
         col_name = 'con_target'
@@ -393,6 +395,7 @@ def Intarna_call(seq1, seq2,df, id_target, id_query):
 
     process = subprocess.Popen(call, stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE, shell=True)
+    print(call)
     for idx, line in enumerate(process.stdout):
         line = line.decode("utf-8").strip().split(';')
         #line = line.strip()
