@@ -19,7 +19,7 @@ from sklearn.neighbors import (KNeighborsClassifier)
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 import xgboost
-
+import pickle
 ###
 
 def read_chira_data(in_file, header='no', separater="\t"):
@@ -380,19 +380,6 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
     ia_df = pd.concat([pos_df,neg_df])
     y = ia_df.label
     X = ia_df.drop(columns="label")
-    #Create training and test dataset
-    ##X_training, X_test, y_training, y_test = model_selection.train_test_split(X, y, test_size=0.3, random_state=42)
-    ##comparison dummy model
-    ##cm = DummyClassifier()
-    ##cm.fit(X_training, y_training)
-    ##dummy_comparison_score = cm.score(X_test, y_test)
-    ##print("Dummy score:")
-    ##print(dummy_comparison_score)
-    ##random_forest = RandomForestClassifier(n_estimators=100, random_state=42)
-    ##random_forest.fit(X_training, y_training)
-    ##random_forest_comparison_score = random_forest.score(X_test, y_test)
-    ##print("RF score:")
-    ##print(random_forest_comparison_score)
     for m in [DummyClassifier, LogisticRegression, DecisionTreeClassifier, KNeighborsClassifier,GaussianNB, SVC, RandomForestClassifier, xgboost.XGBClassifier]:
         cls=m()
         kfold = model_selection.KFold(n_splits=10, random_state=42, shuffle=True)
@@ -401,4 +388,19 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
             f"{m.__name__:22}  AUC: "
             f"{s.mean():.3f} STD: {s.std():.2f}"
             )
+    #Create training and test dataset
+    X_training, X_test, y_training, y_test = model_selection.train_test_split(X, y, test_size=0.3, random_state=42)
+    ##comparison dummy model
+    cm = DummyClassifier()
+    cm.fit(X_training, y_training)
+    dummy_comparison_score = cm.score(X_test, y_test)
+    print("Dummy score: " + dummy_comparison_score)
+    #random_forest
+    random_forest = RandomForestClassifier(n_estimators=100, random_state=42)
+    random_forest.fit(X_training, y_training)
+    random_forest_comparison_score = random_forest.score(X_test, y_test)
+    print("RF score: " + random_forest_comparison_score)
+    rf_path = output_path + "/rf.obj"
+    rf_handle = open(rf_path,"wb")
+    pickle.dump(random_forest,rf_handle)
     return ""
