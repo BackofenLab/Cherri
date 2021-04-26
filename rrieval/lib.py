@@ -403,4 +403,14 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
     rf_path = output_path + "/rf.obj"
     rf_handle = open(rf_path,"wb")
     pickle.dump(random_forest,rf_handle)
+    rf_handle.close()
+    return ""
+
+def classify(in_data_filepath,in_model_filepath,output_path):
+    X = pd.read_csv(in_data_filepath, sep=',')
+    model_handle = open(in_model_filepath,'rb')
+    model = pickle.load(model_handle)
+    model_handle.close()
+    y_pred=model.predict(X)
+    print(y_pred)
     return ""
