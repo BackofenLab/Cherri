@@ -385,8 +385,8 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
         kfold = model_selection.KFold(n_splits=10, random_state=42, shuffle=True)
         s = model_selection.cross_val_score(cls, X,y, scoring="roc_auc", cv=kfold)
         print(
-            f"{m.__name__:22}  AUC: "
-            f"{s.mean():.3f} STD: {s.std():.2f}"
+            f"{m.__name__:22}\t AUC:\t"
+            f"{s.mean():.3f}\t STD:\t {s.std():.2f}"
             )
     #Create training and test dataset
     X_training, X_test, y_training, y_test = model_selection.train_test_split(X, y, test_size=0.3, random_state=42)
@@ -394,12 +394,12 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
     cm = DummyClassifier()
     cm.fit(X_training, y_training)
     dummy_comparison_score = cm.score(X_test, y_test)
-    print("Dummy score: " + dummy_comparison_score)
+    print("Dummy score: %f" %(dummy_comparison_score))
     #random_forest
     random_forest = RandomForestClassifier(n_estimators=100, random_state=42)
     random_forest.fit(X_training, y_training)
     random_forest_comparison_score = random_forest.score(X_test, y_test)
-    print("RF score: " + random_forest_comparison_score)
+    print("RF score: %f" %random_forest_comparison_score)
     rf_path = output_path + "/rf.obj"
     rf_handle = open(rf_path,"wb")
     pickle.dump(random_forest,rf_handle)
