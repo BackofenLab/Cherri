@@ -13,7 +13,13 @@ import sklearn as sk
 from sklearn import model_selection
 from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import (RandomForestClassifier)
-
+from sklearn.linear_model import (LogisticRegression)
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import (KNeighborsClassifier)
+from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC
+import xgboost
+import pickle
 ###
 
 def read_chira_data(in_file, header='no', separater="\t"):
@@ -34,7 +40,7 @@ def read_chira_data(in_file, header='no', separater="\t"):
             dataframe listing all interactions
 
         """
-    
+
     # inclued header
     if header == 'no':
         df_temp = pd.read_table(in_file, header=None, sep=separater)
@@ -360,10 +366,12 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
     pos_df['label'] = 1
     neg_df['label'] = 0
     #Dataset initial characterisation
-    pos_report=pandas_profiling.ProfileReport(pos_df,title="Positive data Report")
-    neg_report=pandas_profiling.ProfileReport(neg_df,title="Negative data Report")
-    pos_report.to_file(output_path + "/positive_report.html")
-    neg_report.to_file(output_path + "/negative_report.html")
+    reporting=0
+    if(reporting):
+        pos_report=pandas_profiling.ProfileReport(pos_df,title="Positive data Report")
+        neg_report=pandas_profiling.ProfileReport(neg_df,title="Negative data Report")
+        pos_report.to_file(output_path + "/positive_report.html")
+        neg_report.to_file(output_path + "/negative_report.html")
     #print(pos_df.dtypes)
     #print(neg_df.dtypes)
     #print(pd.get_dummies(pos_df))
@@ -372,17 +380,37 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
     ia_df = pd.concat([pos_df,neg_df])
     y = ia_df.label
     X = ia_df.drop(columns="label")
+    for m in [DummyClassifier, LogisticRegression, DecisionTreeClassifier, KNeighborsClassifier,GaussianNB, SVC, RandomForestClassifier, xgboost.XGBClassifier]:
+        cls=m()
+        kfold = model_selection.KFold(n_splits=10, random_state=42, shuffle=True)
+        s = model_selection.cross_val_score(cls, X,y, scoring="roc_auc", cv=kfold)
+        print(
+            f"{m.__name__:22}  AUC: "
+            f"{s.mean():.3f} STD: {s.std():.2f}"
+            )
     #Create training and test dataset
     X_training, X_test, y_training, y_test = model_selection.train_test_split(X, y, test_size=0.3, random_state=42)
-    #comparison dummy model
+    ##comparison dummy model
     cm = DummyClassifier()
     cm.fit(X_training, y_training)
     dummy_comparison_score = cm.score(X_test, y_test)
-    print("Dummy score:")
-    print(dummy_comparison_score)
+    print("Dummy score: " + dummy_comparison_score)
+    #random_forest
     random_forest = RandomForestClassifier(n_estimators=100, random_state=42)
     random_forest.fit(X_training, y_training)
     random_forest_comparison_score = random_forest.score(X_test, y_test)
-    print("RF score:")
-    print(random_forest_comparison_score)
+    print("RF score: " + random_forest_comparison_score)
+    rf_path = output_path + "/rf.obj"
+    rf_handle = open(rf_path,"wb")
+    pickle.dump(random_forest,rf_handle)
+    rf_handle.close()
+    return ""
+
+def classify(in_data_filepath,in_model_filepath,output_path):
+    X = pd.read_csv(in_data_filepath, sep=',')
+    model_handle = open(in_model_filepath,'rb')
+    model = pickle.load(model_handle)
+    model_handle.close()
+    y_pred=model.predict(X)
+    print(y_pred)
     return ""
