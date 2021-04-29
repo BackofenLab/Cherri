@@ -171,3 +171,45 @@ python wrapper_feature_generation.py -i /home/teresa/Dokumente/RNA_RNA_interacti
 #### Output 
 - tabular file and call.sh file. The tabel will give a overview for the possible combitoantion of feature sets. Once the call.sh file is perfromed, all of the modle input tabels or vectors are generated. They can be used to train different models.
 
+
+
+
+### run_different_feature_combinations.py
+calls the training.py script for different for all negative dataset and feature combinations. It takes the compintions for the overview tabular. 
+
+#### example call
+```
+python run_different_feature_combinations.py -i /vol/scratch/data/feature_input_snRNA/ -o /vol/scratch/output/modle_test/ -e snRNA
+```
+
+#### Input Parameter
+- input_dir: "path to input files
+- out_dir: path to output dir
+- experiment: prefix indicating the experiment and subest to be analyzed
+
+#### Output 
+- tabular file contiaing the feature and experiment inforamiton and the AUC and STD of the different models.
+
+
+
+### plot_heatmap.py
+plots a heat map for AUCs of feature set and negative data combinations. 
+
+#### example call
+```
+python plot_heatmap.py -i /vol/scratch/output/modle_test/lncRNA_modle_AUC.csv -o /vol/scratch/output/modle_test/ -c 10 -d paris_lncRNA
+```
+
+#### Input Parameter
+- input_file: path to input files
+- out_dir: path to output dir
+- context: context
+- data_name: name of dataset
+
+#### Output 
+- heat map and updated table.
+
+
+
+
+
