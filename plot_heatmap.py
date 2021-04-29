@@ -34,6 +34,7 @@ def main():
                         help= "name of dataset")
 
 
+
     args = parser.parse_args()
 
     input_file = args.input_file
@@ -104,19 +105,11 @@ def main():
 
 
 
-    file_name= out_dir + 'heatmap.pdf'
+    file_name = out_dir +  data_name + '_heatmap.pdf'
     plt.savefig(file_name)
 
 
-
-
-
-
-
-
-
-
-
+    df_input.to_csv(out_dir + data_name + '_modle_AUC_updated.csv', index=False)
 
 
 
