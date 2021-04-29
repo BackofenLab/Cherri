@@ -33,7 +33,7 @@ def main():
     output_dir = args.output_dir
 
     print(feature_set_list)
-    output_dir = '/vol/scratch/data/feature_input_HEK293T/'
+    #output_dir = '/vol/scratch/data/feature_input_HEK293T/'
 
 
     calls_dict = {}
@@ -80,8 +80,8 @@ def main():
     f1 = open(output_dir + "calls.sh", "w")
     f2 = open(output_dir + "overview.tabular", "w")
     # write bash script!
-    f1.write('#!/usr/bin/env bash\n\ntrap ctrl_c INT\n\n\n')
-    f1.write('function ctrl_c() {\necho "** Trapped CTRL-C"\nexit\n}\n\n\n\n')
+    f1.write('#!/usr/bin/env bash\n\n')
+    #f1.write('\n\ntrap ctrl_c INT\n\n\nfunction ctrl_c() {\necho "** Trapped CTRL-C"\nexit\n}\n\n\n\n')
     # header table
     f2.write('id\tsuffeling_id\tdata\tfeaturs\n')
     for key in calls_dict:
