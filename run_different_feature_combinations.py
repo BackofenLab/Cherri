@@ -16,7 +16,7 @@ def main():
                                            , help= "path to input files")
     parser.add_argument("-o", "--out_dir", action="store", dest="out_dir", required=True,
                         help= "path to output dir")
-    parser.add_argument("-s", "--input_set", action="store", dest="input_set", required=True
+    parser.add_argument("-e", "--experiment", action="store", dest="input_set", required=True
                         , help= "prefix indicating the experiment and subest to be analyzed")
 
 
@@ -25,7 +25,7 @@ def main():
 
     input_dir = args.input_dir
     out_dir = args.out_dir
-    input_set = args.input_set
+    experiment = args.experiment
 
 
     input_dir = input_dir + '/'
@@ -98,7 +98,7 @@ def main():
         df_result.loc[len(df_result)] = values
         print(df_result.loc[len(df_result)-1])
     print(df_result)
-    df_result.to_csv(out_dir + input_set + '_modle_AUC.csv', index=False)
+    df_result.to_csv(out_dir + experiment + '_modle_AUC.csv', index=False)
 
 if __name__ == '__main__':
     main()
