@@ -404,6 +404,15 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
     rf_handle = open(rf_path,"wb")
     pickle.dump(random_forest,rf_handle)
     rf_handle.close()
+
+    xgb = xgboost.XGBClassifier(n_estimators=100, random_state=42)
+    xgb.fit(X_training, y_training)
+    xgb_comparison_score = xgb.score(X_test, y_test)
+    print("RF score: %f" %xgb_comparison_score)
+    xgb_path = output_path + "/xgb.obj"
+    xgb_handle = open(xgb_path,"wb")
+    pickle.dump(xgb,xgb_handle)
+    xgb_handle.close()
     return ""
 
 def classify(in_data_filepath,in_model_filepath,output_path):
