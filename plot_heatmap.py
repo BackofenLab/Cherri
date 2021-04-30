@@ -90,9 +90,9 @@ def main():
             #plt.figure(figsize=[5,5])
             df_plot = df_plot.pivot("featurs", "neg_data", "AUC")
             if count == n:
-                ax = sns.heatmap(df_plot, ax=axes[(count-1)], vmin=0.4, vmax=1)
+                ax = sns.heatmap(df_plot, ax=axes[(count-1)], vmin=0.4, vmax=1, annot=True, fmt=".3f")
             else:
-                ax = sns.heatmap(df_plot, xticklabels=False, ax=axes[(count-1)], vmin=0.4, vmax=1)
+                ax = sns.heatmap(df_plot, xticklabels=False, ax=axes[(count-1)], vmin=0.4, vmax=1, annot=True, fmt=".3f")
 
             #axes[(count-1)].set_title(model, fontsize='small')
             axes[(count-1)].tick_params(axis='both', labelsize=8)
