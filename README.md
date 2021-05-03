@@ -57,8 +57,22 @@ Building of the background by controling:
 
 
 
-### select ML-Method
+### Interaction input
 
+To generate the current features we need:
+
+| description  | coloum name  | 
+|---|---|
+| start positon of RRI target  | 'start1'  |
+| end positon of RRI target   |  'end1' | 
+|  start positon of RRI query  |  'start2' |
+| end positon of RRI query   |  'end2' | 
+| dotbrackad of interaction  | hybridDP  |
+| RRI sequence target&query  |  subseqDP | 
+| MFE  |  E | 
+|  seeds starts listed for target |  seedStart1 | 
+| interacting target sequence  |  target | 
+|  interacting query sequence | query |
 
 
 ## Script explanations:
