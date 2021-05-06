@@ -170,7 +170,7 @@ Building a table and a call.sh script for a combination of different negative da
 
 #### example call
 ```
-python wrapper_feature_generation.py -i /home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/data/ -f 'E no_bps GC_content max_inter_len inter_len_normby_bp bp_normby_inter_len mfe_normby_GC no_seeds complex_target complex_query' 'no_bps GC_content max_inter_len' 'bp_normby_inter_len mfe_normby_GC complex_target complex_query'
+python wrapper_feature_generation.py -i /vol/scratch/data/pos_neg_data -s human_mouse -f 'E no_bps GC_content max_inter_len inter_len_normby_bp bp_normby_inter_len mfe_normby_GC no_seeds complex_target complex_query' 'no_bps GC_content max_inter_len' 'bp_normby_inter_len mfe_normby_GC complex_target complex_query' -o /vol/scratch/data/feature_input_human_mouse
 ```
 
 #### feature set combiations:
@@ -181,6 +181,8 @@ python wrapper_feature_generation.py -i /home/teresa/Dokumente/RNA_RNA_interacti
 #### Input Parameter
 - input_dir: path to input files, the file names are currently stored within the script
 - feature_set_list: list of all featurs combinations, each list should be given in ''
+- input_set: prefix indicating the experiment and subest to be analyzed
+- output_dir: dir where feature tables will be stored
 
 #### Output 
 - tabular file and call.sh file. The tabel will give a overview for the possible combitoantion of feature sets. Once the call.sh file is perfromed, all of the modle input tabels or vectors are generated. They can be used to train different models.
@@ -223,6 +225,22 @@ python plot_heatmap.py -i /vol/scratch/output/modle_test/lncRNA_modle_AUC.csv -o
 #### Output 
 - heat map and updated table.
 
+
+
+### python training.py
+
+
+#### example call
+```
+python training.py -i /vol/scratch/data/feature_input_human_mouse//1a  -n /vol/scratch/data/feature_input_human_mouse//1b  -d /vol/scratch/output/modle_test/
+```
+
+#### Input Parameter
+- i: positive feature set
+- n: negative feature set
+- f: output dir where feature tables will be stored
+
+#### Output 
 
 
 

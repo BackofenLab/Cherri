@@ -45,6 +45,8 @@ def main():
     file_names_list_mES = ['paris_mES_06_context_method_together_shuffling_method_3_with_10_context_', 'paris_mES_06_context_method_together_shuffling_method_2_with_10_context_', 'paris_mES_06_context_method_together_shuffling_method_1_with_10_context_', 'paris_mES_06_context_method_separat_shuffling_method_1_with_10_context_', 'paris_mES_06_context_method_separat_shuffling_method_2_with_10_context_']
     file_names_list_lncRNA = ['paris_lncRNA_context_method_together_shuffling_method_3_with_10_context_', 'paris_lncRNA_context_method_together_shuffling_method_2_with_10_context_', 'paris_lncRNA_context_method_together_shuffling_method_1_with_10_context_', 'paris_lncRNA_context_method_separat_shuffling_method_1_with_10_context_', 'paris_lncRNA_context_method_separat_shuffling_method_2_with_10_context_']
     file_names_list_snRNA = ['paris_snRNA_context_method_together_shuffling_method_3_with_10_context_', 'paris_snRNA_context_method_together_shuffling_method_2_with_10_context_', 'paris_snRNA_context_method_together_shuffling_method_1_with_10_context_', 'paris_snRNA_context_method_separat_shuffling_method_1_with_10_context_', 'paris_snRNA_context_method_separat_shuffling_method_2_with_10_context_']
+    file_names_list_human_mouse = ['paris_human_mouse_context_method_together_shuffling_method_3_with_10_context_', 'paris_human_mouse_context_method_together_shuffling_method_2_with_10_context_', 'paris_human_mouse_context_method_together_shuffling_method_1_with_10_context_', 'paris_human_mouse_context_method_separat_shuffling_method_1_with_10_context_', 'paris_human_mouse_context_method_separat_shuffling_method_2_with_10_context_']
+
 
     if input_set == 'human':
         file_names_list = file_names_list_HEK293T
@@ -54,6 +56,8 @@ def main():
         file_names_list = file_names_list_lncRNA
     elif input_set == 'snRNA':
         file_names_list = file_names_list_snRNA
+    elif input_set == 'human_mouse':
+        file_names_list = file_names_list_human_mouse
 
 
 

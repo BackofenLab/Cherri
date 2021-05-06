@@ -16,8 +16,8 @@ def main():
                                            , help= "path to input files")
     parser.add_argument("-o", "--out_dir", action="store", dest="out_dir", required=True,
                         help= "path to output dir")
-    parser.add_argument("-e", "--experiment", action="store", dest="input_set", required=True
-                        , help= "prefix indicating the experiment and subest to be analyzed")
+    parser.add_argument("-e", "--experiment", action="store", dest="experiment", required=True,
+                         help= "prefix indicating the experiment and subest to be analyzed")
 
 
 
