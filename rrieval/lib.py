@@ -17,6 +17,7 @@ from sklearn.linear_model import (LogisticRegression)
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import (KNeighborsClassifier)
 from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 import xgboost
 import pickle
@@ -422,4 +423,54 @@ def classify(in_data_filepath,in_model_filepath,output_path):
     model_handle.close()
     y_pred=model.predict(X)
     print(y_pred)
+    return ""
+
+def param_optimize(in_positive_data_filepath,in_negative_data_filepath,output_path):
+    pos_df = pd.read_csv(in_positive_data_filepath, sep=',')
+    neg_df = pd.read_csv(in_negative_data_filepath, sep=',')
+    #Inject labels
+    pos_df['label'] = 1
+    neg_df['label'] = 0
+    #Dataset initial characterisation
+    reporting=0
+    if(reporting):
+        pos_report=pandas_profiling.ProfileReport(pos_df,title="Positive data Report")
+        neg_report=pandas_profiling.ProfileReport(neg_df,title="Negative data Report")
+        pos_report.to_file(output_path + "/positive_report.html")
+        neg_report.to_file(output_path + "/negative_report.html")
+    #print(pos_df.dtypes)
+    #print(neg_df.dtypes)
+    #print(pd.get_dummies(pos_df))
+    #print(pd.get_dummies(neg_df))
+    #Concat datasets
+    ia_df = pd.concat([pos_df,neg_df])
+    y = ia_df.label
+    X = ia_df.drop(columns="label")
+    X_training, X_test, y_training, y_test = model_selection.train_test_split(X, y, test_size=0.3, random_state=42)
+    #random_forest
+    random_forest = RandomForestClassifier(n_estimators=100, random_state=42)
+
+    # dict of hyperparmeters to optimize
+    param_grid = {'bootstrap': [True],
+        'max_depth': [6, 10],
+        'max_features': ['auto', 'sqrt'],
+        'min_samples_leaf': [3, 5],
+        'min_samples_split': [4, 6],
+        'n_estimators': [100, 350]
+        }
+
+    forest_grid_search = GridSearchCV(random_forest, param_grid, cv=5,
+                                      scoring="roc_auc",
+                                      return_train_score=True,
+                                      verbose=True,
+                                      n_jobs=-1)
+
+    forest_grid_search.fit(X_training, y_training)
+
+    #best_param = forest_grid_search.best_params(X_training, y_training)
+    best_param = forest_grid_search.best_params_
+    print("RF best params: ")
+    print(best_param)
+
+
     return ""
