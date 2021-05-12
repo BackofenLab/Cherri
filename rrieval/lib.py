@@ -358,9 +358,7 @@ def read_fasta_into_dic(fasta_file,
     return seqs_dic
 
 
-
-#Functions for model training
-def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path):
+def read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath):
     pos_df = pd.read_csv(in_positive_data_filepath, sep=',')
     neg_df = pd.read_csv(in_negative_data_filepath, sep=',')
     #Inject labels
@@ -379,6 +377,33 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
     #print(pd.get_dummies(neg_df))
     #Concat datasets
     ia_df = pd.concat([pos_df,neg_df])
+
+    return ia_df
+
+
+
+#Functions for model training
+def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path):
+    #pos_df = pd.read_csv(in_positive_data_filepath, sep=',')
+    #neg_df = pd.read_csv(in_negative_data_filepath, sep=',')
+    #Inject labels
+    #pos_df['label'] = 1
+    #neg_df['label'] = 0
+    #Dataset initial characterisation
+    #reporting=0
+    #if(reporting):
+        #pos_report=pandas_profiling.ProfileReport(pos_df,title="Positive data Report")
+        #neg_report=pandas_profiling.ProfileReport(neg_df,title="Negative data Report")
+        #pos_report.to_file(output_path + "/positive_report.html")
+        #neg_report.to_file(output_path + "/negative_report.html")
+    #print(pos_df.dtypes)
+    #print(neg_df.dtypes)
+    #print(pd.get_dummies(pos_df))
+    #print(pd.get_dummies(neg_df))
+    #Concat datasets
+    #ia_df = pd.concat([pos_df,neg_df])
+    ia_df = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)
+
     y = ia_df.label
     X = ia_df.drop(columns="label")
     for m in [DummyClassifier, LogisticRegression, DecisionTreeClassifier, KNeighborsClassifier,GaussianNB, SVC, RandomForestClassifier, xgboost.XGBClassifier]:
@@ -426,24 +451,8 @@ def classify(in_data_filepath,in_model_filepath,output_path):
     return ""
 
 def param_optimize(in_positive_data_filepath,in_negative_data_filepath,output_path):
-    pos_df = pd.read_csv(in_positive_data_filepath, sep=',')
-    neg_df = pd.read_csv(in_negative_data_filepath, sep=',')
-    #Inject labels
-    pos_df['label'] = 1
-    neg_df['label'] = 0
-    #Dataset initial characterisation
-    reporting=0
-    if(reporting):
-        pos_report=pandas_profiling.ProfileReport(pos_df,title="Positive data Report")
-        neg_report=pandas_profiling.ProfileReport(neg_df,title="Negative data Report")
-        pos_report.to_file(output_path + "/positive_report.html")
-        neg_report.to_file(output_path + "/negative_report.html")
-    #print(pos_df.dtypes)
-    #print(neg_df.dtypes)
-    #print(pd.get_dummies(pos_df))
-    #print(pd.get_dummies(neg_df))
-    #Concat datasets
-    ia_df = pd.concat([pos_df,neg_df])
+    ia_df = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)
+
     y = ia_df.label
     X = ia_df.drop(columns="label")
     X_training, X_test, y_training, y_test = model_selection.train_test_split(X, y, test_size=0.3, random_state=42)
@@ -467,10 +476,15 @@ def param_optimize(in_positive_data_filepath,in_negative_data_filepath,output_pa
 
     forest_grid_search.fit(X_training, y_training)
 
-    #best_param = forest_grid_search.best_params(X_training, y_training)
     best_param = forest_grid_search.best_params_
     print("RF best params: ")
     print(best_param)
 
+    random_forest_comparison_score = random_forest.score(X_test, y_test)
+    print("RF score: %f" %random_forest_comparison_score)
+    rf_path = output_path + "/rf.obj"
+    rf_handle = open(rf_path,"wb")
+    pickle.dump(random_forest,rf_handle)
+    rf_handle.close()
 
     return ""
