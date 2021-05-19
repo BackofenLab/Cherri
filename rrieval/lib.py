@@ -8,6 +8,7 @@ import os
 # training imports
 import csv
 import pandas as pd
+import numpy as np
 import pandas_profiling
 import sklearn as sk
 from sklearn import model_selection
@@ -21,6 +22,8 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 import xgboost
 import pickle
+from sklearn.linear_model import Lasso
+import seaborn as sns
 ###
 
 def read_chira_data(in_file, header='no', separater="\t"):
@@ -378,7 +381,10 @@ def read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath):
     #Concat datasets
     ia_df = pd.concat([pos_df,neg_df])
 
-    return ia_df
+    y = ia_df.label
+    X = ia_df.drop(columns="label")
+
+    return y, X
 
 
 
@@ -402,7 +408,7 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
     #print(pd.get_dummies(neg_df))
     #Concat datasets
     #ia_df = pd.concat([pos_df,neg_df])
-    ia_df = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)
+    y,X = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)
 
     y = ia_df.label
     X = ia_df.drop(columns="label")
@@ -451,14 +457,20 @@ def classify(in_data_filepath,in_model_filepath,output_path):
     return ""
 
 def param_optimize(in_positive_data_filepath,in_negative_data_filepath,output_path):
-    ia_df = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)
+    y,X = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)
 
-    y = ia_df.label
-    X = ia_df.drop(columns="label")
+    #y = ia_df.label
+    #X = ia_df.drop(columns="label")
     X_training, X_test, y_training, y_test = model_selection.train_test_split(X, y, test_size=0.3, random_state=42)
-    #random_forest
-    random_forest = RandomForestClassifier(n_estimators=100, random_state=42)
 
+    # computing base modle perfomance:
+    base_model = RandomForestClassifier(n_estimators=100, random_state=42)
+    base_model.fit(X_training, y_training)
+    base_accuracy = evaluate(base_model, X_test, y_test)
+
+
+    #random_forest
+    random_forest = RandomForestClassifier()
     # dict of hyperparmeters to optimize
     param_grid = {'bootstrap': [True],
         'max_depth': [6, 10],
@@ -480,11 +492,32 @@ def param_optimize(in_positive_data_filepath,in_negative_data_filepath,output_pa
     print("RF best params: ")
     print(best_param)
 
-    random_forest_comparison_score = random_forest.score(X_test, y_test)
-    print("RF score: %f" %random_forest_comparison_score)
-    rf_path = output_path + "/rf.obj"
-    rf_handle = open(rf_path,"wb")
-    pickle.dump(random_forest,rf_handle)
-    rf_handle.close()
+    best_grid = forest_grid_search.best_estimator_
+    grid_accuracy = evaluate(best_grid, X_test, y_test)
+
+    print('RF base accuracy: %f' % base_accuracy)
+    print('RF base accuracy: %f' % grid_accuracy)
+
+    print('Improvement of {:0.2f}%.'.format( 100 * (grid_accuracy - base_accuracy) / base_accuracy))
+
+
+
+    #random_forest_comparison_score = random_forest.score(X_test, y_test)
+    #print("RF score: %f" %random_forest_comparison_score)
+    #rf_path = output_path + "/rf.obj"
+    #rf_handle = open(rf_path,"wb")
+    #pickle.dump(random_forest,rf_handle)
+    #rf_handle.close()
 
     return ""
+
+def evaluate(model, test_features, test_labels):
+    predictions = model.predict(test_features)
+    errors = abs(predictions - test_labels)
+    mape = 100 * np.mean(errors / test_labels)
+    accuracy = 100 - mape
+    print('Model Performance')
+    print('Average Error: {:0.4f} degrees.'.format(np.mean(errors)))
+    print('Accuracy = {:0.2f}%.'.format(accuracy))
+
+    return accuracy
