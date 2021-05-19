@@ -218,9 +218,15 @@ def main():
     feature_set_list = args.feature_set_list
     output_file = args.output_file
 
+    validation = 1
+
     df_rri = rl.read_chira_data(input, header='yes', separater=",")
     #print(df_rri.info())
     #print(df_rri['subseqDP'])
+    if validation == 1:
+        df_rri['subseqDP'] = df_rri['subseq1'] + '&' + df_rri['subseq2']
+        df_rri['target'] = df_rri['seq1']
+        df_rri['query'] = df_rri['seq2']
 
 
     # MFE: mfe = df_rri['E']
@@ -230,7 +236,10 @@ def main():
     df_rri['len_interaction_query'] = df_rri['end2'] - df_rri['start2']
 
     # Number of base pairs within the top 1 RRI ?
-    df_rri['no_bps'] = df_rri['hybridDP'].apply(lambda x: sequence_length(x))
+    if validation == 0:
+        df_rri['no_bps'] = df_rri['hybridDP'].apply(lambda x: sequence_length(x))
+    elif validation == 1:
+        df_rri['no_bps'] = df_rri['hybridDPfull'].apply(lambda x: sequence_length(x))
 
     # Maximal length of an interacting subsequence normalized by the number of base pairs within the top 1 RRI
     df_rri['max_inter_len'] = df_rri[['len_interaction_target', 'len_interaction_query']].max(axis=1)

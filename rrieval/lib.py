@@ -8,6 +8,7 @@ import os
 # training imports
 import csv
 import pandas as pd
+import numpy as np
 import pandas_profiling
 import sklearn as sk
 from sklearn import model_selection
@@ -17,9 +18,12 @@ from sklearn.linear_model import (LogisticRegression)
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import (KNeighborsClassifier)
 from sklearn.naive_bayes import GaussianNB
+from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 import xgboost
 import pickle
+from sklearn.linear_model import Lasso
+import seaborn as sns
 ###
 
 def read_chira_data(in_file, header='no', separater="\t"):
@@ -357,9 +361,7 @@ def read_fasta_into_dic(fasta_file,
     return seqs_dic
 
 
-
-#Functions for model training
-def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path):
+def read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath):
     pos_df = pd.read_csv(in_positive_data_filepath, sep=',')
     neg_df = pd.read_csv(in_negative_data_filepath, sep=',')
     #Inject labels
@@ -378,6 +380,36 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
     #print(pd.get_dummies(neg_df))
     #Concat datasets
     ia_df = pd.concat([pos_df,neg_df])
+
+    y = ia_df.label
+    X = ia_df.drop(columns="label")
+
+    return y, X
+
+
+
+#Functions for model training
+def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path):
+    #pos_df = pd.read_csv(in_positive_data_filepath, sep=',')
+    #neg_df = pd.read_csv(in_negative_data_filepath, sep=',')
+    #Inject labels
+    #pos_df['label'] = 1
+    #neg_df['label'] = 0
+    #Dataset initial characterisation
+    #reporting=0
+    #if(reporting):
+        #pos_report=pandas_profiling.ProfileReport(pos_df,title="Positive data Report")
+        #neg_report=pandas_profiling.ProfileReport(neg_df,title="Negative data Report")
+        #pos_report.to_file(output_path + "/positive_report.html")
+        #neg_report.to_file(output_path + "/negative_report.html")
+    #print(pos_df.dtypes)
+    #print(neg_df.dtypes)
+    #print(pd.get_dummies(pos_df))
+    #print(pd.get_dummies(neg_df))
+    #Concat datasets
+    #ia_df = pd.concat([pos_df,neg_df])
+    y,X = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)
+
     y = ia_df.label
     X = ia_df.drop(columns="label")
     for m in [DummyClassifier, LogisticRegression, DecisionTreeClassifier, KNeighborsClassifier,GaussianNB, SVC, RandomForestClassifier, xgboost.XGBClassifier]:
@@ -385,8 +417,8 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
         kfold = model_selection.KFold(n_splits=10, random_state=42, shuffle=True)
         s = model_selection.cross_val_score(cls, X,y, scoring="roc_auc", cv=kfold)
         print(
-            f"{m.__name__:22}  AUC: "
-            f"{s.mean():.3f} STD: {s.std():.2f}"
+            f"{m.__name__:22}\t AUC:\t"
+            f"{s.mean():.3f}\t STD:\t {s.std():.2f}"
             )
     #Create training and test dataset
     X_training, X_test, y_training, y_test = model_selection.train_test_split(X, y, test_size=0.3, random_state=42)
@@ -394,16 +426,25 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
     cm = DummyClassifier()
     cm.fit(X_training, y_training)
     dummy_comparison_score = cm.score(X_test, y_test)
-    print("Dummy score: " + dummy_comparison_score)
+    print("Dummy score: %f" %(dummy_comparison_score))
     #random_forest
     random_forest = RandomForestClassifier(n_estimators=100, random_state=42)
     random_forest.fit(X_training, y_training)
     random_forest_comparison_score = random_forest.score(X_test, y_test)
-    print("RF score: " + random_forest_comparison_score)
+    print("RF score: %f" %random_forest_comparison_score)
     rf_path = output_path + "/rf.obj"
     rf_handle = open(rf_path,"wb")
     pickle.dump(random_forest,rf_handle)
     rf_handle.close()
+
+    xgb = xgboost.XGBClassifier(n_estimators=100, random_state=42)
+    xgb.fit(X_training, y_training)
+    xgb_comparison_score = xgb.score(X_test, y_test)
+    print("RF score: %f" %xgb_comparison_score)
+    xgb_path = output_path + "/xgb.obj"
+    xgb_handle = open(xgb_path,"wb")
+    pickle.dump(xgb,xgb_handle)
+    xgb_handle.close()
     return ""
 
 def classify(in_data_filepath,in_model_filepath,output_path):
@@ -414,3 +455,69 @@ def classify(in_data_filepath,in_model_filepath,output_path):
     y_pred=model.predict(X)
     print(y_pred)
     return ""
+
+def param_optimize(in_positive_data_filepath,in_negative_data_filepath,output_path):
+    y,X = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)
+
+    #y = ia_df.label
+    #X = ia_df.drop(columns="label")
+    X_training, X_test, y_training, y_test = model_selection.train_test_split(X, y, test_size=0.3, random_state=42)
+
+    # computing base modle perfomance:
+    base_model = RandomForestClassifier(n_estimators=100, random_state=42)
+    base_model.fit(X_training, y_training)
+    base_accuracy = evaluate(base_model, X_test, y_test)
+
+
+    #random_forest
+    random_forest = RandomForestClassifier()
+    # dict of hyperparmeters to optimize
+    param_grid = {'bootstrap': [True],
+        'max_depth': [6, 10],
+        'max_features': ['auto', 'sqrt'],
+        'min_samples_leaf': [3, 5],
+        'min_samples_split': [4, 6],
+        'n_estimators': [100, 350]
+        }
+
+    forest_grid_search = GridSearchCV(random_forest, param_grid, cv=5,
+                                      scoring="roc_auc",
+                                      return_train_score=True,
+                                      verbose=True,
+                                      n_jobs=-1)
+
+    forest_grid_search.fit(X_training, y_training)
+
+    best_param = forest_grid_search.best_params_
+    print("RF best params: ")
+    print(best_param)
+
+    best_grid = forest_grid_search.best_estimator_
+    grid_accuracy = evaluate(best_grid, X_test, y_test)
+
+    print('RF base accuracy: %f' % base_accuracy)
+    print('RF base accuracy: %f' % grid_accuracy)
+
+    print('Improvement of {:0.2f}%.'.format( 100 * (grid_accuracy - base_accuracy) / base_accuracy))
+
+
+
+    #random_forest_comparison_score = random_forest.score(X_test, y_test)
+    #print("RF score: %f" %random_forest_comparison_score)
+    #rf_path = output_path + "/rf.obj"
+    #rf_handle = open(rf_path,"wb")
+    #pickle.dump(random_forest,rf_handle)
+    #rf_handle.close()
+
+    return ""
+
+def evaluate(model, test_features, test_labels):
+    predictions = model.predict(test_features)
+    errors = abs(predictions - test_labels)
+    mape = 100 * np.mean(errors / test_labels)
+    accuracy = 100 - mape
+    print('Model Performance')
+    print('Average Error: {:0.4f} degrees.'.format(np.mean(errors)))
+    print('Accuracy = {:0.2f}%.'.format(accuracy))
+
+    return accuracy

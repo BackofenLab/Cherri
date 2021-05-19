@@ -13,20 +13,27 @@ def main():
     # store commandline args
     parser = argparse.ArgumentParser(description='')
     parser.add_argument("-i", "--input_dir", action="store", dest="input_dir", required=True
-                                           , help= "path to input files")
+                        , help= "path to input files")
+    parser.add_argument("-s", "--input_set", action="store", dest="input_set", required=True
+                        , help= "prefix indicating the experiment and subest to be analyzed")
     parser.add_argument("-f", "--feature_set_list", action="store", nargs='+',
                         dest="feature_set_list", required=True,
                         help= "set of features the script will output ")
+    parser.add_argument("-o", "--output_dir", action="store", dest="output_dir", required=True
+                        , help= "dir where feature tables will be stored")
+
 
 
 
     args = parser.parse_args()
 
     input_dir = args.input_dir
+    input_set = args.input_set
     feature_set_list = args.feature_set_list
+    output_dir = args.output_dir
 
     print(feature_set_list)
-    output_dir = '/vol/scratch/data/feature_input_HEK293T/'
+    #output_dir = '/vol/scratch/data/feature_input_HEK293T/'
 
 
     calls_dict = {}
@@ -34,7 +41,25 @@ def main():
     counter = 1
     #file_names_list = ['paris_mES_06_context_method_together_shuffling_method_1_with_10_context_', 'paris_mES_06_context_method_together_shuffling_method_3_with_10_context_', 'paris_mES_06_context_method_together_shuffling_method_2_with_10_context_', 'paris_mES_06_context_method_separat_shuffling_method_1_with_10_context_', 'paris_mES_06_context_method_separat_shuffling_method_2_with_10_context_', 'paris_HEK293T_context_method_together_shuffling_method_3_with_10_context_', 'paris_HEK293T_context_method_together_shuffling_method_2_with_10_context_', 'paris_HEK293T_context_method_together_shuffling_method_1_with_10_context_', 'paris_HEK293T_context_method_separat_shuffling_method_1_with_10_context_', 'paris_HEK293T_context_method_separat_shuffling_method_2_with_10_context_']
 
-    file_names_list = ['paris_HEK293T_context_method_together_shuffling_method_3_with_10_context_', 'paris_HEK293T_context_method_together_shuffling_method_2_with_10_context_', 'paris_HEK293T_context_method_together_shuffling_method_1_with_10_context_', 'paris_HEK293T_context_method_separat_shuffling_method_1_with_10_context_', 'paris_HEK293T_context_method_separat_shuffling_method_2_with_10_context_']
+    file_names_list_HEK293T = ['paris_HEK293T_context_method_together_shuffling_method_3_with_10_context_', 'paris_HEK293T_context_method_together_shuffling_method_2_with_10_context_', 'paris_HEK293T_context_method_together_shuffling_method_1_with_10_context_', 'paris_HEK293T_context_method_separat_shuffling_method_1_with_10_context_', 'paris_HEK293T_context_method_separat_shuffling_method_2_with_10_context_']
+    file_names_list_mES = ['paris_mES_06_context_method_together_shuffling_method_3_with_10_context_', 'paris_mES_06_context_method_together_shuffling_method_2_with_10_context_', 'paris_mES_06_context_method_together_shuffling_method_1_with_10_context_', 'paris_mES_06_context_method_separat_shuffling_method_1_with_10_context_', 'paris_mES_06_context_method_separat_shuffling_method_2_with_10_context_']
+    file_names_list_lncRNA = ['paris_lncRNA_context_method_together_shuffling_method_3_with_10_context_', 'paris_lncRNA_context_method_together_shuffling_method_2_with_10_context_', 'paris_lncRNA_context_method_together_shuffling_method_1_with_10_context_', 'paris_lncRNA_context_method_separat_shuffling_method_1_with_10_context_', 'paris_lncRNA_context_method_separat_shuffling_method_2_with_10_context_']
+    file_names_list_snRNA = ['paris_snRNA_context_method_together_shuffling_method_3_with_10_context_', 'paris_snRNA_context_method_together_shuffling_method_2_with_10_context_', 'paris_snRNA_context_method_together_shuffling_method_1_with_10_context_', 'paris_snRNA_context_method_separat_shuffling_method_1_with_10_context_', 'paris_snRNA_context_method_separat_shuffling_method_2_with_10_context_']
+    file_names_list_human_mouse = ['paris_human_mouse_context_method_together_shuffling_method_3_with_10_context_', 'paris_human_mouse_context_method_together_shuffling_method_2_with_10_context_', 'paris_human_mouse_context_method_together_shuffling_method_1_with_10_context_', 'paris_human_mouse_context_method_separat_shuffling_method_1_with_10_context_', 'paris_human_mouse_context_method_separat_shuffling_method_2_with_10_context_']
+
+
+    if input_set == 'human':
+        file_names_list = file_names_list_HEK293T
+    elif input_set == 'mouse':
+        file_names_list = file_names_list_mES
+    elif input_set == 'lncRNA':
+        file_names_list = file_names_list_lncRNA
+    elif input_set == 'snRNA':
+        file_names_list = file_names_list_snRNA
+    elif input_set == 'human_mouse':
+        file_names_list = file_names_list_human_mouse
+
+
 
     print(len(file_names_list))
 
@@ -59,8 +84,8 @@ def main():
     f1 = open(output_dir + "calls.sh", "w")
     f2 = open(output_dir + "overview.tabular", "w")
     # write bash script!
-    f1.write('#!/usr/bin/env bash\n\ntrap ctrl_c INT\n\n\n')
-    f1.write('function ctrl_c() {\necho "** Trapped CTRL-C"\nexit\n}\n\n\n\n')
+    f1.write('#!/usr/bin/env bash\n\n')
+    #f1.write('\n\ntrap ctrl_c INT\n\n\nfunction ctrl_c() {\necho "** Trapped CTRL-C"\nexit\n}\n\n\n\n')
     # header table
     f2.write('id\tsuffeling_id\tdata\tfeaturs\n')
     for key in calls_dict:
