@@ -384,7 +384,7 @@ def read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath):
     y = ia_df.label
     X = ia_df.drop(columns="label")
 
-    return y, X
+    return X, y
 
 
 
@@ -408,7 +408,7 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
     #print(pd.get_dummies(neg_df))
     #Concat datasets
     #ia_df = pd.concat([pos_df,neg_df])
-    y,X = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)
+    X, y = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)
 
     y = ia_df.label
     X = ia_df.drop(columns="label")
@@ -457,7 +457,7 @@ def classify(in_data_filepath,in_model_filepath,output_path):
     return ""
 
 def param_optimize(in_positive_data_filepath,in_negative_data_filepath,output_path):
-    y,X = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)
+    X, y = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)
 
     #y = ia_df.label
     #X = ia_df.drop(columns="label")
