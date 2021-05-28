@@ -454,7 +454,7 @@ def classify(in_data_filepath,in_model_filepath,output_path):
     model_handle.close()
     y_pred=model.predict(X)
     print(y_pred)
-    return ""
+    return y_pred
 
 def param_optimize(in_positive_data_filepath,in_negative_data_filepath,output_path):
     X, y = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)

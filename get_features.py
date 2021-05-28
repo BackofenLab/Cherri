@@ -4,6 +4,7 @@ import math
 import matplotlib as mpl
 import argparse
 import rrieval.lib as rl
+import re
 
 
 ##### possible features to add:
@@ -69,7 +70,13 @@ def count_number_of_seeds(seed_pos):
         """
     #seed_pos_target = '1:5:8:10'
     #seed_pos_query = '2:4:6:8'
-    no_seed = seed_pos.count(':') + 1
+    #print(seed_pos)
+    match = re.search(r":", str(seed_pos))
+    if match:
+        #print('found pattern')
+        no_seed = seed_pos.count(':') + 1
+    else:
+        no_seed = 1
     return no_seed
 
 
@@ -190,11 +197,13 @@ def get_GC_content(interacting_seq):
 
 
         """
-    #interacting_seq = row['subseqDP']
+    #print(interacting_seq)
+    interacting_seq = str(interacting_seq)
     no_A = interacting_seq.count('A')
     no_U = interacting_seq.count('U')
     no_G = interacting_seq.count('G')
     no_C = interacting_seq.count('C')
+    #print(no_A)
 
     assert (no_A + no_U + no_G + no_C + 1) == len(interacting_seq), "something went wrong detecting the nucleotieds"
     GC_content = (no_G + no_C)/len(interacting_seq)
@@ -221,12 +230,13 @@ def main():
     validation = 1
 
     df_rri = rl.read_chira_data(input, header='yes', separater=",")
-    #print(df_rri.info())
-    #print(df_rri['subseqDP'])
+
     if validation == 1:
         df_rri['subseqDP'] = df_rri['subseq1'] + '&' + df_rri['subseq2']
         df_rri['target'] = df_rri['seq1']
         df_rri['query'] = df_rri['seq2']
+    print(df_rri.info())
+    #print(df_rri['subseqDP'])
 
 
     # MFE: mfe = df_rri['E']
@@ -252,6 +262,8 @@ def main():
     df_rri['bp_normby_inter_len'] = df_rri['no_bps']/df_rri['max_inter_len']
 
     # GC-content within interaction side
+    #print(df_rri['subseqDP'].type)
+
     df_rri['GC_content'] = df_rri['subseqDP'].apply(lambda x: get_GC_content(x))
 
     # Minimum free energy normalized by the GC-content
