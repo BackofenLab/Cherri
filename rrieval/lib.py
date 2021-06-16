@@ -410,8 +410,8 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
     #ia_df = pd.concat([pos_df,neg_df])
     X, y = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)
 
-    y = ia_df.label
-    X = ia_df.drop(columns="label")
+    #y = ia_df.label
+    #X = ia_df.drop(columns="label")
     for m in [DummyClassifier, LogisticRegression, DecisionTreeClassifier, KNeighborsClassifier,GaussianNB, SVC, RandomForestClassifier, xgboost.XGBClassifier]:
         cls=m()
         kfold = model_selection.KFold(n_splits=10, random_state=42, shuffle=True)
