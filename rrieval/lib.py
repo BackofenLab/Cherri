@@ -20,10 +20,10 @@ from sklearn.neighbors import (KNeighborsClassifier)
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
-import xgboost
-import pickle
+#import xgboost
+#import pickle
 from sklearn.linear_model import Lasso
-import seaborn as sns
+#import seaborn as sns
 ###
 
 def read_chira_data(in_file, header='no', separater="\t"):
