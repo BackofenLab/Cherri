@@ -19,6 +19,7 @@ import re
 #  DOI: 10.1038/s41598-017-17510-y
 
 
+
 def sequence_length(hybrid):
     """
     compute number of base pairs
@@ -266,11 +267,16 @@ def main():
 
     df_rri['GC_content'] = df_rri['subseqDP'].apply(lambda x: get_GC_content(x))
 
-    # Minimum free energy normalized by the GC-content
-    df_rri['mfe_normby_GC'] = df_rri['E']/df_rri['GC_content']
-
     # Number of seeds seedStart1
     df_rri['no_seeds'] = df_rri['seedStart1'].apply(lambda x: count_number_of_seeds(x))
+
+    # E_hybrid,ED1,ED2'
+    df_rri['max_ED'] = df_rri[['ED1', 'ED2']].max(axis=1)
+
+    # Energys normalized by the GC-content
+    df_rri['mfe_normby_GC'] = df_rri['E']/df_rri['GC_content']
+    df_rri['max_ED_normby_GC'] = df_rri['max_ED']/df_rri['GC_content']
+    df_rri['E_hybrid_normby_GC'] = df_rri['E_hybrid']/df_rri['GC_content']
 
     # sequence complexety shannon entropy
     df_rri['complex_target'] = df_rri['target'].apply(lambda x: comput_complexity(x))

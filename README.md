@@ -138,15 +138,22 @@ python plot_tRRIs.py -i1 test_paris_HEK293T_context_method_together_shuffling_me
 ### get_features.py
 Here for a given input and a given reature set the features, this features are stored in a tabular format. 
 
+
 #### Our List of features
-- E : Minimum free energy
+- E : Minimum free energy (overall interaction energy)
+- E_hybrid : energy of hybridization only = E - ED1 - ED2
+- maxED: maximal energy of ED1 and ED2
+
 - no_bps : number of base pairs within the interaction
 - GC_content: GC content of the interaction side
 - max_inter_len: the maximum interaction side calculated by the length of the target sequence and query sequence lenght
+- no_seeds: numbers of possible seeds within the interaction
+
 - inter_len_normby_bp: the maximum interaction length divided by the number of base pairs with the interaction 
 - bp_normby_inter_len: number of base pairs within the interaction divided by the maximum lenthe at the interaction
 - mfe_normby_GC: MFE devieded by the GC content
-- no_seeds: numbers of possible seeds within the interaction
+- max_ED_normby_GC: max_ED devieded by the GC content
+- E_hybrid_normby_GC: E_hybrid devieded by the GC content
 - complex_target: sheenon entropy of target sequence
 - complex_query: sheenon entropy of query sequence
 
