@@ -361,7 +361,7 @@ def inial_df():
     df_inital = pd.DataFrame(columns=['id1','start1','end1','id2','start2',
                                       'end2','subseqDP','hybridDP','E',
                                       'seedStart1','seedEnd1','seedStart2',
-                                      'seedEnd2', 'target', 'query',
+                                      'seedEnd2', 'E_hybrid','ED1','ED2', 'target', 'query',
                                       'id_target', 'id_query'])
     return df_inital
 
@@ -389,9 +389,9 @@ def Intarna_call(seq1, seq2,df, id_target, id_query):
     #print(df)
     #print(seq1)
     #print(seq2)
-    output_columns = '--outCsvCols id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E,seedStart1,seedEnd1,seedStart2,seedEnd2'
+    output_columns = '--outCsvCols id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E,seedStart1,seedEnd1,seedStart2,seedEnd2,E_hybrid,ED1,ED2'
     call = 'IntaRNA -t ' + seq1 + ' -q ' + seq2 + ' --outMode C --seedBP 5 --seedMinPu 0 --accW 150 --acc N --temperature=37 ' + output_columns
-    # print(call)
+    print(call)
 
     process = subprocess.Popen(call, stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE, shell=True)
@@ -413,7 +413,7 @@ def Intarna_call(seq1, seq2,df, id_target, id_query):
     #print(result)
     if result == 'empty':
         no_values = ['nan','nan','nan','nan','nan','nan','nan',
-                     'nan','nan','nan','nan','nan','nan']
+                     'nan','nan','nan','nan','nan','nan','nan','nan','nan']
         #print(col)
         df_one_result = pd.DataFrame([no_values], columns=col)
     elif result == 'exists':
