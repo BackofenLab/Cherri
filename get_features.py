@@ -228,7 +228,7 @@ def main():
     feature_set_list = args.feature_set_list
     output_file = args.output_file
 
-    validation = 1
+    validation = 0
 
     df_rri = rl.read_chira_data(input, header='yes', separater=",")
 
@@ -285,14 +285,17 @@ def main():
     #print(df_rri['complex_query'])
 
 
-
-    print(feature_set_list)
-    for col_name in feature_set_list:
-        print(col_name)
-        #print(df_rri[col_name])
-        print('#################')
-    # generate output:
-    df_feature = df_rri[feature_set_list].copy()
+    if feature_set_list[0] == 'all' or feature_set_list[0] == 'All':
+        # ToDo: now we have duplicats. find a more recine set of all!!
+        df_feature = df_rri
+        print('OUTput contians all featurs')
+    else:
+        for col_name in feature_set_list:
+            print(col_name)
+            #print(df_rri[col_name])
+            print('#################')
+        # generate output:
+        df_feature = df_rri[feature_set_list].copy()
     df_feature.to_csv(output_file, index=False)
 
     # Go over list of featurs for the output dir and generate table:
