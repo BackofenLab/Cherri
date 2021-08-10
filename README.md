@@ -93,12 +93,30 @@ python find_trusted_RRI.py -i /home/teresa/Dokumente/RNA_RNA_interaction_evaluat
 
 #### Output 
 - trusted RRIs in tabulat format
+- pickled list of avg overlap percent
+- pickled list of avg overlap lenght
 
+
+### plot_avg_overlaps.py 
+The scirpt takes the lists of avg overlap percent and overlap lenght form the find_trusted_RRI.py script. Thie Idea ist that for differen overlap thresholds will be plotted into a box plot. At the moment for overlap thresholds ['0.3', '0.4', '0.5', '0.6', '0.7']. Therefor the find_trusted_RRI.py should be called with this overlap thresholds.
+
+#### example call
+```
+python plot_avg_overlaps.py -i /vol/scratch/data/plots/overlap_distibution/ -n rri_overlap_plots
+```
+
+#### Input Parameter
+- input_path: path to folder where input files
+- experiment_name: name of the data soruce of positve trusted RRIs
+
+
+#### Output 
+- two boxplots
 
 
 
 ### find_occupied_regions.py
-Given the RRI information tables form Chira and RNA-Protein binding positions a Interlab object is build. This object can be used to 
+Given the RRI information tables form Chira and RNA-Protein binding positions a Interlab object is build. The occuped information can be used to mask parts of the genome and therefore enale to select negative interaction regions. This reagions are not part of interaction in nature. 
 
 #### example call
 ```
