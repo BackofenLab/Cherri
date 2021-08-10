@@ -9,10 +9,11 @@ import sys
 import argparse
 import numpy as np
 import rrieval.lib as rl
+import pickle
 
 
 
-def filter_score(df_interactions):
+def filter_score(df_interactions, score_th):
     """
     Filter dataframe for instances with a score of 1
 
@@ -31,7 +32,7 @@ def filter_score(df_interactions):
 
             """
     # filter input for score_seq_1st_side and score_seq_2end_side == 1
-    df_interactions_single_mapped = df_interactions[(df_interactions.score_seq_1st_side == 1) & (df_interactions.score_seq_2end_side == 1)]
+    df_interactions_single_mapped = df_interactions[(df_interactions.score_seq_1st_side >= score_th) & (df_interactions.score_seq_2end_side >= score_th)]
     #df_interactions_single_mapped
     return df_interactions_single_mapped
 
@@ -145,7 +146,7 @@ def build_interlap_for_replicat(df_interactions):
 
 
 
-def build_replicat_library_to_compare(input_path, list_of_replicats):
+def build_replicat_library_to_compare(input_path, list_of_replicats, score_th):
     """
     Building for each replicat a inter object
 
@@ -171,7 +172,7 @@ def build_replicat_library_to_compare(input_path, list_of_replicats):
     for file in list_of_replicats:
         in_file = input_path + '/' + file
         df_replicat = rl.read_chira_data(in_file)
-        df_filtered_replicat = filter_score(df_replicat)
+        df_filtered_replicat = filter_score(df_replicat, score_th)
         rep_size = len(df_filtered_replicat)
         rep_size_list.append(rep_size)
         inter_replicat = build_interlap_for_replicat(df_filtered_replicat)
@@ -302,17 +303,14 @@ def compare_overlap(overlap_pairs_list, overlap_th, no_replicats):
         Parameters
         ----------
         overlap_pairs_list: list of overlapping RRIs
-        overlap_th: pverlap threshold
+        overlap_th: overlap threshold
         no_replicats: number of replicats
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
         trusted_rri
-            list contining the most overlaping rri for each replicat if there
+            list contining the most overlaping rri for each replicat if
             one could be found
 
         """
@@ -692,7 +690,23 @@ def sequence_length(start, end):
     return seq_length
 
 
+def get_list_overlaps(instances_no_nan_list):
+    avg_overlap_list = []
+    avg_overlap_len_list = []
+    for temp_list in instances_no_nan_list:
+        sort_pos = [(i[0],i[1])for i in temp_list]
+        # print(sort_pos)
+        overlap_rep1_rep2_seq1 = rl.calculate_overlap(sort_pos[0][0],sort_pos[0][1],sort_pos[1][0],sort_pos[1][1])
+        overlap_rep1_rep2_seq2 = rl.calculate_overlap(sort_pos[0][0],sort_pos[0][1],sort_pos[2][0],sort_pos[2][1])
+        overlap_len_seq1 = rl.calculate_overlap(sort_pos[0][0],sort_pos[0][1],sort_pos[1][0],sort_pos[1][1], len_flag=True)
+        overlap_len_seq2 = rl.calculate_overlap(sort_pos[0][0],sort_pos[0][1],sort_pos[2][0],sort_pos[2][1], len_flag=True)
+        avg_overlap = (overlap_rep1_rep2_seq1 + overlap_rep1_rep2_seq2)/2
+        avg_overlap_len = (overlap_len_seq1 + overlap_len_seq2)/2
 
+        avg_overlap_list.append(avg_overlap)
+        avg_overlap_len_list.append(avg_overlap_len)
+
+    return avg_overlap_list, avg_overlap_len_list
 
 
 def main():
@@ -713,6 +727,9 @@ def main():
     parser.add_argument("-n", "--experiment_name", action="store",
                         dest="experiment_name", required=True,
                         help= "name of the datasoruce of positve trusted RRIs")
+    parser.add_argument("-s", "--score_th", default=1,  type=float,
+                        help= "threshold score giving the liklyhood that RRI is mapping to the given interaction side")
+
 
 
     args = parser.parse_args()
@@ -722,6 +739,7 @@ def main():
     overlap_th = args.overlap_th
     output_path = args.output_path
     experiment_name = args.experiment_name
+    score_th = args.score_th
 
 
     plot_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/RNA_RNA_binding_evaluation/plots/'
@@ -732,12 +750,16 @@ def main():
     plot_path_full = plot_path + '_' + str(overlap_th) + '_'
 
 
-    inter_replicat_list, no_replicats, rep_size_list = build_replicat_library_to_compare(input_path, list_of_replicats)
+    inter_replicat_list, no_replicats, rep_size_list = build_replicat_library_to_compare(input_path, list_of_replicats, score_th)
     len_smalles_replicat = rep_size_list[0]
     print(rep_size_list)
     print(len_smalles_replicat)
     no_relayble_rri, trusted_rri_list, no_replicats = find_relayble_replicats(inter_replicat_list, overlap_th, no_replicats)
+
     instances_just_nan_list, instances_also_nan_list, instances_no_nan_list = get_numbers_nan(no_replicats, trusted_rri_list)
+
+    avg_overlap_list, avg_overlap_len_list = get_list_overlaps(instances_no_nan_list)
+
     enegy_list, interaction_length, df_final_output = get_enegy_seqlen(instances_no_nan_list)
 
     if len(instances_also_nan_list) > 0:
@@ -752,13 +774,25 @@ def main():
 
     print('######\n for %i replicates the following number of reliable interactions are found: %i (%f)'%(no_replicats, no_relayble_rri, percentage_trustable_rri_all))
     print('the distribution of the interactions are:')
-    print('Number of only nan RRI: %i'%len(instances_just_nan_list))
-    print('Number of some nan RRI: %i'%len(instances_also_nan_list))
-    print('Number of no nan RRI: %i'%len(instances_no_nan_list))
+    print('Number of RRI all not having a hybrid: %i'%len(instances_just_nan_list))
+    print('Number of RRI some having a hybrid: %i'%len(instances_also_nan_list))
+    print('Number of RRI all having hybrids: %i'%len(instances_no_nan_list))
     #print(no_relayble_rri)
     #print(len_smalles_replicat)
     print('######')
 
+    # print(avg_overlap_list)
+    avg_path = output_path + experiment_name + 'avg_overlap_' + str(overlap_th) + '.obj'
+    avg_handle = open(avg_path,"wb")
+    pickle.dump(avg_overlap_list,avg_handle)
+    avg_handle.close()
+
+    avg_overlap_len_list
+
+    len_path = output_path + experiment_name + 'len_overlap_' + str(overlap_th) + '.obj'
+    len_handle = open(len_path,"wb")
+    pickle.dump(avg_overlap_len_list,len_handle)
+    len_handle.close()
 
 
     #### Plotting ######
