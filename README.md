@@ -82,7 +82,7 @@ Here we search for trusted RRIs, so RRIs which can be found in all replicates. I
 
 #### example call
 ```
-python data_feature_generation.py -i /home/teresa/Dokumente/RNA_RNA_interaction_evaluation/data/data_Chira/training/Paris -r test_rep1.tabular test_rep2.tabular test_rep3.tabular -o 0.6 -d /home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/ -n test_paris
+python find_trusted_RRI.py -i /home/teresa/Dokumente/RNA_RNA_interaction_evaluation/data/data_Chira/training/Paris -r test_rep1.tabular test_rep2.tabular test_rep3.tabular -o 0.6 -d /home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/ -n test_paris
 ```
 
 #### Input Parameter
@@ -94,6 +94,25 @@ python data_feature_generation.py -i /home/teresa/Dokumente/RNA_RNA_interaction_
 #### Output 
 - trusted RRIs in tabulat format
 
+
+
+
+### find_occupied_regions.py
+Given the RRI information tables form Chira and RNA-Protein binding positions a Interlab object is build. This object can be used to 
+
+#### example call
+```
+python find_occupied_regions.py -i1 /vol/scratch/data/RRIs/Paris/ -r test_rep1.tabular test_rep2.tabular test_rep3.tabular -o /vol/scratch/data/RRIs/
+```
+
+#### Input Parameter
+- RRI_path: path to folder storing all RRI data (tabular)
+- rbp_path: path to RBP side data file (bed format)
+- list_of_replicats: list having filenames of all replicats
+- out_path: path to folder storing outputfiles
+
+#### Output 
+- outputs a pickels Interlab object and prints the path to the file
 
 
 ### get_negative_dataset.py
