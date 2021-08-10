@@ -68,9 +68,33 @@ def read_chira_data(in_file, header='no', separater="\t"):
     return df_interactions
 
 
+def call_script(call,reprot_stdout=False):
+    """
+    starts a subprosses to call a script and checks for errors.
 
 
-def calculate_overlap(s1,e1,s2,e2):
+        Parameters
+        ----------
+        call : cmd comand
+
+        Returns
+        -------
+        out
+            if reprot_stdout set True returns the stdout (default: False)
+
+    """
+    process = subprocess.Popen(call, stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE, shell=True)
+    out, err = process.communicate()
+    #print(out.decode('utf-8'))
+    error = err.decode('utf-8')
+
+    assert not error, "script is complaining:\n%s\n%s" %(call, error)
+    if reprot_stdout == True:
+        out = out.decode('utf-8')
+        return out
+
+def calculate_overlap(s1,e1,s2,e2,len_flag=False):
     """
     Building for each replicat a inter object
 
@@ -120,7 +144,136 @@ def calculate_overlap(s1,e1,s2,e2):
     # select overlap of shorter sequence:
     compinde_overlap = max([overlap_seq1, overlap_seq2])
     # print(compinde_overlap)
-    return compinde_overlap
+    if len_flag:
+        return overlap_len
+    else:
+        return compinde_overlap
+
+
+
+def get_chrom_list_no_numbers(df_interactions, chrom):
+    """
+    Generates a unique list of chromosmes or conticts for both interaction
+    partners
+
+        Parameters
+        ----------
+        df_interactions : df including the filtered RRIs
+        chrom :  string indicating from wich seq the chromosome is
+
+
+        Returns
+        -------
+        sort_list_chrom
+            sorted list of unique chromosmes or contics which are not a number
+            and present in the input data frame
+
+        """
+    chrom_list = df_interactions[chrom].unique().tolist()
+    #convert all values to string in case it is not
+    new_list = [str(el) for idx,el in enumerate(chrom_list)]
+    sort_list_chrom = sorted(new_list)
+
+    return sort_list_chrom
+
+
+def get_list_chrom(df_interactions):
+    """
+    Generates a unique list of chromosmes or conticts for both interaction
+    partners
+
+        Parameters
+        ----------
+        df_interactions : df including the filtered RRIs
+
+
+        Returns
+        -------
+        sort_list_chrom
+            sorted list of unique chromosmes or contics which are not a number
+            and present in the input data frame
+
+        """
+    chrom1_list = get_chrom_list_no_numbers(df_interactions, 'chrom_seq_1st_side')
+    chrom2_list = get_chrom_list_no_numbers(df_interactions, 'chrom_seq_2end_side')
+    list_chrom_no_int = list(set().union(chrom1_list,chrom2_list))
+    sort_list_chrom = sorted(list_chrom_no_int)
+    return sort_list_chrom
+
+
+
+
+### functions context
+
+def check_convert_chr_id(chr_id):
+    """
+    Check and convert chromosome IDs to format:
+    chr1, chr2, chrX, ...
+    If chromosome IDs like 1,2,X, .. given, convert to chr1, chr2, chrX ..
+    Return False if given chr_id not standard and not convertable.
+
+    Filter out scaffold IDs like:
+    GL000009.2, KI270442.1, chr14_GL000009v2_random
+    chrUn_KI270442v1 ...
+
+        Parameters
+        ----------
+        chr_id: chromosme id string
+
+        Raises
+        ------
+        nothing
+
+        Returns
+        -------
+        chr_id
+            updated chromosme id
+
+    """
+    assert chr_id, "given chr_id empty"
+    chr_id = str(chr_id)
+
+    if re.search("^chr", chr_id):
+        if not re.search("^chr[\dMXY]+$", chr_id):
+            chr_id = False
+    else:
+        # Convert to "chr" IDs.
+        if chr_id == "MT":
+            chr_id = "M"
+        if re.search("^[\dMXY]+$", chr_id):
+            chr_id = "chr" + chr_id
+        else:
+            chr_id = False
+    return chr_id
+
+
+def add_context(df_bed, context, start, end):
+    """
+    edding the changing the start and end postion of the sequences
+    to add context to both sides of the sequences in the dataframe
+
+        Parameters
+        ----------
+        df_bed: dataframe containing start and end positon
+        context: amount of nucleotied
+        start: column name of start positons
+        end: column name of end positons
+
+        Raises
+        ------
+        nothing
+
+        Returns
+        -------
+        df_bed
+            datafram with updated postions
+
+        """
+    #print(df_bed[start])
+    df_bed[start] = df_bed[start] - context
+    df_bed[end] = df_bed[end] + context
+    #print(df_bed[start])
+    return df_bed
 
 
 #Functions negative data
