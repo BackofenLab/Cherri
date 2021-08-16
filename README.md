@@ -133,6 +133,30 @@ python find_occupied_regions.py -i1 /vol/scratch/data/RRIs/Paris/ -r test_rep1.t
 - outputs a pickels Interlab object and prints the path to the file
 
 
+
+### generate_pos_neg_with_context.pl
+Given trusted RRI and the occupyed regions a given context is appended. Than positive sequences are computed by calling IntaRNA specifiying the the seed region with the trusted RRI regions. The negative interactions are computed by calling IntaRNA given regions, which should not be in the interaction 'occupied regions'. 
+
+**sofare we can only coumpute the this data for HEK293T RRIs**
+
+#### example call
+```
+python generate_pos_neg_with_context.py -i1 /vol/scratch/data/trusted_RRIs/test_paris_overlap_0.6.cvs -i2 /vol/scratch/data/RRIs/20210809_occ_out/occupied_regions.obj -d /vol/scratch/data/pos_neg_data_context/ -g /vol/scratch/data/genomes/hg38_UCSC_20210318.2bit -n test_paris_HEK293T  -c 10
+```
+
+#### Input Parameter
+- input_rris: path to file storing all positve trusted RRIs
+- input_occupyed: path to file storing occupied sides (InterLab obj)
+- output_path: path output reposetory
+- experiment_name: name of the datasoruce of positve trusted RRIs
+- genome_file: path to 2bit genome file
+- context: how much context should be added at left an right of the sequence
+
+#### Output 
+- Positive and negative datasets stored in tabular format.
+
+
+
 ### get_negative_dataset.py
 Generate the positive and negative dataset for the trusted RRIs. A context around the interaction side can be specified and what kind of shuffling should be used to generate the negative data. The negative instance is chosen form a random number of options, which has the closed energy to the positive RRIs. 
 

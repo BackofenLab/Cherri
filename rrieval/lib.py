@@ -91,7 +91,7 @@ def call_script(call,reprot_stdout=False):
 
     assert not error, "script is complaining:\n%s\n%s" %(call, error)
     if reprot_stdout == True:
-        out = out.decode('utf-8')
+        # out = out.decode('utf-8')
         return out
 
 def calculate_overlap(s1,e1,s2,e2,len_flag=False):
@@ -272,6 +272,7 @@ def add_context(df_bed, context, start, end):
     #print(df_bed[start])
     df_bed[start] = df_bed[start] - context
     df_bed[end] = df_bed[end] + context
+
     #print(df_bed[start])
     return df_bed
 
