@@ -57,6 +57,28 @@ Building of the background by controling:
 
 
 
+
+### IntaRNA params for call
+
+To generate the current features we need:
+
+| param  | value  | decription | 
+|---|---|---|
+| outMode |  C  |  |
+| seedBP |  5  |  |
+| seedMinPu |  0  | the minimal unpaired probability of each seed region in query and target |
+| accW |  150  | sliding window length (0=global folding) |
+| acc |  N/C  |  To globally turn off accessibility consideration: turn off/on |
+| outMaxE |  -5  |  |
+| outOverlap |  B  | overlapping of interaction sites of Suboptimal allowed (B:both) |
+| outNumber |  5  |  |
+| seedT/QRange |  positive interaction |  |
+| q/tAccConstr |  negative interaction  |  |
+
+
+
+
+
 ### Interaction input
 
 To generate the current features we need:
@@ -207,14 +229,14 @@ Here for a given input and a given reature set the features, this features are s
 
 - no_bps : number of base pairs within the interaction
 - GC_content: GC content of the interaction side
-- max_inter_len: the maximum interaction side calculated by the length of the target sequence and query sequence lenght
+- max_inter_len: the maximum interaction side calculated by the length of the target sequence and query sequence length
 - no_seeds: numbers of possible seeds within the interaction
 
 - inter_len_normby_bp: the maximum interaction length divided by the number of base pairs with the interaction 
-- bp_normby_inter_len: number of base pairs within the interaction divided by the maximum lenthe at the interaction
-- mfe_normby_GC: MFE devieded by the GC content
-- max_ED_normby_GC: max_ED devieded by the GC content
-- E_hybrid_normby_GC: E_hybrid devieded by the GC content
+- bp_normby_inter_len: number of base pairs within the interaction divided by the maximum length at the interaction
+- mfe_normby_GC: MFE divided by the GC content
+- max_ED_normby_GC: max_ED divided by the GC content
+- E_hybrid_normby_GC: E_hybrid divided by the GC content
 - complex_target: sheenon entropy of target sequence
 - complex_query: sheenon entropy of query sequence
 

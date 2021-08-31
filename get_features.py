@@ -227,6 +227,7 @@ def main():
     input = args.input
     feature_set_list = args.feature_set_list
     output_file = args.output_file
+    shuffled_flag = False
 
     validation = 0
 
@@ -243,8 +244,8 @@ def main():
     # MFE: mfe = df_rri['E']
 
     # Maximal length of the two interacting subsequence
-    df_rri['len_interaction_target'] = df_rri['end1'] - df_rri['start1']
-    df_rri['len_interaction_query'] = df_rri['end2'] - df_rri['start2']
+    df_rri['len_interaction_target'] = df_rri['end1'] - df_rri['start1'] + 1
+    df_rri['len_interaction_query'] = df_rri['end2'] - df_rri['start2'] + 1
 
     # Number of base pairs within the top 1 RRI ?
     if validation == 0:
@@ -279,9 +280,21 @@ def main():
     df_rri['E_hybrid_normby_GC'] = df_rri['E_hybrid']/df_rri['GC_content']
 
     # sequence complexety shannon entropy
-    df_rri['complex_target'] = df_rri['target'].apply(lambda x: comput_complexity(x))
-    #print(df_rri['complex_target'])
-    df_rri['complex_query'] = df_rri['query'].apply(lambda x: comput_complexity(x))
+    if shuffled_flag:
+        df_rri['complex_target'] = df_rri['target'].apply(lambda x: comput_complexity(x))
+        #print(df_rri['complex_target'])
+        df_rri['complex_query'] = df_rri['query'].apply(lambda x: comput_complexity(x))
+    else:
+        # sequence complexety shannon entropy
+        df_rri['complex_target'] = df_rri['con_query'].apply(lambda x: comput_complexity(x))
+        #print(df_rri['complex_target'])
+        df_rri['complex_query'] = df_rri['con_query'].apply(lambda x: comput_complexity(x))
+        df_rri['side_target'] = df_rri['subseqDP'].apply(lambda x: x.split('&')[0])
+        #print(df_rri['complex_target'])
+        df_rri['side_query'] = df_rri['subseqDP'].apply(lambda x: x.split('&')[1])
+        df_rri['complex_target_side'] = df_rri['side_target'].apply(lambda x: comput_complexity(x))
+        #print(df_rri['complex_target'])
+        df_rri['complex_query_side'] = df_rri['side_query'].apply(lambda x: comput_complexity(x))
     #print(df_rri['complex_query'])
 
 

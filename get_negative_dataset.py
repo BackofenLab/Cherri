@@ -636,8 +636,8 @@ def main():
 
         # adding context by including infors into the df
         df_RRIs = extention_df(df_RRIs)
-        df_target = get_context('target', df_RRIs, output_path, genome_file, context)
-        df_context = get_context('query', df_target, output_path, genome_file, context)
+        df_target = rl.get_context('target', df_RRIs, output_path, genome_file, context)
+        df_context = rl.get_context('query', df_target, output_path, genome_file, context)
 
         df_filted_RRIs = check_context_extention(df_context, context, output_path)
         #### context added df saved!
