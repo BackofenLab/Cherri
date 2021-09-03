@@ -4,6 +4,7 @@ import argparse
 import rrieval.lib as rl
 import sklearn.datasets
 import sklearn.metrics
+import pickle
 
 import autosklearn.classification
 
