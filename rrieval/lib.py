@@ -5,6 +5,8 @@ import subprocess
 import random
 import re
 import os
+#from interlap import InterLap
+from collections import defaultdict
 # training imports
 import csv
 import pandas as pd
@@ -68,9 +70,33 @@ def read_chira_data(in_file, header='no', separater="\t"):
     return df_interactions
 
 
+def call_script(call,reprot_stdout=False):
+    """
+    starts a subprosses to call a script and checks for errors.
 
 
-def calculate_overlap(s1,e1,s2,e2):
+        Parameters
+        ----------
+        call : cmd comand
+
+        Returns
+        -------
+        out
+            if reprot_stdout set True returns the stdout (default: False)
+
+    """
+    process = subprocess.Popen(call, stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE, shell=True)
+    out, err = process.communicate()
+    #print(out.decode('utf-8'))
+    error = err.decode('utf-8')
+
+    assert not error, "script is complaining:\n%s\n%s" %(call, error)
+    if reprot_stdout == True:
+        # out = out.decode('utf-8')
+        return out
+
+def calculate_overlap(s1,e1,s2,e2,len_flag=False):
     """
     Building for each replicat a inter object
 
@@ -120,7 +146,273 @@ def calculate_overlap(s1,e1,s2,e2):
     # select overlap of shorter sequence:
     compinde_overlap = max([overlap_seq1, overlap_seq2])
     # print(compinde_overlap)
-    return compinde_overlap
+    if len_flag:
+        return overlap_len
+    else:
+        return compinde_overlap
+
+
+
+def get_chrom_list_no_numbers(df_interactions, chrom):
+    """
+    Generates a unique list of chromosmes or conticts for both interaction
+    partners
+
+        Parameters
+        ----------
+        df_interactions : df including the filtered RRIs
+        chrom :  string indicating from wich seq the chromosome is
+
+
+        Returns
+        -------
+        sort_list_chrom
+            sorted list of unique chromosmes or contics which are not a number
+            and present in the input data frame
+
+        """
+    chrom_list = df_interactions[chrom].unique().tolist()
+    #convert all values to string in case it is not
+    new_list = [str(el) for idx,el in enumerate(chrom_list)]
+    sort_list_chrom = sorted(new_list)
+
+    return sort_list_chrom
+
+
+def get_list_chrom(df_interactions):
+    """
+    Generates a unique list of chromosmes or conticts for both interaction
+    partners
+
+        Parameters
+        ----------
+        df_interactions : df including the filtered RRIs
+
+
+        Returns
+        -------
+        sort_list_chrom
+            sorted list of unique chromosmes or contics which are not a number
+            and present in the input data frame
+
+        """
+    chrom1_list = get_chrom_list_no_numbers(df_interactions, 'chrom_seq_1st_side')
+    chrom2_list = get_chrom_list_no_numbers(df_interactions, 'chrom_seq_2end_side')
+    list_chrom_no_int = list(set().union(chrom1_list,chrom2_list))
+    sort_list_chrom = sorted(list_chrom_no_int)
+    return sort_list_chrom
+
+
+
+
+### functions context
+
+def check_convert_chr_id(chr_id):
+    """
+    Check and convert chromosome IDs to format:
+    chr1, chr2, chrX, ...
+    If chromosome IDs like 1,2,X, .. given, convert to chr1, chr2, chrX ..
+    Return False if given chr_id not standard and not convertable.
+
+    Filter out scaffold IDs like:
+    GL000009.2, KI270442.1, chr14_GL000009v2_random
+    chrUn_KI270442v1 ...
+
+        Parameters
+        ----------
+        chr_id: chromosme id string
+
+        Raises
+        ------
+        nothing
+
+        Returns
+        -------
+        chr_id
+            updated chromosme id
+
+    """
+    assert chr_id, "given chr_id empty"
+    chr_id = str(chr_id)
+
+    if re.search("^chr", chr_id):
+        if not re.search("^chr[\dMXY]+$", chr_id):
+            chr_id = False
+    else:
+        # Convert to "chr" IDs.
+        if chr_id == "MT":
+            chr_id = "M"
+        if re.search("^[\dMXY]+$", chr_id):
+            chr_id = "chr" + chr_id
+        else:
+            chr_id = False
+    return chr_id
+
+
+def add_context(df_bed, context, start, end):
+    """
+    edding the changing the start and end postion of the sequences
+    to add context to both sides of the sequences in the dataframe
+
+        Parameters
+        ----------
+        df_bed: dataframe containing start and end positon
+        context: amount of nucleotied
+        start: column name of start positons
+        end: column name of end positons
+
+        Raises
+        ------
+        nothing
+
+        Returns
+        -------
+        df_bed
+            datafram with updated postions
+
+        """
+    #print(df_bed[start])
+    df_bed[start] = df_bed[start] - context
+    df_bed[end] = df_bed[end] + context
+
+    #print(df_bed[start])
+    return df_bed
+
+
+def bed_extract_sequences_from_2bit(in_bed, out_fa, in_2bit,
+                                    lc_repeats=False,
+                                    convert_to_rna=False):
+    """
+    Extract sequences from genome (provide genome .2bit file).
+    twoBitToFa executable needs to be in PATH. Store extracted
+    sequences in out_fa.
+
+        Parameters
+        ----------
+
+        convert_to_rna:
+            If true, read in extracted sequences and convert to RNA.
+        lc_repeats:
+            If True, do not convert repeat regions to uppercase and output.
+
+        Raises
+        ------
+        nothing
+
+        Returns
+        -------
+        seqs_dic
+            dictinary holding the sequence ID as key and seqeuce as value
+
+    """
+    # Check for twoBitToFa.
+    #assert is_tool("twoBitToFa"), "twoBitToFa not in PATH"
+
+    # Run twoBitToFa and check.
+    check_cmd = "twoBitToFa"
+    if not lc_repeats:
+        check_cmd += " -noMask"
+    check_cmd += " -bed=" + in_bed + " " + in_2bit + " " + out_fa
+    # print(check_cmd)
+    output = subprocess.getoutput(check_cmd)
+    error = False
+    if output:
+        error = True
+    assert error == False, "twoBitToFa is complaining:\n%s\n%s" %(check_cmd, output)
+    #print(output)
+    if convert_to_rna:
+        # Read in tmp_fa into dictionary (this also converts sequences to RNA).
+        seqs_dic = read_fasta_into_dic(out_fa, skip_n_seqs=True)
+        # Output RNA sequences.
+        #fasta_output_dic(seqs_dic, out_fa, split=True)
+    return seqs_dic
+
+
+def check_context(df, start, end, chrom_end, seq_tag):
+    """
+    check that the extende contxt is not to short or long!
+
+        Parameters
+        ----------
+        df: bed df
+
+
+        Returns
+        -------
+        df
+            df with changed postions
+
+        """
+    if seq_tag == 'target':
+        if len(df[df.start_1st <=0]) > 0:
+            print('Warning: added context t is smaller than 0 for %i instances'%len(df[df.start_1st <=0]))
+            df.loc[df.start_1st <= 0, 'start_1st'] = 1
+    elif seq_tag == 'query':
+        if len(df[df.start_2end <=0]) > 0:
+            print('Warning: added context q is smaller than 0 for %i instances'%len(df[df.start_2end <=0]))
+            df.loc[df.start_2end <= 0, 'start_1st'] = 1
+
+    return df
+
+
+def get_context(seq_tag, df, out_dir, in_2bit_file, context):
+    """
+    defining column with ID and empty colums to store the context sequences
+
+        Parameters
+        ----------
+        seq_tag: dataframe
+        df: dataframe contining position of the extraction
+        out_dir: directory where to store bed and fa file
+        in_2bit_file: genome 2bit file
+        context: amout of nt that should be added on both sides
+
+        Raises
+        ------
+        nothing
+
+        Returns
+        -------
+        df
+            colum update dataframe
+
+        """
+    out_bed = out_dir + seq_tag + '_out.bed'
+    out_fa = out_dir + seq_tag + '_out.fa'
+    if seq_tag == 'target':
+        df_bed = df[['chrom_1st', 'start_1st', 'end_1st', 'ID1', 'interaction_no', 'strand_1st']].copy()
+        #print(df_bed.tail())
+        df_bed['chrom_1st'] = df_bed['chrom_1st'].apply(lambda x: check_convert_chr_id(x))
+        df_context =  add_context(df_bed, context, 'start_1st', 'end_1st')
+        df_context = check_context(df_context, 'start_1st', 'end_1st', 100000000000, seq_tag)
+        # check context!
+        col_name = 'con_target'
+        col_id = 'ID1'
+        df_context_filted = df_context[df_context.chrom_1st != False]
+        no_del_entys = len(df_context) - len(df_context_filted)
+    elif seq_tag == 'query':
+        df_bed = df[['chrom_2end', 'start_2end', 'end_2end', 'ID2', 'interaction_no', 'strand_2end']].copy()
+        df_bed['chrom_2end'] = df_bed['chrom_2end'].apply(lambda x: check_convert_chr_id(x))
+        df_context =  add_context(df_bed, context, 'start_2end', 'end_2end')
+        df_context = check_context(df_context, 'start_2end', 'end_2end', 100000000000, seq_tag)
+        col_name = 'con_query'
+        col_id = 'ID2'
+        df_context_filted = df_context[df_context.chrom_2end != False]
+        no_del_entys = len(df_context) - len(df_context_filted)
+    else:
+        print('error: please specify the parameter seq_tag with target or query')
+    # delet all 'False' chromosmes of in the df
+    print('loost %i instaces because of the Chromosome'%(no_del_entys))
+    df_context_filted.to_csv(out_bed, sep="\t", index=False, header=False)
+    #df = df_context
+    seqs_dic = bed_extract_sequences_from_2bit(out_bed, out_fa, in_2bit_file,lc_repeats=False, convert_to_rna=True)
+
+    for seq_id in seqs_dic:
+        #print(seq_id)
+        #print(seqs_dic[seq_id])
+        df.loc[df[col_id] == seq_id, [col_name]] = seqs_dic[seq_id]
+
+    return df
 
 
 #Functions negative data
@@ -279,6 +571,77 @@ def make_seq_from_list(suffled_list):
             print('hybrid encode error: soemthing went wrong with the encoding')
 
     return seq1, seq2
+
+
+def mearge_overlaps(inter_obj, info):
+    """
+    mearg postions in a interlab library
+
+        Parameters
+        ----------
+        inter_obj : inter objects
+        info: information what inter object
+
+
+        Returns
+        -------
+        inter_obj_new
+            inerlap objects with the mearged positons
+
+        """
+    inter_obj_new = defaultdict(InterLap)
+
+    for key in inter_obj:
+        #print(key)
+        #print(list(inter_obj[key]))
+        inter_list_temp = [(i[0],i[1]) for i in list(inter_obj[key])]
+        #print(inter_list_temp)
+        inter = join_pos(inter_list_temp)
+        #print(inter)
+        inter_list = [(i[0],i[1], info) for i in list(inter)]
+        #print(inter_list)
+        inter_obj_new[key].add(inter_list)
+        #for i in inter_rep_one[key]:
+            #print(i)
+        #print('test interval')
+    return inter_obj_new
+
+
+def join_pos(pos_list):
+    """
+    join positons will join start end end postions whick are overlaping
+
+        Parameters
+        ----------
+        pos_list : list of tupels containg (start, end) position
+        info: information what inter object
+
+        Returns
+        -------
+        inter_obj_new
+            inerlap objects with the mearged positons
+
+    >>> join_pos([(2, 4), (4, 9)])
+    [(2, 4), (4, 9)]
+    >>> join_pos([(2, 6), (4, 10)])
+    [(2, 10)]
+    """
+    if len(pos_list) < 2: return pos_list
+    pos_list.sort()
+    joint_pos_list = [pos_list[0]]
+    for next_i, (s, e) in enumerate(pos_list, start=1):
+        if next_i == len(pos_list):
+            joint_pos_list[-1] = joint_pos_list[-1][0], max(joint_pos_list[-1][1], e)
+            break
+
+        ns, ne = pos_list[next_i]
+        if e > ns or joint_pos_list[-1][1] > ns:
+            joint_pos_list[-1] = joint_pos_list[-1][0], max(e, ne, joint_pos_list[-1][1])
+        else:
+            joint_pos_list.append((ns, ne))
+    return joint_pos_list
+
+
 
 def read_fasta_into_dic(fasta_file,
                         seqs_dic=False,

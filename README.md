@@ -57,6 +57,28 @@ Building of the background by controling:
 
 
 
+
+### IntaRNA params for call
+
+To generate the current features we need:
+
+| param  | value  | decription | 
+|---|---|---|
+| outMode |  C  |  |
+| seedBP |  5  |  |
+| seedMinPu |  0  | the minimal unpaired probability of each seed region in query and target |
+| accW |  150  | sliding window length (0=global folding) |
+| acc |  N/C  |  To globally turn off accessibility consideration: turn off/on |
+| outMaxE |  -5  |  |
+| outOverlap |  B  | overlapping of interaction sites of Suboptimal allowed (B:both) |
+| outNumber |  5  |  |
+| seedT/QRange |  positive interaction |  |
+| q/tAccConstr |  negative interaction  |  |
+
+
+
+
+
 ### Interaction input
 
 To generate the current features we need:
@@ -82,7 +104,7 @@ Here we search for trusted RRIs, so RRIs which can be found in all replicates. I
 
 #### example call
 ```
-python data_feature_generation.py -i /home/teresa/Dokumente/RNA_RNA_interaction_evaluation/data/data_Chira/training/Paris -r test_rep1.tabular test_rep2.tabular test_rep3.tabular -o 0.6 -d /home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/ -n test_paris
+python find_trusted_RRI.py -i /home/teresa/Dokumente/RNA_RNA_interaction_evaluation/data/data_Chira/training/Paris -r test_rep1.tabular test_rep2.tabular test_rep3.tabular -o 0.6 -d /home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/ -n test_paris
 ```
 
 #### Input Parameter
@@ -93,6 +115,67 @@ python data_feature_generation.py -i /home/teresa/Dokumente/RNA_RNA_interaction_
 
 #### Output 
 - trusted RRIs in tabulat format
+- pickled list of avg overlap percent
+- pickled list of avg overlap lenght
+
+
+### plot_avg_overlaps.py 
+The scirpt takes the lists of avg overlap percent and overlap lenght form the find_trusted_RRI.py script. Thie Idea ist that for differen overlap thresholds will be plotted into a box plot. At the moment for overlap thresholds ['0.3', '0.4', '0.5', '0.6', '0.7']. Therefor the find_trusted_RRI.py should be called with this overlap thresholds.
+
+#### example call
+```
+python plot_avg_overlaps.py -i /vol/scratch/data/plots/overlap_distibution/ -n rri_overlap_plots
+```
+
+#### Input Parameter
+- input_path: path to folder where input files
+- experiment_name: name of the data soruce of positve trusted RRIs
+
+
+#### Output 
+- two boxplots
+
+
+
+### find_occupied_regions.py
+Given the RRI information tables form Chira and RNA-Protein binding positions a Interlab object is build. The occuped information can be used to mask parts of the genome and therefore enale to select negative interaction regions. This reagions are not part of interaction in nature. 
+
+#### example call
+```
+python find_occupied_regions.py -i1 /vol/scratch/data/RRIs/Paris/ -r test_rep1.tabular test_rep2.tabular test_rep3.tabular -o /vol/scratch/data/RRIs/
+```
+
+#### Input Parameter
+- RRI_path: path to folder storing all RRI data (tabular)
+- rbp_path: path to RBP side data file (bed format)
+- list_of_replicats: list having filenames of all replicats
+- out_path: path to folder storing outputfiles
+
+#### Output 
+- outputs a pickels Interlab object and prints the path to the file
+
+
+
+### generate_pos_neg_with_context.pl
+Given trusted RRI and the occupyed regions a given context is appended. Than positive sequences are computed by calling IntaRNA specifiying the the seed region with the trusted RRI regions. The negative interactions are computed by calling IntaRNA given regions, which should not be in the interaction 'occupied regions'. 
+
+**sofare we can only coumpute the this data for HEK293T RRIs**
+
+#### example call
+```
+python generate_pos_neg_with_context.py -i1 /vol/scratch/data/trusted_RRIs/test_paris_overlap_0.6.cvs -i2 /vol/scratch/data/RRIs/20210809_occ_out/occupied_regions.obj -d /vol/scratch/data/pos_neg_data_context/ -g /vol/scratch/data/genomes/hg38_UCSC_20210318.2bit -n test_paris_HEK293T  -c 10
+```
+
+#### Input Parameter
+- input_rris: path to file storing all positve trusted RRIs
+- input_occupyed: path to file storing occupied sides (InterLab obj)
+- output_path: path output reposetory
+- experiment_name: name of the datasoruce of positve trusted RRIs
+- genome_file: path to 2bit genome file
+- context: how much context should be added at left an right of the sequence
+
+#### Output 
+- Positive and negative datasets stored in tabular format.
 
 
 
@@ -138,15 +221,22 @@ python plot_tRRIs.py -i1 test_paris_HEK293T_context_method_together_shuffling_me
 ### get_features.py
 Here for a given input and a given reature set the features, this features are stored in a tabular format. 
 
+
 #### Our List of features
-- E : Minimum free energy
+- E : Minimum free energy (overall interaction energy)
+- E_hybrid : energy of hybridization only = E - ED1 - ED2
+- maxED: maximal energy of ED1 and ED2
+
 - no_bps : number of base pairs within the interaction
 - GC_content: GC content of the interaction side
-- max_inter_len: the maximum interaction side calculated by the length of the target sequence and query sequence lenght
-- inter_len_normby_bp: the maximum interaction length divided by the number of base pairs with the interaction 
-- bp_normby_inter_len: number of base pairs within the interaction divided by the maximum lenthe at the interaction
-- mfe_normby_GC: MFE devieded by the GC content
+- max_inter_len: the maximum interaction side calculated by the length of the target sequence and query sequence length
 - no_seeds: numbers of possible seeds within the interaction
+
+- inter_len_normby_bp: the maximum interaction length divided by the number of base pairs with the interaction 
+- bp_normby_inter_len: number of base pairs within the interaction divided by the maximum length at the interaction
+- mfe_normby_GC: MFE divided by the GC content
+- max_ED_normby_GC: max_ED divided by the GC content
+- E_hybrid_normby_GC: E_hybrid divided by the GC content
 - complex_target: sheenon entropy of target sequence
 - complex_query: sheenon entropy of query sequence
 

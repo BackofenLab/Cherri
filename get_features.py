@@ -19,6 +19,7 @@ import re
 #  DOI: 10.1038/s41598-017-17510-y
 
 
+
 def sequence_length(hybrid):
     """
     compute number of base pairs
@@ -226,8 +227,9 @@ def main():
     input = args.input
     feature_set_list = args.feature_set_list
     output_file = args.output_file
+    shuffled_flag = False
 
-    validation = 1
+    validation = 0
 
     df_rri = rl.read_chira_data(input, header='yes', separater=",")
 
@@ -242,8 +244,8 @@ def main():
     # MFE: mfe = df_rri['E']
 
     # Maximal length of the two interacting subsequence
-    df_rri['len_interaction_target'] = df_rri['end1'] - df_rri['start1']
-    df_rri['len_interaction_query'] = df_rri['end2'] - df_rri['start2']
+    df_rri['len_interaction_target'] = df_rri['end1'] - df_rri['start1'] + 1
+    df_rri['len_interaction_query'] = df_rri['end2'] - df_rri['start2'] + 1
 
     # Number of base pairs within the top 1 RRI ?
     if validation == 0:
@@ -266,27 +268,47 @@ def main():
 
     df_rri['GC_content'] = df_rri['subseqDP'].apply(lambda x: get_GC_content(x))
 
-    # Minimum free energy normalized by the GC-content
-    df_rri['mfe_normby_GC'] = df_rri['E']/df_rri['GC_content']
-
     # Number of seeds seedStart1
     df_rri['no_seeds'] = df_rri['seedStart1'].apply(lambda x: count_number_of_seeds(x))
 
+    # E_hybrid,ED1,ED2'
+    df_rri['max_ED'] = df_rri[['ED1', 'ED2']].max(axis=1)
+
+    # Energys normalized by the GC-content
+    df_rri['mfe_normby_GC'] = df_rri['E']/df_rri['GC_content']
+    df_rri['max_ED_normby_GC'] = df_rri['max_ED']/df_rri['GC_content']
+    df_rri['E_hybrid_normby_GC'] = df_rri['E_hybrid']/df_rri['GC_content']
+
     # sequence complexety shannon entropy
-    df_rri['complex_target'] = df_rri['target'].apply(lambda x: comput_complexity(x))
-    #print(df_rri['complex_target'])
-    df_rri['complex_query'] = df_rri['query'].apply(lambda x: comput_complexity(x))
+    if shuffled_flag:
+        df_rri['complex_target'] = df_rri['target'].apply(lambda x: comput_complexity(x))
+        #print(df_rri['complex_target'])
+        df_rri['complex_query'] = df_rri['query'].apply(lambda x: comput_complexity(x))
+    else:
+        # sequence complexety shannon entropy
+        df_rri['complex_target'] = df_rri['con_query'].apply(lambda x: comput_complexity(x))
+        #print(df_rri['complex_target'])
+        df_rri['complex_query'] = df_rri['con_query'].apply(lambda x: comput_complexity(x))
+        df_rri['side_target'] = df_rri['subseqDP'].apply(lambda x: x.split('&')[0])
+        #print(df_rri['complex_target'])
+        df_rri['side_query'] = df_rri['subseqDP'].apply(lambda x: x.split('&')[1])
+        df_rri['complex_target_side'] = df_rri['side_target'].apply(lambda x: comput_complexity(x))
+        #print(df_rri['complex_target'])
+        df_rri['complex_query_side'] = df_rri['side_query'].apply(lambda x: comput_complexity(x))
     #print(df_rri['complex_query'])
 
 
-
-    print(feature_set_list)
-    for col_name in feature_set_list:
-        print(col_name)
-        #print(df_rri[col_name])
-        print('#################')
-    # generate output:
-    df_feature = df_rri[feature_set_list].copy()
+    if feature_set_list[0] == 'all' or feature_set_list[0] == 'All':
+        # ToDo: now we have duplicats. find a more recine set of all!!
+        df_feature = df_rri
+        print('OUTput contians all featurs')
+    else:
+        for col_name in feature_set_list:
+            print(col_name)
+            #print(df_rri[col_name])
+            print('#################')
+        # generate output:
+        df_feature = df_rri[feature_set_list].copy()
     df_feature.to_csv(output_file, index=False)
 
     # Go over list of featurs for the output dir and generate table:
