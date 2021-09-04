@@ -11,7 +11,6 @@ from collections import defaultdict
 import csv
 import pandas as pd
 import numpy as np
-import pandas_profiling
 import sklearn as sk
 from sklearn import model_selection
 from sklearn.dummy import DummyClassifier
@@ -733,6 +732,7 @@ def read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath):
     #Dataset initial characterisation
     reporting=0
     if(reporting):
+        import pandas_profiling
         pos_report=pandas_profiling.ProfileReport(pos_df,title="Positive data Report")
         neg_report=pandas_profiling.ProfileReport(neg_df,title="Negative data Report")
         pos_report.to_file(output_path + "/positive_report.html")

@@ -3,7 +3,7 @@ import pandas as pd
 import math
 import matplotlib as mpl
 import argparse
-import rrieval.lib as rl
+import RNA_RNA_binding_evaluation.rrieval.lib as rl
 import re
 
 
@@ -210,27 +210,7 @@ def get_GC_content(interacting_seq):
     GC_content = (no_G + no_C)/len(interacting_seq)
     return GC_content
 
-
-def main():
-    # store commandline args
-    parser = argparse.ArgumentParser(description='')
-    parser.add_argument("-i", "--input", action="store", dest="input", required=True
-                                           , help= "path to input file")
-    parser.add_argument("-f", "--feature_set_list", action="store", nargs='+',
-                        dest="feature_set_list", required=True,
-                        help= "set of features the script will output ")
-    parser.add_argument("-o", "--output_file", action="store", dest="output_file", required=True
-                                           , help= "output file path inclusive of the file name")
-
-    args = parser.parse_args()
-
-    input = args.input
-    feature_set_list = args.feature_set_list
-    output_file = args.output_file
-    shuffled_flag = False
-
-    validation = 0
-
+def loadDF(input, validation=0, shuffled_flag=False):
     df_rri = rl.read_chira_data(input, header='yes', separater=",")
 
     if validation == 1:
@@ -296,8 +276,31 @@ def main():
         #print(df_rri['complex_target'])
         df_rri['complex_query_side'] = df_rri['side_query'].apply(lambda x: comput_complexity(x))
     #print(df_rri['complex_query'])
+    return df_rri
 
 
+
+
+
+def main():
+    # store commandline args
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument("-i", "--input", action="store", dest="input", required=True
+                                           , help= "path to input file")
+    parser.add_argument("-f", "--feature_set_list", action="store", nargs='+',
+                        dest="feature_set_list", required=True,
+                        help= "set of features the script will output ")
+    parser.add_argument("-o", "--output_file", action="store", dest="output_file", required=True
+                                           , help= "output file path inclusive of the file name")
+
+    args = parser.parse_args()
+
+    input = args.input
+    feature_set_list = args.feature_set_list
+    output_file = args.output_file
+    shuffled_flag = False
+    validation = 0
+    df_rri= loadDF(input, validation, shuffled_flag)
     if feature_set_list[0] == 'all' or feature_set_list[0] == 'All':
         # ToDo: now we have duplicats. find a more recine set of all!!
         df_feature = df_rri
