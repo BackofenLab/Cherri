@@ -108,6 +108,46 @@ def join_pos(pos_list):
     return joint_pos_list
 
 
+def count_entrys(inter_obj, name):
+    """
+    count enteys of inter lap object and prints the the counts
+
+        Parameters
+        ----------
+        inter_obj : inter lap object
+        name: name of the data in object
+
+    """
+    count = 0
+    for key in inter_obj:
+        count += len(list(inter_obj[key]))
+        # print(key)
+        # print(list(inter_rri[key]))
+    print('##########')
+    print('entrys in list ',name, ' are: ' , count)
+
+
+def get_prot_occ_regions(file_rbp_pos, exp_score_th, context):
+    header = ['chrom', 'start', 'end', 'info', 'score', 'strand']
+    df_bed_temp = pd.read_table(file_rbp_pos, header=None, sep="\t")
+    df_bed = pd.DataFrame(df_bed_temp.values, columns=header)
+
+    # filter by sorcre
+    #print(df_bed)
+    df_bed = df_bed[df_bed.score >= exp_score_th]
+    #print(df_bed)
+
+    # check that chorm starts with chr
+    df_bed['chrom'] = df_bed['chrom'].apply(lambda x: rl.check_convert_chr_id(x))
+    # add context
+    df_context =  rl.add_context(df_bed, context, 'start', 'end')
+    #print(df_context)
+
+    inter_rep_one = build_interlap_occ_sides(df_context, 'one')
+    inter_rbp = rl.mearge_overlaps(inter_rep_one, 'rbp')
+    return inter_rbp
+
+
 def main():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument("-i1", "--RRI_path",
@@ -143,8 +183,9 @@ def main():
     # RBP params
     seq_tag = '_RBP_side_'
     # context added to the T-> C side giving us the RBP interaction side
-    context = 20
+    context = 5
     exp_score_th = 10
+    flag_prot = True
 
     #### Get RRI data by calling find trusted RRI with a very low overlap th of 5%
     ### only take uniquly mapped reads but they do not need to be to stricke over the replicats:
@@ -166,73 +207,26 @@ def main():
     #df_rris = rl.read_chira_data(file_test, header='yes', separater=",")
     #print(df_rris)
     inter_rep_two = build_interlap_occ_sides(df_rris, 'two')
-
-
-    #for key in inter_rep_two:
-        #print(key)
-        #print(list(inter_rep_two[key]))
-
-    ####### Get protein data
-
-    ## Read protein data in bed format
-    header = ['chrom', 'start', 'end', 'info', 'score', 'strand']
-    df_bed_temp = pd.read_table(file_rbp_pos, header=None, sep="\t")
-    df_bed = pd.DataFrame(df_bed_temp.values, columns=header)
-
-    # filter by sorcre
-    #print(df_bed)
-    df_bed = df_bed[df_bed.score >= exp_score_th]
-    #print(df_bed)
-
-
-    # check that chorm starts with chr
-    df_bed['chrom'] = df_bed['chrom'].apply(lambda x: rl.check_convert_chr_id(x))
-    # add context
-    df_context =  rl.add_context(df_bed, context, 'start', 'end')
-    #print(df_context)
-
-    inter_rep_one = build_interlap_occ_sides(df_context, 'one')
-    # print('$$$$$$$$$$')
-    # for key in inter_rep_one:
-    #     print(key)
-    #     print([(i[0],i[1]) for i in list(inter_rep_one[key])])
-    # print('$$$$$$$$$$')
     inter_rri = rl.mearge_overlaps(inter_rep_two, 'rri')
-    inter_rbp = rl.mearge_overlaps(inter_rep_one, 'rbp')
 
 #check data:
     print('##RRI results ###')
-    count2 = 0
-    for key in inter_rep_two:
-        count2 += len(list(inter_rep_two[key]))
-        #print(key)
-        #print([(i[0],i[1]) for i in list(inter_rep_two[key])])
-    print('##########')
-    print('entrys in List rri: %i' %count2)
+    count_entrys(inter_rri, 'rri')
 
-    count3 = 0
-    for key in inter_rbp:
-        count3 += len(list(inter_rbp[key]))
-        # print(key)
-        # print(list(inter_rbp[key]))
-    print('##########')
-    print('entrys in List rbp: %i' %count3)
+    ####### Get protein data
+    if flag_prot:
+        inter_rbp = get_prot_occ_regions(file_rbp_pos, exp_score_th, context)
+        print('##RBP results ###')
+        count_entrys(inter_rbp, 'rbp')
 
+        # add the two inter laps together
+        for key in inter_rri:
+            if key in inter_rbp:
+                inter_rri[key].add(list(inter_rbp[key]))
 
-
-    # add the two inter laps together
-    for key in inter_rri:
-        if key in inter_rbp:
-            inter_rri[key].add(list(inter_rbp[key]))
-
-    #check data:
-    count = 0
-    for key in inter_rri:
-        count += len(list(inter_rri[key]))
-        # print(key)
-        # print(list(inter_rri[key]))
-    print('##########')
-    print('entrys in List both: %i' %count)
+        #check data:
+        print('##Results of both lists###')
+        count_entrys(inter_rri, 'both')
 
     # save files
     or_path = out_path + "/occupied_regions.obj"
