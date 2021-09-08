@@ -11,9 +11,18 @@ import numpy as np
 import seaborn as sns
 
 
-def plot_historgramm(colum, file_name, plot_dir, df_neg,df_pos, name):
+def plot_historgramm(colum, file_name, plot_dir, df_neg,df_pos, name, flag_norm):
     fig = plt.figure()
-    n, bins, edges = plt.hist([df_neg[colum], df_pos[colum]], color=['r','b'], bins=15, alpha=0.5, density=True)
+    if flag_norm == 1:
+        n, bins, edges = plt.hist([df_neg[colum], df_pos[colum]],
+                                  color=['r','b'], bins=15, alpha=0.5,
+                                  density=True)
+    elif flag_norm == 0:
+        n, bins, edges = plt.hist([df_neg[colum], df_pos[colum]],
+                                  color=['r','b'], bins=15, alpha=0.5,
+                                  density=False)
+
+
     plt.xticks(bins)
     plt.xticks(rotation=75)
     #print(min(df_neg[colum]))
@@ -43,7 +52,11 @@ def main():
                         default="/vol/scratch/data/features_files/test/fearutes_neg.csv")
     parser.add_argument("-n", "--name",
                         help= "name to add to the output file name",
-                        default='True_b40_')
+                        default='')
+    parser.add_argument("-f", "--flag_norm",
+                        help= "1: normalize each bin, so that the area under the histogram integrates to 1",
+                        default=1)
+
 
 
 
@@ -52,7 +65,15 @@ def main():
     pos_file = args.pos_file
     neg_file = args.neg_file
     name = args.name
-    file_add_name = name
+    flag_norm = int(args.flag_norm)
+    # flag_norm = True
+    print(flag_norm)
+    if flag_norm == 1:
+        file_add_name = name + '_norm_bins_'
+    elif flag_norm == 0:
+        file_add_name = name
+    else:
+        print('error: flag_norm should be 1 for True and 0 for False')
 
     plot_dir = "/vol/scratch/data/features_files/full_c300/" + file_add_name
 
@@ -65,12 +86,13 @@ def main():
 
     # print E, E_hybrid, ED1, ED2, no_bps,max_inter_len,GC_content,max_ED
 
-    plot_historgramm('E', 'MFE', plot_dir, df_neg,df_pos, name)
-    plot_historgramm('E_hybrid', 'E_hybrid', plot_dir, df_neg,df_pos, name)
-    plot_historgramm('no_bps', 'no_bps', plot_dir, df_neg,df_pos, name)
-    plot_historgramm('max_inter_len', 'max_inter_len', plot_dir, df_neg,df_pos, name)
-    plot_historgramm('GC_content', 'GC_content', plot_dir, df_neg,df_pos, name)
-    plot_historgramm('max_ED', 'max_ED', plot_dir, df_neg,df_pos, name)
+    plot_historgramm('E', 'MFE', plot_dir, df_neg,df_pos, name, flag_norm)
+    plot_historgramm('E_hybrid', 'E_hybrid', plot_dir, df_neg,df_pos, name, flag_norm)
+    plot_historgramm('no_bps', 'no_bps', plot_dir, df_neg,df_pos, name, flag_norm)
+    plot_historgramm('max_inter_len', 'max_inter_len', plot_dir, df_neg,df_pos, name, flag_norm)
+    plot_historgramm('GC_content', 'GC_content', plot_dir, df_neg,df_pos, name, flag_norm)
+    plot_historgramm('max_ED', 'max_ED', plot_dir, df_neg, df_pos, name, flag_norm)
+    plot_historgramm('sum_ED', 'sum_ED', plot_dir, df_neg, df_pos, name, flag_norm)
 
     #df_pos_sub = df_pos['E']
     #df_pos_sub['data'] = 'pos'
