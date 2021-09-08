@@ -5,7 +5,7 @@ import subprocess
 import random
 import re
 import os
-#from interlap import InterLap
+from interlap import InterLap
 from collections import defaultdict
 # training imports
 import csv
@@ -23,7 +23,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 #import xgboost
-#import pickle
+import pickle
 from sklearn.linear_model import Lasso
 #import seaborn as sns
 ###

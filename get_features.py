@@ -273,6 +273,7 @@ def main():
 
     # E_hybrid,ED1,ED2'
     df_rri['max_ED'] = df_rri[['ED1', 'ED2']].max(axis=1)
+    df_rri['sum_ED'] = df_rri['ED1'] + df_rri['ED2']
 
     # Energys normalized by the GC-content
     df_rri['mfe_normby_GC'] = df_rri['E']/df_rri['GC_content']
