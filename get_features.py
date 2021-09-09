@@ -3,7 +3,7 @@ import pandas as pd
 import math
 import matplotlib as mpl
 import argparse
-import RNA_RNA_binding_evaluation.rrieval.lib as rl
+from .rrieval import lib as rl
 import re
 
 
