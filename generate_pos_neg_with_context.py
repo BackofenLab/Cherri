@@ -289,12 +289,15 @@ def get_neg_pos_intarna_str(occupied_regions, neg_param, pos_s, pos_e):
 
 def join_result_and_infos(df, lost_inst, row, list_rows_add):
     """
-    join_result_and_infos
+    The function checks whether IntaRNA could predict anything. If it did
+    than additional infomation are appende to the inarna results staming from
+    the original trusted RRI instace. This additional coulum naes are stored
+    in the list_rows_add list.
 
         Parameters
         ----------
         df: IntaRNA result df
-        lost_inst: list of colum names to add
+        lost_inst: no of already lost instances
         row: row of RRI dataframe
         list_rows_add: header line for to extract from row
 
@@ -312,6 +315,7 @@ def join_result_and_infos(df, lost_inst, row, list_rows_add):
         return df, lost_inst
     else:
         val = {}
+        # appeding information for the RRI that is not predicted by IntaRNA
         for col_n in list_rows_add:
             #print(col_n)
             val[col_n] = [row[col_n]]*len(df)
@@ -446,39 +450,44 @@ def decode_IntaRNA_call(call, lost_inst, row, list_rows_add, df_data, no_sub_opt
 
         Parameters
         ----------
-        call_pos:
-        lost_inst:
-        row:
+        call: IntaRNA call
+        lost_inst: no of lost instances so fare
+        row: infos of the curren RRI (line of df)
         list_rows_add:
-        df_data:
-        no_sub_opt:
-        no_less_sub_opt:
+        df_data: df contining the already calculated training instances
+        no_sub_opt: suboptimals that should reported by IntaRNA if possible
+        no_less_sub_opt: no of suboptimals that could not be predicted
 
         Returns
         -------
-        new_occ_list
-            list with updated postions
+        df_data
+            calculated instaces including the new prediction if prediction was sucessfull
+        lost_inst
+            number of lost instaces so fare. Inceased of one if prediction failed
+        no_less_sub_opt
+            no of suboptimal that could not be predicted so fare!
         """
     out = rl.call_script(call,reprot_stdout=True)
     #print(call)
     df = decode_Intarna_output(out)
     #print(df)
+    # reset the indix of the df and avoid the old index being added as a column
     df = df.reset_index(drop=True)
 
-    df_result_pos, lost_inst_new = join_result_and_infos(df,
+    df_result, lost_inst_new = join_result_and_infos(df,
                                                          lost_inst,
                                                          row, list_rows_add)
     if lost_inst < lost_inst_new:
-        #print('lost instace')
+        # IntaRNA could not predict anything!
         lost_inst = lost_inst_new
     else:
         #print('instace appended to data')
         # check if found all number of subotpimals
-        if no_sub_opt != len(df_result_pos):
-            print('Warning IntaRNA could not find %i interaction but %i interactions for a particular call'%(no_sub_opt, len(df_result_pos)))
-            no_less_sub_opt += 1
+        if no_sub_opt != len(df_result):
+            print('Warning IntaRNA could not find %i interaction but %i interactions for a particular call'%(no_sub_opt, len(df_result)))
+            no_less_sub_opt += no_sub_opt - len(df_result)
 
-        df_data = pd.concat([df_data, df_result_pos])
+        df_data = pd.concat([df_data, df_result])
     return df_data, lost_inst, no_less_sub_opt
 
 
@@ -531,6 +540,25 @@ def get_context_added(input_rris, output_path, genome_file, context, context_not
 
     df_contex.to_csv(context_file, index=False)
     return df_contex
+
+
+def load_occupyed_data(input_occupyed):
+    """
+    load occupyed data
+
+        Parameters
+        ----------
+        input_occupyed: input file path
+
+        Returns
+        -------
+        occupyed_InteLab: Interlab object of occupyed regions
+        """
+    overlap_handle = open(input_occupyed,'rb')
+    occupyed_InteLab = pickle.load(overlap_handle)
+    # print(overlap_avg_val)
+    overlap_handle.close()
+    return occupyed_InteLab
 
 
 def get_occ_regions(target_key, query_key, target_pos_s,target_pos_e, occupyed_InteLab, query_pos_s,query_pos_e,strand_t, strand_q, block_ends, target_seed_s, target_seed_e, query_seed_s, query_seed_e):
@@ -629,6 +657,99 @@ def report(context_not_full,full_seq_occ,no_neg,lost_inst_pos,lost_inst_neg,no_l
         print('%i number of negative IntaRNA calls not all suboptimals'%no_less_sub_opt_neg)
 
 
+def get_context_file_name(context, pos_occ, block_ends, output_path, experiment_name):
+    """
+    get_context_file_name
+
+        Parameters
+        ----------
+        context:
+        pos_occ:
+        block_ends:
+        output_path:
+        experiment_name:
+
+        Returns
+        -------
+        context_file: all no of instaces (trusted rris)
+        """
+    context_info = '_context_' +  str(context)
+    if pos_occ:
+        print('%%%%%\nIntaRNA calls including occupied regions for pos and neg instances!!!!\n%%%%%')
+        context_info = context_info + '_pos_occ_'
+    out_info =  '_block_ends_' +  str(block_ends) + '_'
+    context_file = (output_path + experiment_name +  context_info + out_info +
+                    'RRI_dataset.csv')
+    return context_file, context_info
+
+
+def get_report_steps(df_contex):
+    """
+    get_report_steps
+
+        Parameters
+        ----------
+        df_contex: datafram continig all instances that will be computed
+
+        Returns
+        -------
+        data_100: all no of instaces (trusted rris)
+        data_25: 25 % of number of instances
+        data_50: 50 % of number of instances
+        date_75: 75 % of number of instances
+        """
+    data_100 = len(df_contex)
+    data_25 = int(data_100*25/100)
+    data_50 = int(data_100*50/100)
+    date_75 = int(data_100*75/100)
+    return data_100, data_25, data_50, date_75
+
+def print_status(index, data_100, data_25, data_50, date_75):
+    """
+    Report status of the call!
+
+        Parameters
+        ----------
+        index:
+        data_100: all no of instaces (trusted rris)
+        data_25: 25 % of number of instances
+        data_50: 50 % of number of instances
+        date_75: 75 % of number of instances
+
+        """
+    if (index+1) == data_100:
+        print('***\n full data (%i sequences)\n****' %(data_100))
+    elif (index+1) == data_25:
+        print('***\n25 percent of the data (%i sequences)\n****' %(data_25))
+    elif (index+1) == data_50:
+        print('***\n50 percent of the data (%i sequences)\n****' %(data_50))
+    elif (index+1) == date_75:
+        print('***\n75 percent of the data (%i sequences)\n****' %(date_75))
+
+    # header:
+def get_header():
+    """
+    gets df header and header for IntaRNA call
+
+        Returns
+        ----------
+        index:
+        header: df header
+        list_rows_add: output format for IntaRNA call
+
+
+        """
+    list_rows_add = ['score_seq_1st_side', 'score_seq_2end_side',
+                     'biotype_region_1st', 'biotype_region_2end',
+                     'ID_1st','ID_2end','con_target','con_query',
+                     'target_con_s','target_con_e','query_con_s',
+                     'query_con_e', 'target_key', 'query_key']
+    intaRNA_col_name = 'id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E,seedStart1,seedEnd1,seedStart2,seedEnd2,seedE,E_hybrid,ED1,ED2'
+    list_intaRNA_col_name = intaRNA_col_name.split(',')
+    header = list_intaRNA_col_name + list_rows_add
+    return header, list_rows_add
+
+
 def main():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument("-i1", "--input_rris", action="store", dest="input_rris",
@@ -668,26 +789,25 @@ def main():
     no_sub_opt = 5
     flag_all_neg = True
     flag_all_pos = True
-    no_neg = True
+    no_neg = False
     #block_ends = 20
     # pos_occ = False
 
-    context_info = '_context_' +  str(context)
-    if pos_occ:
-        print(pos_occ)
-        print('%%%%%\npos occ on!!!!\n%%%%%')
-        context_info = context_info + '_pos_occ_'
-    out_info =  '_block_ends_' +  str(block_ends) + '_'
-    context_file = (output_path + experiment_name +  context_info + out_info +
-                    'RRI_dataset.csv')
-
+    context_file, context_info = get_context_file_name(context, pos_occ,
+                                                       block_ends,
+                                                       output_path,
+                                                       experiment_name)
     # load occupyed data
-    overlap_handle = open(input_occupyed,'rb')
-    occupyed_InteLab = pickle.load(overlap_handle)
-    # print(overlap_avg_val)
-    overlap_handle.close()
+    occupyed_InteLab = load_occupyed_data(input_occupyed)
 
+
+    # Reporting how many instances did not lead to a result
     context_not_full = 0
+    lost_inst_pos = 0
+    lost_inst_neg = 0
+    no_less_sub_opt_pos = 0
+    no_less_sub_opt_neg = 0
+    full_seq_occ = 0
 
     ####### Context ###########
     if os.path.isfile(context_file):
@@ -696,33 +816,17 @@ def main():
     else:
         df_contex = get_context_added(input_rris, output_path, genome_file, context, context_not_full, context_file)
         print('***\ncontext is appende pos and negative data generation is starting:\n****')
-    ###########################
 
 
-    ## Generate report steps:
-    data_100 = len(df_contex)
-    data_25 = int(data_100*25/100)
-    data_50 = int(data_100*50/100)
-    date_75 = int(data_100*75/100)
+    ### prepare calling ########################
+    data_100, data_25, data_50, date_75 = get_report_steps(df_contex)
 
-    lost_inst_pos = 0
-    lost_inst_neg = 0
-    no_less_sub_opt_pos = 0
-    no_less_sub_opt_neg = 0
-    full_seq_occ = 0
-    # header:
-    list_rows_add = ['score_seq_1st_side', 'score_seq_2end_side',
-                     'biotype_region_1st', 'biotype_region_2end',
-                     'ID_1st','ID_2end','con_target','con_query',
-                     'target_con_s','target_con_e','query_con_s',
-                     'query_con_e', 'target_key', 'query_key']
-    intaRNA_col_name = 'id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E,seedStart1,seedEnd1,seedStart2,seedEnd2,seedE,E_hybrid,ED1,ED2'
-    list_intaRNA_col_name = intaRNA_col_name.split(',')
-    header = list_intaRNA_col_name + list_rows_add
+    header, list_rows_add = get_header()
 
     df_pos_data = pd.DataFrame(columns=header)
     df_neg_data = pd.DataFrame(columns=header)
 
+    ### Start producing training instances ###########
     for index, row in df_contex.iterrows():
         # sequences
         target_seq = row['con_target']
@@ -748,6 +852,12 @@ def main():
 
         #t_id = t_chr + ';' + strand_t
         #q_id = q_chr + ';' + strand_q
+
+        ########### Interacting sequeces
+        #print('### RRI Interacting sequeces ########')
+        #print('target inter seq: ',row['ineraction_side_1st'])
+        #print('target inter seq: ',row['ineraction_side_2end'])
+
 
         ########### find places which are occupyed
         #print('### RRI strands ########')
@@ -781,7 +891,7 @@ def main():
         call_general = ('IntaRNA -t ' + target_seq + ' -q ' + query_seq +
                        ' --outMode C --seedBP 5 --seedMinPu 0 --intLenMax=50 --accW 100' +
                        ' --accL=80 --acc=C --temperature=37 --outMaxE=-5' +
-                       ' --outOverlap=B --outNumber=' + str(no_sub_opt) + ' ')
+                       ' --outOverlap=B --outNumber=' + str(no_sub_opt) + ' --intLoopMax=3 ')
 
         ####POSITIVE DATA##########################
         #### covert occupyed prositons:
@@ -827,12 +937,10 @@ def main():
                                                              df_neg_data,
                                                              no_sub_opt,
                                                              no_less_sub_opt_neg)
-                #print('losst neg?: ', lost_i_neg_new)
-                #print('neg instaces:',len(df_neg_data))
-                #print('pos instaces:',len(df_pos_data))
             elif lost_inst_pos_new > lost_inst_pos and flag_all_neg:
-                lost_inst_pos = lost_inst_pos_new
-                print('appeded neg data although pos data is not fully found!')
+                print('appeded neg data although pos data is not found!')
+                print('call pos data:\n%s'%call_pos)
+                print('call neg data:\n%s'%call_neg)
                 df_neg_data, lost_i_neg_new, no_less_sub_opt_neg = decode_IntaRNA_call(call_neg,
                                                              lost_inst_neg, row,
                                                              list_rows_add,
@@ -843,23 +951,17 @@ def main():
                 #print('pos instaces:',len(df_pos_data))
             elif lost_inst_pos_new > lost_inst_pos:
                 print('negative data not appended because positive not all suboptimals')
-                lost_inst_pos = lost_inst_pos_new
 
+            # if negative instance could not be computed check if postive should be ignored
             if not flag_all_pos and lost_i_neg_new > lost_inst_neg:
                 df_pos_data = df_pos_data_old
                 lost_inst_neg = lost_i_neg_new
             elif lost_i_neg_new > lost_inst_neg:
                 lost_inst_neg = lost_i_neg_new
+        lost_inst_pos = lost_inst_pos_new
 
 
-        if (index+1) == data_100:
-            print('***\n full data (%i sequences)\n****' %(data_100))
-        elif (index+1) == data_25:
-            print('***\n25 percent of the data (%i sequences)\n****' %(data_25))
-        elif (index+1) == data_50:
-            print('***\n50 percent of the data (%i sequences)\n****' %(data_50))
-        elif (index+1) == date_75:
-            print('***\n75 percent of the data (%i sequences)\n****' %(date_75))
+        print_status(index, data_100, data_25, data_50, date_75)
 
     #print(df_result_neg['start1'], df_result_neg['end1'])
     #print(df_pos_data['start1'],  df_result_neg['end1'])

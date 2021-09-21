@@ -10,8 +10,37 @@ import subprocess
 import numpy as np
 import seaborn as sns
 
+def plot_historgramm_2(colum, file_name, plot_dir, df_neg,df_pos, name, flag_norm):
+    flag_flip_legend = False
+    fig = plt.figure()
+    if flag_norm == 1:
+        n, bins, edges = plt.hist([df_neg[colum], df_pos[colum]],
+                                  color=['r','b'], bins=15, alpha=0.5,
+                                  density=True)
+    elif flag_norm == 0:
+        n, bins, edges = plt.hist([df_neg[colum], df_pos[colum]],
+                                  color=['r','b'], bins=15, alpha=0.5,
+                                  density=False)
 
-def plot_historgramm(colum, file_name, plot_dir, df_neg,df_pos1, df_pos2, name, flag_norm):
+
+    plt.xticks(bins)
+    plt.xticks(rotation=75)
+    #print(min(df_neg[colum]))
+    #print(max([-3,-5]))
+    max_val = max([max(df_neg[colum]),max(df_pos[colum])])
+    min_val = min([min(df_neg[colum]),min(df_pos[colum])])
+    if flag_flip_legend and min_val<0 and max_val <0:
+        max_val_temp = max_val
+        max_val = min_val
+        min_val = max_val_temp
+    plt.xlim(min_val, max_val)
+    labels= ["negative", "positive"]
+    plt.legend(labels)
+    plt.xlabel(colum)
+    plt.title(name)
+    fig.savefig(plot_dir + file_name + '_histogramm.pdf', format='pdf', dpi=300, bbox_inches='tight')
+
+def plot_historgramm_3(colum, file_name, plot_dir, df_neg,df_pos1, df_pos2, name, flag_norm):
     flag_flip_legend = False
     fig = plt.figure()
     if flag_norm == 1:
@@ -53,7 +82,7 @@ def main():
                         default="/vol/scratch/data/features_files/test/fearutes_neg.csv")
     parser.add_argument("-i3", "--pos2_file",
                         help= "file to features of positive data seedMaxE3",
-                        default="/vol/scratch/data/features_files/test/fearutes_pos.csv")
+                        default="")
     parser.add_argument("-n", "--name",
                         help= "name to add to the output file name",
                         default='')
@@ -72,33 +101,48 @@ def main():
     name = args.name
     flag_norm = int(args.flag_norm)
     # flag_norm = True
-    print(flag_norm)
     if flag_norm == 1:
+        print('histrogram will be normalized')
         file_add_name = name + '_norm_bins_'
     elif flag_norm == 0:
+        print('data not normalized')
         file_add_name = name
     else:
         print('error: flag_norm should be 1 for True and 0 for False')
 
-    plot_dir = "/vol/scratch/data/features_files/full_c300/" + file_add_name
+    plot_dir = "/vol/scratch/data/features_files/full_maxloop3/" + file_add_name
 
-
-    df_pos1 = pd.read_table(pos1_file, sep=',')
-    df_pos2 = pd.read_table(pos2_file, sep=',')
-    df_neg = pd.read_table(neg_file, sep=',')
 
     #print(df_pos.info())
     #print(df_neg.info())
 
     # print E, E_hybrid, ED1, ED2, no_bps,max_inter_len,GC_content,max_ED
 
-    plot_historgramm('E', 'MFE', plot_dir, df_neg,df_pos1, df_pos2, name, flag_norm)
-    plot_historgramm('E_hybrid', 'E_hybrid', plot_dir, df_neg,df_pos1, df_pos2, name, flag_norm)
-    plot_historgramm('no_bps', 'no_bps', plot_dir, df_neg,df_pos1, df_pos2, name, flag_norm)
-    plot_historgramm('max_inter_len', 'max_inter_len', plot_dir, df_neg,df_pos1, df_pos2, name, flag_norm)
-    plot_historgramm('GC_content', 'GC_content', plot_dir, df_neg,df_pos1, df_pos2, name, flag_norm)
-    plot_historgramm('max_ED', 'max_ED', plot_dir, df_neg, df_pos1, df_pos2, name, flag_norm)
-    plot_historgramm('sum_ED', 'sum_ED', plot_dir, df_neg, df_pos1, df_pos2, name, flag_norm)
+    if not pos2_file:
+        df_pos1 = pd.read_table(pos1_file, sep=',')
+        df_neg = pd.read_table(neg_file, sep=',')
+
+        plot_historgramm_2('E', 'MFE', plot_dir, df_neg,df_pos1, name, flag_norm)
+        plot_historgramm_2('E_hybrid', 'E_hybrid', plot_dir, df_neg,df_pos1, name, flag_norm)
+        plot_historgramm_2('no_bps', 'no_bps', plot_dir, df_neg,df_pos1, name, flag_norm)
+        plot_historgramm_2('max_inter_len', 'max_inter_len', plot_dir, df_neg,df_pos1, name, flag_norm)
+        plot_historgramm_2('GC_content', 'GC_content', plot_dir, df_neg,df_pos1, name, flag_norm)
+        plot_historgramm_2('max_ED', 'max_ED', plot_dir, df_neg, df_pos1, name, flag_norm)
+        plot_historgramm_2('sum_ED', 'sum_ED', plot_dir, df_neg, df_pos1, name, flag_norm)
+    else:
+        df_pos1 = pd.read_table(pos1_file, sep=',')
+        df_pos2 = pd.read_table(pos2_file, sep=',')
+        df_neg = pd.read_table(neg_file, sep=',')
+
+        plot_historgramm_3('E', 'MFE', plot_dir, df_neg,df_pos1, df_pos2, name, flag_norm)
+        plot_historgramm_3('E_hybrid', 'E_hybrid', plot_dir, df_neg,df_pos1, df_pos2, name, flag_norm)
+        plot_historgramm_3('no_bps', 'no_bps', plot_dir, df_neg,df_pos1, df_pos2, name, flag_norm)
+        plot_historgramm_3('max_inter_len', 'max_inter_len', plot_dir, df_neg,df_pos1, df_pos2, name, flag_norm)
+        plot_historgramm_3('GC_content', 'GC_content', plot_dir, df_neg,df_pos1, df_pos2, name, flag_norm)
+        plot_historgramm_3('max_ED', 'max_ED', plot_dir, df_neg, df_pos1, df_pos2, name, flag_norm)
+        plot_historgramm_3('sum_ED', 'sum_ED', plot_dir, df_neg, df_pos1, df_pos2, name, flag_norm)
+
+
 
     #df_pos_sub = df_pos['E']
     #df_pos_sub['data'] = 'pos'
