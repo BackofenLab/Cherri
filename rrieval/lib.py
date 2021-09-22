@@ -328,7 +328,7 @@ def bed_extract_sequences_from_2bit(in_bed, out_fa, in_2bit,
     return seqs_dic
 
 
-def check_context(df, start, end, chrom_end, seq_tag):
+def check_context(df, seq_tag, chrom_dict):
     """
     check that the extende contxt is not to short or long!
 
@@ -341,21 +341,49 @@ def check_context(df, start, end, chrom_end, seq_tag):
         -------
         df
             df with changed postions
-
+    chrom_dict = {'chr1':60,
+    ...         'chr2':80}
+    >>> data = {'start_1st':[0, -40, 40, -2],
+    ...         'chrom_1st':['chr1', 'chr1', 'chr1', 'chr1'],
+    ...         'end_1st':[30, 60, 70, 70],
+    ...         'start_2end':[0, -40, 40, -2],
+    ...         'end_2end':[30, 60, 70, 70],
+    ...         'chrom_2end':['chr1', 'chr1', 'chr1', 'chr1']}
+    >>> df = pd.DataFrame(data)
+    >>> check_context(df, 'target', chrom_dict)
+    pd.DataFrame({'start_1st':[0, 0, 40, 0],
+    ...         'chrom_1st':['chr1', 'chr1', 'chr1', 'chr1'],
+    ...         'end_1st':[30, 60, 60, 60],
+    ...         'start_2end':[0, -40, 40, -2],
+    ...         'end_2end':[30, 60, 70, 70],
+    ...         'chrom_2end':['chr1', 'chr1', 'chr1', 'chr1']})
+    >>> check_context(df, 'query', chrom_dict)
+    pd.DataFrame({'start_1st':[0, -40, 40, -2],
+    ...         'chrom_1st':['chr1', 'chr1', 'chr1', 'chr1'],
+    ...         'end_1st':[30, 60, 70, 70],
+    ...         'start_2end':[0, 0, 40, 0],
+    ...         'end_2end':[30, 60, 60, 60],
+    ...         'chrom_2end':['chr1', 'chr1', 'chr1', 'chr1']})
         """
+    no_seq_out_boder = 0
     if seq_tag == 'target':
-        if len(df[df.start_1st <=0]) > 0:
-            print('Warning: added context t is smaller than 0 for %i instances'%len(df[df.start_1st <=0]))
-            df.loc[df.start_1st <= 0, 'start_1st'] = 1
-    elif seq_tag == 'query':
-        if len(df[df.start_2end <=0]) > 0:
-            print('Warning: added context q is smaller than 0 for %i instances'%len(df[df.start_2end <=0]))
-            df.loc[df.start_2end <= 0, 'start_1st'] = 1
+        no_seq_out_boder += len(df[df.start_1st <=0])
+        no_seq_out_boder += len(df[df.end_1st >= df['chrom_1st'].apply(lambda x: chrom_dict[x])])
+        df.loc[df.start_1st <= 0, 'start_1st'] = 0
+        df.loc[df.end_1st >= df['chrom_1st'].apply(lambda x: chrom_dict[x]), 'end_1st'] = df['chrom_1st'].apply(lambda x: chrom_dict[x])
 
+    elif seq_tag == 'query':
+        no_seq_out_boder += len(df[df.start_2end <=0])
+        no_seq_out_boder += len(df[df.end_2end >= df['chrom_2end'].apply(lambda x: chrom_dict[x])])
+        df.loc[df.start_2end <= 0, 'start_2end'] = 0
+        df.loc[df.end_2end >= df['chrom_2end'].apply(lambda x: chrom_dict[x]), 'end_2end'] = df['chrom_2end'].apply(lambda x: chrom_dict[x])
+    print('Warning: added context to %s is out of bourder for %i instances'%(seq_tag,no_seq_out_boder))
     return df
 
 
-def get_context(seq_tag, df, out_dir, in_2bit_file, context):
+
+
+def get_context(seq_tag, df, out_dir, in_2bit_file, context, chrom_len_file):
     """
     defining column with ID and empty colums to store the context sequences
 
@@ -379,26 +407,28 @@ def get_context(seq_tag, df, out_dir, in_2bit_file, context):
         """
     out_bed = out_dir + seq_tag + '_out.bed'
     out_fa = out_dir + seq_tag + '_out.fa'
+    no_del_entys = 0
+    chrom_dict = read_table_into_dic(chrom_len_file)
+    #print(chrom_dict)
     if seq_tag == 'target':
         df_bed = df[['chrom_1st', 'start_1st', 'end_1st', 'ID1', 'interaction_no', 'strand_1st']].copy()
         #print(df_bed.tail())
         df_bed['chrom_1st'] = df_bed['chrom_1st'].apply(lambda x: check_convert_chr_id(x))
         df_context =  add_context(df_bed, context, 'start_1st', 'end_1st')
-        df_context = check_context(df_context, 'start_1st', 'end_1st', 100000000000, seq_tag)
-        # check context!
+        df_context = check_context(df_context, seq_tag, chrom_dict)
         col_name = 'con_target'
         col_id = 'ID1'
         df_context_filted = df_context[df_context.chrom_1st != False]
-        no_del_entys = len(df_context) - len(df_context_filted)
+        no_del_entys += len(df_context) - len(df_context_filted)
     elif seq_tag == 'query':
         df_bed = df[['chrom_2end', 'start_2end', 'end_2end', 'ID2', 'interaction_no', 'strand_2end']].copy()
         df_bed['chrom_2end'] = df_bed['chrom_2end'].apply(lambda x: check_convert_chr_id(x))
         df_context =  add_context(df_bed, context, 'start_2end', 'end_2end')
-        df_context = check_context(df_context, 'start_2end', 'end_2end', 100000000000, seq_tag)
+        df_context = check_context(df_context, seq_tag, chrom_dict)
         col_name = 'con_query'
         col_id = 'ID2'
         df_context_filted = df_context[df_context.chrom_2end != False]
-        no_del_entys = len(df_context) - len(df_context_filted)
+        no_del_entys += len(df_context) - len(df_context_filted)
     else:
         print('error: please specify the parameter seq_tag with target or query')
     # delet all 'False' chromosmes of in the df
@@ -448,6 +478,7 @@ def shuffle_sequence(seq, times, kind_of_shuffel):
 
     return seq_list
 
+
 def bp_suffeling(hybrid_seq, IntaRNA_prediction,times):
     """
     basepair shufelling of the given IntaRNA prediction
@@ -483,6 +514,7 @@ def bp_suffeling(hybrid_seq, IntaRNA_prediction,times):
 
     return shuffled_target_list, shuffled_query_list
 
+
 def encode_hybrid_by_BPs(dot_bracked, seq):
     """
     encode_hybrid_by_BPs
@@ -491,10 +523,6 @@ def encode_hybrid_by_BPs(dot_bracked, seq):
         ----------
         dot_bracked:
         seq: query
-
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -535,6 +563,7 @@ def encode_hybrid_by_BPs(dot_bracked, seq):
             print('hybrid encode error: unexpacted case')
     return tup_list
 
+
 def make_seq_from_list(suffled_list):
     """
     make_seq_from_list
@@ -543,9 +572,6 @@ def make_seq_from_list(suffled_list):
         ----------
         suffled_list:
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -640,6 +666,36 @@ def join_pos(pos_list):
         else:
             joint_pos_list.append((ns, ne))
     return joint_pos_list
+
+
+def read_table_into_dic(file):
+    """
+    Read in Table separated by \t and puts first line as key second as value
+        Parameters
+        ----------
+        file: file location ot the table file
+
+        Returns
+        -------
+        chrom_ends_dic:
+            chrom -> length
+
+    """
+    chrom_ends_dic = {}
+
+    # Open FASTA either as .gz or as text file.
+    if re.search(".+\.gz$", file):
+        f = gzip.open(file, 'rt')
+    else:
+        f = open(file, "r")
+
+    for line in f:
+        line_list = line.split("\t")
+        chrom_ends_dic[line_list[0]] = int(line_list[1].rstrip())
+    f.close()
+
+    return chrom_ends_dic
+
 
 
 

@@ -491,7 +491,7 @@ def decode_IntaRNA_call(call, lost_inst, row, list_rows_add, df_data, no_sub_opt
     return df_data, lost_inst, no_less_sub_opt
 
 
-def get_context_added(input_rris, output_path, genome_file, context, context_not_full,context_file):
+def get_context_added(input_rris, output_path, genome_file, context, context_not_full,context_file,chrom_len_file):
     """
     get_context
 
@@ -514,10 +514,10 @@ def get_context_added(input_rris, output_path, genome_file, context, context_not
     # adding context by including infors into the df
     df_RRIs = extention_df(df_RRIs)
     df_target = rl.get_context('target', df_RRIs, output_path,
-                                genome_file, context)
+                                genome_file, context, chrom_len_file)
         #print(df_target)
     df_context_seq = rl.get_context('query', df_target, output_path,
-                                    genome_file, context)
+                                    genome_file, context, chrom_len_file)
         # print(df_context)
 
 
@@ -792,6 +792,7 @@ def main():
     no_neg = False
     #block_ends = 20
     # pos_occ = False
+    chrom_len_file = '/vol/scratch/data/genomes/mm10.chrom.sizes'
 
     context_file, context_info = get_context_file_name(context, pos_occ,
                                                        block_ends,
@@ -814,7 +815,7 @@ def main():
         df_contex = pd.read_table(context_file, sep=",")
         print('used existing context file: %s'%(context_file))
     else:
-        df_contex = get_context_added(input_rris, output_path, genome_file, context, context_not_full, context_file)
+        df_contex = get_context_added(input_rris, output_path, genome_file, context, context_not_full, context_file,chrom_len_file)
         print('***\ncontext is appende pos and negative data generation is starting:\n****')
 
 

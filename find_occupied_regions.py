@@ -185,7 +185,7 @@ def main():
     # context added to the T-> C side giving us the RBP interaction side
     context = 5
     exp_score_th = 10
-    flag_prot = True
+    flag_prot = False
 
     #### Get RRI data by calling find trusted RRI with a very low overlap th of 5%
     ### only take uniquly mapped reads but they do not need to be to stricke over the replicats:
