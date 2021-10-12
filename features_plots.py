@@ -89,6 +89,9 @@ def main():
     parser.add_argument("-f", "--flag_norm",
                         help= "1: normalize each bin, so that the area under the histogram integrates to 1",
                         default=0)
+    parser.add_argument("-o", "--out_dir",
+                        help= "output directory",
+                        default="/vol/scratch/data/features_files/test/")
 
 
 
@@ -99,6 +102,7 @@ def main():
     pos2_file = args.pos2_file
     neg_file = args.neg_file
     name = args.name
+    out_dir = args.out_dir
     flag_norm = int(args.flag_norm)
     # flag_norm = True
     if flag_norm == 1:
@@ -110,7 +114,7 @@ def main():
     else:
         print('error: flag_norm should be 1 for True and 0 for False')
 
-    plot_dir = "/vol/scratch/data/features_files/full_maxloop3/" + file_add_name
+    plot_dir = out_dir + file_add_name + '_'
 
 
     #print(df_pos.info())

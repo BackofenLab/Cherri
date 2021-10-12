@@ -369,14 +369,24 @@ def check_context(df, seq_tag, chrom_dict):
     if seq_tag == 'target':
         no_seq_out_boder += len(df[df.start_1st <=0])
         no_seq_out_boder += len(df[df.end_1st >= df['chrom_1st'].apply(lambda x: chrom_dict[x])])
-        df.loc[df.start_1st <= 0, 'start_1st'] = 0
-        df.loc[df.end_1st >= df['chrom_1st'].apply(lambda x: chrom_dict[x]), 'end_1st'] = df['chrom_1st'].apply(lambda x: chrom_dict[x])
+        #df.loc[df.start_1st <= 0, 'start_1st'] = 0
+        #df.loc[df.end_1st >= df['chrom_1st'].apply(lambda x: chrom_dict[x]), 'end_1st'] = df['chrom_1st'].apply(lambda x: chrom_dict[x])
+        # delet data
+        df = df.loc[df.start_1st >= 0]
+        df = df.loc[df.end_1st <= df['chrom_1st'].apply(lambda x: chrom_dict[x])]
+
 
     elif seq_tag == 'query':
         no_seq_out_boder += len(df[df.start_2end <=0])
         no_seq_out_boder += len(df[df.end_2end >= df['chrom_2end'].apply(lambda x: chrom_dict[x])])
-        df.loc[df.start_2end <= 0, 'start_2end'] = 0
-        df.loc[df.end_2end >= df['chrom_2end'].apply(lambda x: chrom_dict[x]), 'end_2end'] = df['chrom_2end'].apply(lambda x: chrom_dict[x])
+        if no_seq_out_boder > 0:
+            print('context is not expandable:')
+            print(df[df.start_2end <=0])
+            print(df[df.end_2end >= df['chrom_2end'].apply(lambda x: chrom_dict[x])])
+        #df.loc[df.start_2end <= 0, 'start_2end'] = 0
+        #df.loc[df.end_2end >= df['chrom_2end'].apply(lambda x: chrom_dict[x]), 'end_2end'] = df['chrom_2end'].apply(lambda x: chrom_dict[x])
+        df = df.loc[df.start_2end >= 0]
+        df = df.loc[df.end_2end <= df['chrom_2end'].apply(lambda x: chrom_dict[x])]
     print('Warning: added context to %s is out of bourder for %i instances'%(seq_tag,no_seq_out_boder))
     return df
 
