@@ -9,7 +9,6 @@ from interlap import InterLap
 from collections import defaultdict
 # training imports
 import csv
-import pandas as pd
 import numpy as np
 import pandas_profiling
 import sklearn as sk
@@ -22,6 +21,8 @@ from sklearn.neighbors import (KNeighborsClassifier)
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
+from sklearn.metrics import plot_confusion_matrix
+#from sklearn.linear_model import LogisticRegression
 #import xgboost
 import pickle
 from sklearn.linear_model import Lasso
@@ -405,9 +406,6 @@ def get_context(seq_tag, df, out_dir, in_2bit_file, context, chrom_len_file):
         in_2bit_file: genome 2bit file
         context: amout of nt that should be added on both sides
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -424,7 +422,9 @@ def get_context(seq_tag, df, out_dir, in_2bit_file, context, chrom_len_file):
         df_bed = df[['chrom_1st', 'start_1st', 'end_1st', 'ID1', 'interaction_no', 'strand_1st']].copy()
         #print(df_bed.tail())
         df_bed['chrom_1st'] = df_bed['chrom_1st'].apply(lambda x: check_convert_chr_id(x))
+        #print(df_bed.tail())
         df_context =  add_context(df_bed, context, 'start_1st', 'end_1st')
+        #print(df_context.tail())
         df_context = check_context(df_context, seq_tag, chrom_dict)
         col_name = 'con_target'
         col_id = 'ID1'
@@ -876,14 +876,75 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
     xgb_handle.close()
     return ""
 
+def base_model(in_positive_data_filepath,in_negative_data_filepath,output_path,name):
+
+    X, y = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)
+
+    #Create training and test dataset
+    X_training, X_test, y_training, y_test = model_selection.train_test_split(X, y, test_size=0.3, random_state=42)
+    ##comparison dummy model
+    cm = DummyClassifier()
+    cm.fit(X_training, y_training)
+    # prediction: “prior”: always predicts the class that maximizes the class prior (like “most_frequent”) and predict_proba returns the class prior.
+    params = cm.get_params(deep=True)
+    dummy_comparison_score = cm.score(X_test, y_test)
+    print("Dummy score: %f" %(dummy_comparison_score))
+    # save
+    dc_path = output_path + "/" + name + "_dc.obj"
+    dc_handle = open(dc_path,"wb")
+    pickle.dump(cm,dc_handle)
+    dc_handle.close()
+
+    # C-Support Vector Classification
+    svc = SVC()
+    svc.fit(X_training, y_training)
+    # mean accuracy
+    svc_comparison_score = svc.score(X_test, y_test)
+    print("Support Vector Classification score: %f" %svc_comparison_score)
+    svc_path = output_path + "/" + name + "_svc.obj"
+    svc_handle = open(svc_path,"wb")
+    pickle.dump(svc,svc_handle)
+    svc_handle.close()
+
+    #print('trainings data X:\n', X_training.info())
+    #print('trainings data y:\n', y_training.dtype)
+
+    # linear regerssion -> LIBLINEAR – A Library for Large Linear Classification
+    clf = LogisticRegression(solver='liblinear')
+    clf.fit(X_training, y_training)
+
+    logistic_regression_score = clf.score(X_test, y_test)
+    print("LogisticRegression score: %f" %(logistic_regression_score))
+    clf_path = output_path + "/" + name + "_clf.obj"
+    clf_handle = open(clf_path,"wb")
+    pickle.dump(clf,clf_handle)
+    clf_handle.close()
+
+    return ""
+
+
 def classify(in_data_filepath,in_model_filepath,output_path):
     X = pd.read_csv(in_data_filepath, sep=',')
     model_handle = open(in_model_filepath,'rb')
     model = pickle.load(model_handle)
     model_handle.close()
     y_pred=model.predict(X)
+    print('model predictions')
     print(y_pred)
     return y_pred
+
+def classify2(X,in_model_filepath,score_flag):
+    model_handle = open(in_model_filepath,'rb')
+    model = pickle.load(model_handle)
+    model_handle.close()
+    y_pred = model.predict(X)
+    if score_flag == 'proba':
+        y_score = model.predict_proba(X)
+    elif score_flag == 'decision':
+        y_score = model.decision_function(X)
+    #print('model predictions')
+    #print(y_pred)
+    return model, y_pred, y_score
 
 def param_optimize(in_positive_data_filepath,in_negative_data_filepath,output_path):
     X, y = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)

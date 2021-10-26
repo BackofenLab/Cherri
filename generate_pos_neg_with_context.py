@@ -774,6 +774,9 @@ def main():
     parser.add_argument("-b", "--block_ends",  nargs='?', type=int,
                         dest="block_ends",  default=0,
                         help= "# nts blocked at the ends of the sequence")
+    parser.add_argument("-l", "--chrom_len_file",  action="store", dest="chrom_len_file",
+                        required=True,
+                        help= "tabular file containing chrom name \t chrom lenght for each chromosome")
 
 
     args = parser.parse_args()
@@ -785,6 +788,7 @@ def main():
     context = args.context
     pos_occ = args.pos_occ
     block_ends = args.block_ends
+    chrom_len_file = args.chrom_len_file
 
     no_sub_opt = 5
     flag_all_neg = True
@@ -792,7 +796,8 @@ def main():
     no_neg = False
     #block_ends = 20
     # pos_occ = False
-    chrom_len_file = '/vol/scratch/data/genomes/mm10.chrom.sizes'
+    #chrom_len_file = '/vol/scratch/data/genomes/mm10.chrom.sizes'
+    #chrom_len_file = '/vol/scratch/data/genomes/hg38_Info.tab'
 
     context_file, context_info = get_context_file_name(context, pos_occ,
                                                        block_ends,

@@ -287,7 +287,7 @@ def main():
         df_rri['complex_query'] = df_rri['query'].apply(lambda x: comput_complexity(x))
     else:
         # sequence complexety shannon entropy
-        df_rri['complex_target'] = df_rri['con_query'].apply(lambda x: comput_complexity(x))
+        df_rri['complex_target'] = df_rri['con_target'].apply(lambda x: comput_complexity(x))
         #print(df_rri['complex_target'])
         df_rri['complex_query'] = df_rri['con_query'].apply(lambda x: comput_complexity(x))
         df_rri['side_target'] = df_rri['subseqDP'].apply(lambda x: x.split('&')[0])
@@ -296,6 +296,9 @@ def main():
         df_rri['complex_target_side'] = df_rri['side_target'].apply(lambda x: comput_complexity(x))
         #print(df_rri['complex_target'])
         df_rri['complex_query_side'] = df_rri['side_query'].apply(lambda x: comput_complexity(x))
+        df_rri['max_seed_E'] = df_rri['seedE'].apply(lambda x: max(x.split(':')))
+        df_rri['min_seed_E'] = df_rri['seedE'].apply(lambda x: min(x.split(':')))
+
     #print(df_rri['complex_query'])
 
 
@@ -310,6 +313,7 @@ def main():
             print('#################')
         # generate output:
         df_feature = df_rri[feature_set_list].copy()
+    df_feature = df_feature.loc[df_feature["GC_content"] != 0]
     df_feature.to_csv(output_file, index=False)
 
     # Go over list of featurs for the output dir and generate table:
