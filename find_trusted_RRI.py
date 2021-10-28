@@ -616,10 +616,6 @@ def get_seq_lengths(min_enegy_rep, interaction_length):
         min_enegy_rep : Inter instance containing all sequence positons
         interaction_length: list with length of the two interaction RNAs so far
 
-        Raises
-        ------
-        nothing
-
         Returns
         -------
         interaction_length:
@@ -644,9 +640,6 @@ def concat_series_objects(list_of_series):
         list_of_series : list of seris objects containing the row information
         of the choosen trusted RRI
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -679,9 +672,6 @@ def sequence_length(start, end):
         start: start position of a sequence
         end: end postion of a sequence
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -696,6 +686,23 @@ def sequence_length(start, end):
 
 
 def get_list_overlaps(instances_no_nan_list):
+    """
+    compute list of overlabes
+
+        Parameters
+        ----------
+        instances_no_nan_list:
+
+
+        Returns
+        -------
+        avg_overlap_list
+            list of average overlap
+        avg_overlap_len_list
+            list
+
+
+        """
     avg_overlap_list = []
     avg_overlap_len_list = []
     for temp_list in instances_no_nan_list:
