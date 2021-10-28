@@ -20,15 +20,21 @@ def filter_score(df_interactions, score_th):
         Parameters
         ----------
         df_interactions : df including the containing all RRIs
+        score_th: threshold for the expactation maximization score of Chira
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
         df_interactions_single_mapped
-            dataframes with instances filter for a score of 1
+            dataframes filter for a score smaller equal threshold of both
+            interacting partners
+
+    >>> data = {'score_seq_1st_side':[0.3, 1, 0.9, 0.4],
+    ...         'score_seq_2end_side':[0.7, 1, 0.2, 0.5]}
+    >>> df = pd.DataFrame(data)
+    >>> filter_score(df, 1)
+       score_seq_1st_side  score_seq_2end_side
+    1                 1.0                  1.0
 
             """
     # filter input for score_seq_1st_side and score_seq_2end_side == 1
@@ -75,9 +81,6 @@ def get_list_chrom(df_interactions):
         ----------
         df_interactions : df including the filtered RRIs
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -86,8 +89,10 @@ def get_list_chrom(df_interactions):
             and present in the input data frame
 
         """
-    chrom1_list = get_chrom_list_no_numbers(df_interactions, 'chrom_seq_1st_side')
-    chrom2_list = get_chrom_list_no_numbers(df_interactions, 'chrom_seq_2end_side')
+    chrom1_list = get_chrom_list_no_numbers(df_interactions,
+                                            'chrom_seq_1st_side')
+    chrom2_list = get_chrom_list_no_numbers(df_interactions,
+                                            'chrom_seq_2end_side')
     list_chrom_no_int = list(set().union(chrom1_list,chrom2_list))
     sort_list_chrom = sorted(list_chrom_no_int)
     return sort_list_chrom
@@ -126,18 +131,28 @@ def build_interlap_for_replicat(df_interactions):
 
         if chrom_2_index < chrom_1_index:
             first_key = str(chrom_2) + ':' + str(chrom_1)
-            second_key = row['strand_seq_2end_side'] + ':' + row['strand_seq_1st_side']
+            second_key = (row['strand_seq_2end_side'] + ':' +
+                          row['strand_seq_1st_side'])
             both_keys = first_key + ';' + second_key
-            inter_rep[both_keys].add((row['start_seq_2end_side'], row['stop_seq_2end_side'], both_keys,
-                                    [row['start_seq_1st_side'],row['stop_seq_1st_side']],
-                                    ['swap',row['IntaRNA_prediction'], row['energy']], [row]))
+            inter_rep[both_keys].add((row['start_seq_2end_side'],
+                                      row['stop_seq_2end_side'], both_keys,
+                                      [row['start_seq_1st_side'],
+                                      row['stop_seq_1st_side']],
+                                      ['swap',row['IntaRNA_prediction'],
+                                      row['energy']],
+                                      [row]))
         elif chrom_1_index <= chrom_2_index:
             first_key = str(chrom_1) + ':' + str(chrom_2)
-            second_key = row['strand_seq_1st_side'] + ':' + row['strand_seq_2end_side']
+            second_key = (row['strand_seq_1st_side'] + ':' +
+                          row['strand_seq_2end_side'])
             both_keys = first_key + ';' + second_key
-            inter_rep[both_keys].add((row['start_seq_1st_side'], row['stop_seq_1st_side'], both_keys,
-                                    [row['start_seq_2end_side'],row['stop_seq_2end_side']],
-                                    ['no',row['IntaRNA_prediction'], row['energy']], row))
+            inter_rep[both_keys].add((row['start_seq_1st_side'],
+                                      row['stop_seq_1st_side'], both_keys,
+                                      [row['start_seq_2end_side'],
+                                      row['stop_seq_2end_side']],
+                                      ['no',row['IntaRNA_prediction'],
+                                      row['energy']],
+                                      row))
         else:
             print('error: something went wrong!!')
 
@@ -154,17 +169,17 @@ def build_replicat_library_to_compare(input_path, list_of_replicats, score_th):
         ----------
         input_path : path to the input files
         list_of_replicats: list of replicat file names
-
-        Raises
-        ------
-        nothing
+        score_th: threshold for the expactation maximization score of Chira
 
         Returns
         -------
         inter_replicat_list
             list for all replicat inter object
         no_replicats
-            number of replicats
+            number of replicats (integer)
+        rep_size_list
+            list number of instace within each replicat
+
 
         """
     inter_replicat_list = []
@@ -181,7 +196,8 @@ def build_replicat_library_to_compare(input_path, list_of_replicats, score_th):
     # sort the replicat list by size...
 
     no_replicats = len(inter_replicat_list)
-    inter_replicat_sorted_list = sort_list_replicat(inter_replicat_list, rep_size_list)
+    inter_replicat_sorted_list = sort_list_replicat(inter_replicat_list,
+                                                    rep_size_list)
 
     return inter_replicat_sorted_list, no_replicats, rep_size_list
 
@@ -194,10 +210,8 @@ def sort_list_replicat(inter_replicat_list, rep_size_list):
         Parameters
         ----------
         inter_replicat_list : list contining all replicats
+        rep_size_list: list number of instace within each replicat
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -216,15 +230,12 @@ def rep_seq_pos(inter_rep):
     """
     extracts the start and stop positions of a interaction for one replicats
     for a inter opject:
-    (s1, e1, 'Chrom1:Chrom2;strand1:strand2', [s2, e2], ['swap' or not, structure, enegy])
+    (s1, e1, 'Chrom1:Chrom2;strand1:strand2', [s2, e2],
+    ['swap' or not, structure, enegy])
 
         Parameters
         ----------
-        inter_rep :
-
-        Raises
-        ------
-        nothing
+        inter_rep : interlab object for the current replicat
 
         Returns
         -------
@@ -264,10 +275,6 @@ def check_last_position(pos_replicat, inter_list, trusted_rri_temp,
         max_overlap: the overlap of the rri having the highest overlap among all
             overlapping rris between the first replicat and the current replicat
 
-
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -393,9 +400,6 @@ def find_relayble_replicats(inter_replicat_list, overlap_th, no_replicats):
         overlap_th : overlap threshold
         no_replicats: number of replicats
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -467,9 +471,6 @@ def get_numbers_nan(no_replicats, trusted_rri_list):
         overlap_th : overlap threshold
         list_of_replicats: list of replicat file names
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -515,13 +516,12 @@ def get_seq_IntaRNA_calls(trusted_rri_list):
         [inter_instance rep1, [list overlapping second rep]...,
         [list overlapping last rep]]
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
-        instances_just_nan_list
+        df_output
+            dataframe containing a the trusted rris with a instance of a
+            replicat that has a hybrid
         """
 
     nan_seq_list = []
@@ -557,13 +557,15 @@ def get_enegy_seqlen(trusted_rri_list):
         [inter_instance rep1, [list overlapping second rep]...,
         [list overlapping last rep]]
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
-        instances_just_nan_list
+        enegy_list
+            list
+        interaction_length
+           list
+        df_output
+           data frame
         """
 
     enegy_list = []
@@ -654,6 +656,9 @@ def concat_series_objects(list_of_series):
     >>> s1 = pd.Series([1, 2], index=['A', 'B'], name='s1')
     >>> s2 = pd.Series([3, 4], index=['A', 'B'], name='s2')
     >>> concat_series_objects([s1, s2])
+        A  B
+    s1  1  2
+    s2  3  4
 
         """
     #for i in list_of_series:

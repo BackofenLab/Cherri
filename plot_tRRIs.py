@@ -2,7 +2,6 @@
 import pandas as pd
 import math
 import matplotlib as mpl
-from collections import defaultdict
 import sys
 import seaborn as sns
 import matplotlib.pyplot as plt
