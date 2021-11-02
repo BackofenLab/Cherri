@@ -128,6 +128,21 @@ def count_entrys(inter_obj, name):
 
 
 def get_prot_occ_regions(file_rbp_pos, exp_score_th, context):
+    """
+    get_prot_occ_regions
+
+        Parameters
+        ----------
+        file_rbp_pos :
+        exp_score_th:
+        context:
+
+        Returns
+        -------
+        inter_rbp
+
+
+    """
     header = ['chrom', 'start', 'end', 'info', 'score', 'strand']
     df_bed_temp = pd.read_table(file_rbp_pos, header=None, sep="\t")
     df_bed = pd.DataFrame(df_bed_temp.values, columns=header)
@@ -234,6 +249,11 @@ def main():
     pickle.dump(inter_rri,or_handle)
     or_handle.close()
     print('object contining InteLab object with start and end postions:\n%s'%or_path)
+
+    # filter rri file and save:
+    output_name = 'rri_occupied_regions' + '_overlapTH_' + str(overlap_th) + '_scoreTH_1.cvs'
+    df_rris_filterd = df_rris[(df_rris.score_seq_1st_side >= 1) & (df_rris.score_seq_2end_side >= 1)]
+    df_rris_filterd.to_csv(out_path + output_name, index=False)
 
 
 

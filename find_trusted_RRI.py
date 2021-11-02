@@ -705,9 +705,10 @@ def get_list_overlaps(instances_no_nan_list):
         """
     avg_overlap_list = []
     avg_overlap_len_list = []
+    print('test')
     for temp_list in instances_no_nan_list:
         sort_pos = [(i[0],i[1])for i in temp_list]
-        # print(sort_pos)
+        print(sort_pos)
         overlap_rep1_rep2_seq1 = rl.calculate_overlap(sort_pos[0][0],sort_pos[0][1],sort_pos[1][0],sort_pos[1][1])
         overlap_rep1_rep2_seq2 = rl.calculate_overlap(sort_pos[0][0],sort_pos[0][1],sort_pos[2][0],sort_pos[2][1])
         overlap_len_seq1 = rl.calculate_overlap(sort_pos[0][0],sort_pos[0][1],sort_pos[1][0],sort_pos[1][1], len_flag=True)
@@ -763,48 +764,63 @@ def main():
 
 
     inter_replicat_list, no_replicats, rep_size_list = build_replicat_library_to_compare(input_path, list_of_replicats, score_th)
-    len_smalles_replicat = rep_size_list[0]
-    print(rep_size_list)
-    print(len_smalles_replicat)
-    no_relayble_rri, trusted_rri_list, no_replicats = find_relayble_replicats(inter_replicat_list, overlap_th, no_replicats)
 
-    instances_just_nan_list, instances_also_nan_list, instances_no_nan_list = get_numbers_nan(no_replicats, trusted_rri_list)
+    if no_replicats == 1:
+        in_file = input_path + list_of_replicats[0]
+        df_replicat = rl.read_chira_data(in_file)
+        df_filtered_replicat = filter_score(df_replicat, score_th)
+        df_final_output = df_filtered_replicat[df_filtered_replicat.IntaRNA_prediction != 'NA']
+        # do something
+        # check for hybrid
+    elif no_replicats >= 1:
 
-    avg_overlap_list, avg_overlap_len_list = get_list_overlaps(instances_no_nan_list)
+        len_smalles_replicat = rep_size_list[0]
+        print(rep_size_list)
+        print(len_smalles_replicat)
+        no_relayble_rri, trusted_rri_list, no_replicats = find_relayble_replicats(inter_replicat_list, overlap_th, no_replicats)
 
-    enegy_list, interaction_length, df_final_output = get_enegy_seqlen(instances_no_nan_list)
+        instances_just_nan_list, instances_also_nan_list, instances_no_nan_list = get_numbers_nan(no_replicats, trusted_rri_list)
 
-    if len(instances_also_nan_list) > 0:
-        enegy_list_also_nan, interaction_length_also_nan, df_output_nan_temp = get_enegy_seqlen(instances_also_nan_list)
-        out_for_IntaRNA_calls_df = get_seq_IntaRNA_calls(instances_also_nan_list)
-        df_final_output = pd.concat([df_final_output, df_output_nan_temp])
-        out_for_IntaRNA_calls_df.to_csv(output_path + 'NAN_' + output_name, index=False)
+        #avg_overlap_list, avg_overlap_len_list = get_list_overlaps(instances_no_nan_list)
+
+        enegy_list, interaction_length, df_final_output = get_enegy_seqlen(instances_no_nan_list)
+
+        if len(instances_also_nan_list) > 0:
+            enegy_list_also_nan, interaction_length_also_nan, df_output_nan_temp = get_enegy_seqlen(instances_also_nan_list)
+            out_for_IntaRNA_calls_df = get_seq_IntaRNA_calls(instances_also_nan_list)
+            df_final_output = pd.concat([df_final_output, df_output_nan_temp])
+            out_for_IntaRNA_calls_df.to_csv(output_path + 'NAN_' + output_name, index=False)
+
+
+            percentage_trustable_rri_all = no_relayble_rri/len_smalles_replicat
+
+
+            print('######\n for %i replicates the following number of reliable interactions are found: %i (%f)'%(no_replicats, no_relayble_rri, percentage_trustable_rri_all))
+            print('the distribution of the interactions are:')
+            print('Number of RRI all not having a hybrid: %i'%len(instances_just_nan_list))
+            print('Number of RRI some having a hybrid: %i'%len(instances_also_nan_list))
+            print('Number of RRI all having hybrids: %i'%len(instances_no_nan_list))
+            #print(no_relayble_rri)
+            #print(len_smalles_replicat)
+            print('######')
+
+            # print(avg_overlap_list)
+            #avg_path = output_path + experiment_name + 'avg_overlap_' + str(overlap_th) + '.obj'
+            #avg_handle = open(avg_path,"wb")
+            #pickle.dump(avg_overlap_list,avg_handle)
+            #avg_handle.close()
+
+            #avg_overlap_len_list
+
+            #len_path = output_path + experiment_name + 'len_overlap_' + str(overlap_th) + '.obj'
+            #len_handle = open(len_path,"wb")
+            #pickle.dump(avg_overlap_len_list,len_handle)
+            #len_handle.close()
+
+        else:
+            print('something went wrong with the no of replicats!')
+
     df_final_output.to_csv(output_path + output_name, index=False)
-
-    percentage_trustable_rri_all = no_relayble_rri/len_smalles_replicat
-
-
-    print('######\n for %i replicates the following number of reliable interactions are found: %i (%f)'%(no_replicats, no_relayble_rri, percentage_trustable_rri_all))
-    print('the distribution of the interactions are:')
-    print('Number of RRI all not having a hybrid: %i'%len(instances_just_nan_list))
-    print('Number of RRI some having a hybrid: %i'%len(instances_also_nan_list))
-    print('Number of RRI all having hybrids: %i'%len(instances_no_nan_list))
-    #print(no_relayble_rri)
-    #print(len_smalles_replicat)
-    print('######')
-
-    # print(avg_overlap_list)
-    avg_path = output_path + experiment_name + 'avg_overlap_' + str(overlap_th) + '.obj'
-    avg_handle = open(avg_path,"wb")
-    pickle.dump(avg_overlap_list,avg_handle)
-    avg_handle.close()
-
-    avg_overlap_len_list
-
-    len_path = output_path + experiment_name + 'len_overlap_' + str(overlap_th) + '.obj'
-    len_handle = open(len_path,"wb")
-    pickle.dump(avg_overlap_len_list,len_handle)
-    len_handle.close()
 
 
     #### Plotting ######
