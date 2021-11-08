@@ -135,8 +135,8 @@ def main():
         plot_historgramm_2('GC_content', 'GC_content', plot_dir, df_neg,df_pos1, name, flag_norm)
         plot_historgramm_2('max_ED', 'max_ED', plot_dir, df_neg, df_pos1, name, flag_norm)
         plot_historgramm_2('sum_ED', 'sum_ED', plot_dir, df_neg, df_pos1, name, flag_norm)
-        plot_historgramm_2('no_seeds', 'no_seeds', plot_dir, df_neg, df_pos1, name, flag_norm)
-        plot_historgramm_2('max_seed_E', 'max_seed_E', plot_dir, df_neg, df_pos1, name, flag_norm)
+        #plot_historgramm_2('no_seeds', 'no_seeds', plot_dir, df_neg, df_pos1, name, flag_norm)
+        #plot_historgramm_2('max_seed_E', 'max_seed_E', plot_dir, df_neg, df_pos1, name, flag_norm)
     else:
         df_pos1 = pd.read_table(pos1_file, sep=',')
         df_pos2 = pd.read_table(pos2_file, sep=',')

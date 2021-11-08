@@ -510,6 +510,7 @@ def get_context_added(input_rris, output_path, genome_file, context, context_not
             datafram including the context appended sequences
         """
     df_RRIs = pd.read_table(input_rris, sep=",")
+    print(len(df_RRIs))
 
     # adding context by including infors into the df
     df_RRIs = extention_df(df_RRIs)

@@ -191,6 +191,7 @@ def main():
     out_path = '/' + out_path + '/' + timestr + '_occ_out/'
     if not os.path.exists(out_path):
         os.mkdir(out_path)
+        print('***added new folder***')
 
     # RRI thresholds
     overlap_th = 0.3
@@ -214,11 +215,16 @@ def main():
     rri_file = (out_path + 'rri_occupied_regions_overlap_' +
                 str(overlap_th) + '.cvs')
 
-    rl.call_script(rri_call)
-
-    #print(rri_call)
-    #file_test =  '/vol/scratch/data/trusted_RRIs/paris_HEK293T_overlap_0.6_snoRNA.cvs'
-    df_rris = rl.read_chira_data(rri_file, header='yes', separater=",")
+    if len(replicats) == 1:
+        print('only one experiment!')
+        in_file = input_path_RRIs + replicats[0]
+        df_replicat = rl.read_chira_data(in_file)
+        df_filtered_replicat = rl.filter_score(df_replicat, score_th)
+        df_rris = rl.delet_empty_col(df_filtered_replicat)
+    else:
+        rl.call_script(rri_call)
+        print(rri_call)
+        df_rris = rl.read_chira_data(rri_file, header='yes', separater=",")
     #df_rris = rl.read_chira_data(file_test, header='yes', separater=",")
     #print(df_rris)
     inter_rep_two = build_interlap_occ_sides(df_rris, 'two')
@@ -253,7 +259,12 @@ def main():
     # filter rri file and save:
     output_name = 'rri_occupied_regions' + '_overlapTH_' + str(overlap_th) + '_scoreTH_1.cvs'
     df_rris_filterd = df_rris[(df_rris.score_seq_1st_side >= 1) & (df_rris.score_seq_2end_side >= 1)]
-    df_rris_filterd.to_csv(out_path + output_name, index=False)
+    df_final_output = df_rris_filterd[(
+                      (df_rris_filterd.IntaRNA_prediction != 'NA') |
+                      (df_rris_filterd['energy'] != '') |
+                      (df_rris_filterd['chrom_1st'] != False) |
+                      (df_rris_filterd['chrom_2end'] != False))]
+    df_final_output.to_csv(out_path + output_name, index=False)
 
 
 

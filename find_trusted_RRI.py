@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import pandas as pd
 import math
+import numpy as np
 #import matplotlib as mpl
 #import matplotlib.pyplot as plt
 from collections import defaultdict
@@ -12,35 +13,6 @@ import rrieval.lib as rl
 import pickle
 
 
-
-def filter_score(df_interactions, score_th):
-    """
-    Filter dataframe for instances with a score of 1
-
-        Parameters
-        ----------
-        df_interactions : df including the containing all RRIs
-        score_th: threshold for the expactation maximization score of Chira
-
-
-        Returns
-        -------
-        df_interactions_single_mapped
-            dataframes filter for a score smaller equal threshold of both
-            interacting partners
-
-    >>> data = {'score_seq_1st_side':[0.3, 1, 0.9, 0.4],
-    ...         'score_seq_2end_side':[0.7, 1, 0.2, 0.5]}
-    >>> df = pd.DataFrame(data)
-    >>> filter_score(df, 1)
-       score_seq_1st_side  score_seq_2end_side
-    1                 1.0                  1.0
-
-            """
-    # filter input for score_seq_1st_side and score_seq_2end_side == 1
-    df_interactions_single_mapped = df_interactions[(df_interactions.score_seq_1st_side >= score_th) & (df_interactions.score_seq_2end_side >= score_th)]
-    #df_interactions_single_mapped
-    return df_interactions_single_mapped
 
 
 def get_chrom_list_no_numbers(df_interactions, chrom):
@@ -106,9 +78,6 @@ def build_interlap_for_replicat(df_interactions):
         ----------
         df_interactions : df including the filtered RRIs
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -187,7 +156,7 @@ def build_replicat_library_to_compare(input_path, list_of_replicats, score_th):
     for file in list_of_replicats:
         in_file = input_path + '/' + file
         df_replicat = rl.read_chira_data(in_file)
-        df_filtered_replicat = filter_score(df_replicat, score_th)
+        df_filtered_replicat = rl.filter_score(df_replicat, score_th)
         rep_size = len(df_filtered_replicat)
         rep_size_list.append(rep_size)
         inter_replicat = build_interlap_for_replicat(df_filtered_replicat)
@@ -506,6 +475,93 @@ def get_numbers_nan(no_replicats, trusted_rri_list):
     return instances_just_nan_list, instances_also_nan_list, instances_no_nan_list
 
 
+def get_rep_highest_overlap(no_replicats, trusted_rri_list):
+    """
+    finding the interaciton, where overlap is biggest
+
+        Parameters
+        ----------
+        no_replicats : number of replicates
+        trusted_rri_list: list of replicat
+
+
+        Returns
+        -------
+        instances_list
+            list filtered interaction
+        >>> ind_list = [[(10,20, '7:9;-:+', [20, 33]),
+        ... (8,20, '7:9;-:+', [20, 30])],
+        ... [(30,40, '1:2;-:+', [20, 33]),
+        ... (31,54, '1:2;-:+', [20, 30])]]
+        >>> get_rep_highest_overlap(2, ind_list)
+        [(10, 20, '7:9;-:+', [20, 33]), (30, 40, '1:2;-:+', [20, 33])]
+        """
+    instances_list = []
+
+    for rep_list in trusted_rri_list:
+        seq1_pos = [0]*no_replicats
+        seq2_pos = [0]*no_replicats
+        idx1 = 0
+        #print(rep_list)
+
+        for rep_instans in rep_list:
+            #print(idx1)
+            seq1_pos[idx1] = [6,15]
+            #seq1_pos[idx] = [rep_instans[0],rep_instans[1]]
+            #seq2_pos[idx] = rep_instans[3]
+            seq2_pos[idx1] = [6,15]
+            idx1 +=1
+
+        not_overlapLen_list_seq1 = find_overlap_of_all(seq1_pos, no_replicats)
+        not_overlapLen_list_seq2 = find_overlap_of_all(seq2_pos, no_replicats)
+        idx2 = 0
+        overlap_list = [0]*no_replicats
+        for i in not_overlapLen_list_seq1:
+            curr_min = i + not_overlapLen_list_seq2[idx2]
+            overlap_list[idx2] = curr_min
+            if idx2 ==0:
+                min_pos = 0
+            if  curr_min < overlap_list[min_pos]:
+                min_pos = idx2
+            idx2 +=1
+        instances_list.append(rep_list[min_pos])
+
+    return instances_list
+
+
+def find_overlap_of_all(pos_list, no_replicats):
+    """
+    finding the interaciton, where overlap is biggest
+    no_replicats : number of replicates
+
+        Parameters
+        ----------
+        pos_list : list of tupels with start, end pos
+
+
+        Returns
+        -------
+        not_overlapLen_list
+            list length outside of overlap
+    >>> in_list = [[10,20],[11,25]]
+    >>> find_overlap_of_all(in_list, 2)
+    [1, 5]
+        """
+    not_overlapLen_list = [0]*no_replicats
+    start_overlap = max([i[0] for i in pos_list])
+    end_overlap = min([i[1] for i in pos_list])
+
+    idx = 0
+
+    for pos_inst in pos_list:
+
+        not_overlapLen_list[idx] = ((start_overlap- pos_inst[0]) +
+                                   (pos_inst[1] - end_overlap ))
+        idx += 1
+
+    return not_overlapLen_list
+
+
 def get_seq_IntaRNA_calls(trusted_rri_list):
     """
     collect all
@@ -600,7 +656,7 @@ def get_enegy_seqlen(trusted_rri_list):
         final_output_list.append(instance)
         interaction_length = get_seq_lengths(min_enegy_rep, interaction_length)
         enegy_list.append(min_enegy_rep[4][2])
-    print('final output list')
+    #print('final output list')
     #print(final_output_list)
     df_output = concat_series_objects(final_output_list)
     #print(df_output.info())
@@ -765,20 +821,18 @@ def main():
 
     inter_replicat_list, no_replicats, rep_size_list = build_replicat_library_to_compare(input_path, list_of_replicats, score_th)
 
-    if no_replicats == 1:
-        in_file = input_path + list_of_replicats[0]
-        df_replicat = rl.read_chira_data(in_file)
-        df_filtered_replicat = filter_score(df_replicat, score_th)
-        df_final_output = df_filtered_replicat[df_filtered_replicat.IntaRNA_prediction != 'NA']
-        # do something
-        # check for hybrid
-    elif no_replicats >= 1:
 
-        len_smalles_replicat = rep_size_list[0]
-        print(rep_size_list)
-        print(len_smalles_replicat)
-        no_relayble_rri, trusted_rri_list, no_replicats = find_relayble_replicats(inter_replicat_list, overlap_th, no_replicats)
 
+
+
+    len_smalles_replicat = rep_size_list[0]
+    no_relayble_rri, trusted_rri_list, no_replicats = find_relayble_replicats(inter_replicat_list, overlap_th, no_replicats)
+    #print(trusted_rri_list[0][0][5])
+    #print(trusted_rri_list[0][1][5])
+
+    use_enegy = False
+
+    if use_enegy:
         instances_just_nan_list, instances_also_nan_list, instances_no_nan_list = get_numbers_nan(no_replicats, trusted_rri_list)
 
         #avg_overlap_list, avg_overlap_len_list = get_list_overlaps(instances_no_nan_list)
@@ -800,25 +854,41 @@ def main():
             print('Number of RRI all not having a hybrid: %i'%len(instances_just_nan_list))
             print('Number of RRI some having a hybrid: %i'%len(instances_also_nan_list))
             print('Number of RRI all having hybrids: %i'%len(instances_no_nan_list))
-            #print(no_relayble_rri)
-            #print(len_smalles_replicat)
+                #print(no_relayble_rri)
+                #print(len_smalles_replicat)
             print('######')
+    else:
+        instances_list = get_rep_highest_overlap(no_replicats, trusted_rri_list)
+        final_output_list = []
 
-            # print(avg_overlap_list)
-            #avg_path = output_path + experiment_name + 'avg_overlap_' + str(overlap_th) + '.obj'
-            #avg_handle = open(avg_path,"wb")
-            #pickle.dump(avg_overlap_list,avg_handle)
-            #avg_handle.close()
+        for rep in instances_list:
+            if isinstance(rep[5][0], int):
+                instance = rep[5]
+            else:
+                instance = rep[5][0]
+            final_output_list.append(instance)
 
-            #avg_overlap_len_list
+        df_output = concat_series_objects(final_output_list)
 
-            #len_path = output_path + experiment_name + 'len_overlap_' + str(overlap_th) + '.obj'
-            #len_handle = open(len_path,"wb")
-            #pickle.dump(avg_overlap_len_list,len_handle)
-            #len_handle.close()
+        print(df_output.info())
 
-        else:
-            print('something went wrong with the no of replicats!')
+        df_final_output = df_output[df_output['#reads'] >= 50]
+
+        print(df_final_output.info())
+
+
+        # print(avg_overlap_list)
+        #avg_path = output_path + experiment_name + 'avg_overlap_' + str(overlap_th) + '.obj'
+        #avg_handle = open(avg_path,"wb")
+        #pickle.dump(avg_overlap_list,avg_handle)
+        #avg_handle.close()
+
+        #avg_overlap_len_list
+
+        #len_path = output_path + experiment_name + 'len_overlap_' + str(overlap_th) + '.obj'
+        #len_handle = open(len_path,"wb")
+        #pickle.dump(avg_overlap_len_list,len_handle)
+        #len_handle.close()
 
     df_final_output.to_csv(output_path + output_name, index=False)
 
