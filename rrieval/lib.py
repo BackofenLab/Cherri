@@ -50,7 +50,7 @@ def read_chira_data(in_file, header='no', separater="\t"):
 
     # inclued header
     if header == 'no':
-        df_temp = pd.read_table(in_file, header=None, sep=separater)
+        df_temp = pd.read_table(in_file, header=None, sep=separater, low_memory=False)
         header = ['#reads','chrom_1st','start_1st','end_1st', 'strand_1st',
                 'chrom_2end','start_2end','end_2end', 'strand_2end',
                 'ineraction_side_1st', 'ineraction_side_2end',
@@ -67,9 +67,65 @@ def read_chira_data(in_file, header='no', separater="\t"):
     # len(header)
         df_interactions = pd.DataFrame(df_temp.values, columns=header)
     elif header == 'yes':
-        df_interactions = pd.read_table(in_file, sep=separater)
+        df_interactions = pd.read_table(in_file, sep=separater, low_memory=False)
     return df_interactions
 
+
+def filter_score(df_interactions, score_th):
+    """
+    Filter dataframe for instances with a score of 1
+
+        Parameters
+        ----------
+        df_interactions : df including the containing all RRIs
+        score_th: threshold for the expactation maximization score of Chira
+
+
+        Returns
+        -------
+        df_interactions_single_mapped
+            dataframes filter for a score smaller equal threshold of both
+            interacting partners
+
+    >>> data = {'score_seq_1st_side':[0.3, 1, 0.9, 0.4],
+    ...         'score_seq_2end_side':[0.7, 1, 0.2, 0.5]}
+    >>> df = pd.DataFrame(data)
+    >>> filter_score(df, 1)
+       score_seq_1st_side  score_seq_2end_side
+    1                 1.0                  1.0
+
+            """
+    # filter input for score_seq_1st_side and score_seq_2end_side == 1
+    df_interactions_single_mapped = df_interactions[(df_interactions.score_seq_1st_side >= score_th) & (df_interactions.score_seq_2end_side >= score_th)]
+    #df_interactions_single_mapped
+    return df_interactions_single_mapped
+
+
+def delet_empty_col(df):
+    """
+    Filter dataframe filters out all rows with a emty column entry
+
+        Parameters
+        ----------
+        df : df including the containing all RRIs
+        col_name: name of to be filterd colum
+
+
+        Returns
+        -------
+        df_filtered
+            dataframes without empty column entrys
+
+
+    >>> df = pd.DataFrame({'a':[0.3,'',1,''],'b':[1,1,1,1]})
+    >>> delet_empty_col(df)
+         a  b
+    0  0.3  1
+    2  1.0  1
+            """
+    df_temp = df.replace('', np.nan)
+    df_filtered = df_temp.dropna()
+    return df_filtered
 
 def call_script(call,reprot_stdout=False):
     """
@@ -223,9 +279,6 @@ def check_convert_chr_id(chr_id):
         ----------
         chr_id: chromosme id string
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -331,67 +384,92 @@ def bed_extract_sequences_from_2bit(in_bed, out_fa, in_2bit,
 
 def check_context(df, seq_tag, chrom_dict):
     """
-    check that the extende contxt is not to short or long!
+    check that the extended context is not to short or long!
 
         Parameters
         ----------
-        df: bed df
+        df: df with added context
+        seq_tag: target or query
+        chrom_dict: dictionary storing chrmosome length {name->len,...}
 
 
         Returns
         -------
         df
             df with changed postions
-    chrom_dict = {'chr1':60,
+
+    >>> chrom_dict = {'chr1':60,
     ...         'chr2':80}
-    >>> data = {'start_1st':[0, -40, 40, -2],
+    >>> datat = {'start_1st':[0, -40, 40, -2],
     ...         'chrom_1st':['chr1', 'chr1', 'chr1', 'chr1'],
-    ...         'end_1st':[30, 60, 70, 70],
-    ...         'start_2end':[0, -40, 40, -2],
+    ...         'end_1st':[30, 60, 70, 70]}
+    >>> dataq = {'start_2end':[0, -40, 40, -2],
     ...         'end_2end':[30, 60, 70, 70],
     ...         'chrom_2end':['chr1', 'chr1', 'chr1', 'chr1']}
-    >>> df = pd.DataFrame(data)
-    >>> check_context(df, 'target', chrom_dict)
-    pd.DataFrame({'start_1st':[0, 0, 40, 0],
-    ...         'chrom_1st':['chr1', 'chr1', 'chr1', 'chr1'],
-    ...         'end_1st':[30, 60, 60, 60],
-    ...         'start_2end':[0, -40, 40, -2],
-    ...         'end_2end':[30, 60, 70, 70],
-    ...         'chrom_2end':['chr1', 'chr1', 'chr1', 'chr1']})
-    >>> check_context(df, 'query', chrom_dict)
-    pd.DataFrame({'start_1st':[0, -40, 40, -2],
-    ...         'chrom_1st':['chr1', 'chr1', 'chr1', 'chr1'],
-    ...         'end_1st':[30, 60, 70, 70],
-    ...         'start_2end':[0, 0, 40, 0],
-    ...         'end_2end':[30, 60, 60, 60],
-    ...         'chrom_2end':['chr1', 'chr1', 'chr1', 'chr1']})
+    >>> dft = pd.DataFrame(datat)
+    >>> dfq = pd.DataFrame(dataq)
+    >>> check_context(dft, 'target', chrom_dict)
+    Warning: added context to target is out of bourder for 4 instances
+       start_1st chrom_1st  end_1st
+    0          0      chr1       30
+
+    >>> check_context(dfq, 'query', chrom_dict)
+    Warning: added context to query is out of bourder for 4 instances
+       start_2end  end_2end chrom_2end
+    0           0        30       chr1
+
+
         """
+    #print(df.info())
+    #print(seq_tag)
     no_seq_out_boder = 0
     if seq_tag == 'target':
-        no_seq_out_boder += len(df[df.start_1st <=0])
-        no_seq_out_boder += len(df[df.end_1st >= df['chrom_1st'].apply(lambda x: chrom_dict[x])])
-        #df.loc[df.start_1st <= 0, 'start_1st'] = 0
-        #df.loc[df.end_1st >= df['chrom_1st'].apply(lambda x: chrom_dict[x]), 'end_1st'] = df['chrom_1st'].apply(lambda x: chrom_dict[x])
-        # delet data
-        df = df.loc[df.start_1st >= 0]
-        df = df.loc[df.end_1st <= df['chrom_1st'].apply(lambda x: chrom_dict[x])]
-
-
+        start = 'start_1st'
+        end = 'end_1st'
+        chrom = 'chrom_1st'
     elif seq_tag == 'query':
-        no_seq_out_boder += len(df[df.start_2end <=0])
-        no_seq_out_boder += len(df[df.end_2end >= df['chrom_2end'].apply(lambda x: chrom_dict[x])])
-        if no_seq_out_boder > 0:
-            print('context is not expandable:')
-            print(df[df.start_2end <=0])
-            print(df[df.end_2end >= df['chrom_2end'].apply(lambda x: chrom_dict[x])])
-        #df.loc[df.start_2end <= 0, 'start_2end'] = 0
-        #df.loc[df.end_2end >= df['chrom_2end'].apply(lambda x: chrom_dict[x]), 'end_2end'] = df['chrom_2end'].apply(lambda x: chrom_dict[x])
-        df = df.loc[df.start_2end >= 0]
-        df = df.loc[df.end_2end <= df['chrom_2end'].apply(lambda x: chrom_dict[x])]
+        start = 'start_2end'
+        end = 'end_2end'
+        chrom = 'chrom_2end'
+
+    print(df)
+    no_seq_out_boder += len(df[df[start] < 0])
+    no_seq_out_boder += len(df[df[end] > df[chrom].apply(lambda x: chrom_dict[x])])
+
+        # delet data
+    df = df.loc[df[start] >= 0]
+    df = df.loc[df[end] <= df[chrom].apply(lambda x: chrom_dict[x])]
+
     print('Warning: added context to %s is out of bourder for %i instances'%(seq_tag,no_seq_out_boder))
     return df
 
+def filter_false_chr(df, col_name):
+    """
+    If a cell of a column has False as a entry the row will be filterd out!
 
+        Parameters
+        ----------
+        df: DataFrame
+        col_name: chromosome colum name
+
+
+        Returns
+        -------
+        df_filtered
+            dataframe without rows contining False rows with the col_name column
+            df with changed postions
+
+    >>> data = {'start_1st':[0, -40, 40, -2],
+    ...         'chrom_1st':['chr1', 'False', 'chr1', 'False']}
+    >>> df = pd.DataFrame(data)
+    >>> filter_false_chr(df, 'chrom_1st')
+    (   start_1st chrom_1st
+    0          0      chr1
+    2         40      chr1, 2)
+        """
+    df_filterd = df[df[col_name] != 'False']
+    no_del_entys = len(df) - len(df_filterd)
+    return df_filterd, no_del_entys
 
 
 def get_context(seq_tag, df, out_dir, in_2bit_file, context, chrom_len_file):
@@ -410,7 +488,7 @@ def get_context(seq_tag, df, out_dir, in_2bit_file, context, chrom_len_file):
         Returns
         -------
         df
-            colum update dataframe
+            column update dataframe
 
         """
     out_bed = out_dir + seq_tag + '_out.bed'
@@ -428,8 +506,10 @@ def get_context(seq_tag, df, out_dir, in_2bit_file, context, chrom_len_file):
         df_context = check_context(df_context, seq_tag, chrom_dict)
         col_name = 'con_target'
         col_id = 'ID1'
-        df_context_filted = df_context[df_context.chrom_1st != False]
-        no_del_entys += len(df_context) - len(df_context_filted)
+        df_context_filted, count = filter_false_chr(df_context, 'chrom_1st')
+        no_del_entys += count
+        #df_context_filted = df_context[df_context.chrom_1st != False]
+        #no_del_entys += len(df_context) - len(df_context_filted)
     elif seq_tag == 'query':
         df_bed = df[['chrom_2end', 'start_2end', 'end_2end', 'ID2', 'interaction_no', 'strand_2end']].copy()
         df_bed['chrom_2end'] = df_bed['chrom_2end'].apply(lambda x: check_convert_chr_id(x))
@@ -437,8 +517,10 @@ def get_context(seq_tag, df, out_dir, in_2bit_file, context, chrom_len_file):
         df_context = check_context(df_context, seq_tag, chrom_dict)
         col_name = 'con_query'
         col_id = 'ID2'
-        df_context_filted = df_context[df_context.chrom_2end != False]
-        no_del_entys += len(df_context) - len(df_context_filted)
+        df_context_filted, count = filter_false_chr(df_context, 'chrom_2end')
+        no_del_entys += count
+        #df_context_filted = df_context[df_context.chrom_2end != False]
+        #no_del_entys += len(df_context) - len(df_context_filted)
     else:
         print('error: please specify the parameter seq_tag with target or query')
     # delet all 'False' chromosmes of in the df

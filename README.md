@@ -5,13 +5,6 @@ We are developing a tool that distinguishes between biological relevant or real 
 
 
 
-## select features
-
-#### Feature selecton tools
-- nucleotied-contens, nucleodited-skews and sequence complexety measurs
-- featurs for lncRNAs: more cis than trans binding (https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0150353)
-- feature selection using [Relief](https://doi.org/10.1016/j.jbi.2018.07.014)
-
 
 #### Features according to the Proposal: 
 - composition of the predicted duplex:
@@ -54,6 +47,56 @@ Building of the background by controling:
 - GC-content within interaction side
 - Requencies of the minimum free energy normalizedby the GC-content
 - Number of possible seeds
+
+
+
+## CheRRI build a new model:
+
+### Instalation
+
+### Usage
+
+### Backround of scripts which are wrapped
+The following scripts are needed to build the trainings data to build a model.
+
+#### 1. find_occupied_regions.py
+Here trusted RRIs are found and a library of occupyed regions are build. The occupyed reagions are the found RRIs that could greact a hybrind but with a bit looser score. 
+#### example call
+```
+python find_occupied_regions.py -i1 /vol/scratch/data/RRIs/SPLASH/ -r ChiRA_interaction_summary_hES2.tabular -o /vol/scratch/data/RRIs/
+```
+
+#### Input Parameter
+- 
+#### Output 
+-
+
+#### 2. generate_pos_neg_with_context.py
+
+#### example call
+```
+python generate_pos_neg_with_context.py -i1 /vol/scratch/data/RRIs/20211105_occ_out_hES/rri_occupied_regions_overlapTH_0.3_scoreTH_1_hES.cvs -i2 /vol/scratch/data/RRIs/20211105_occ_out_hES/occupied_regions.obj -d /vol/scratch/data/pos_neg_data_context/full_SPLASH_hES/ -g /vol/scratch/data/genomes/hg38_UCSC_20210318.2bit -n SPLASH_hES -c 150 --pos_occ -b 40 -l /vol/scratch/data/genomes/hg38_Info.tab
+```
+
+#### Input Parameter
+- 
+#### Output 
+-
+
+
+#### 3. get_features.py
+
+
+#### example call
+```
+python get_features.py -i /vol/scratch/data/pos_neg_data_context/mouse_full_c150/paris_mouse_context_150_pos_occ_neg.csv -f all -o /vol/scratch/data/features_files/full_mouse_c150_maxloop3/feature_filtered_paris_mouse_context_150_pos_occ_neg.csv
+```
+
+#### Input Parameter
+- 
+#### Output 
+-
+
 
 
 
