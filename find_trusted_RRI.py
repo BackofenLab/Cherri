@@ -868,13 +868,13 @@ def main():
                 instance = rep[5][0]
             final_output_list.append(instance)
 
-        df_output = concat_series_objects(final_output_list)
+        df_final_output = concat_series_objects(final_output_list)
 
-        print(df_output.info())
+        #print(df_output.info())
 
-        df_final_output = df_output[df_output['#reads'] >= 50]
+        #df_final_output = df_output[df_output['#reads'] >= 50]
 
-        print(df_final_output.info())
+        #print(df_final_output.info())
 
 
         # print(avg_overlap_list)

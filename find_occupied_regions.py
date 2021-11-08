@@ -178,6 +178,9 @@ def main():
     parser.add_argument("-o", "--out_path",
                         help= "path to folder storing outputfiles",
                         default="/vol/scratch/data/RRIs/")
+    parser.add_argument("-t", "--overlap_th",
+                        help= "overlap threshold",
+                        default="0.3")
 
 
 
@@ -185,16 +188,17 @@ def main():
     input_path_RRIs = args.RRI_path
     file_rbp_pos = args.rbp_path
     replicats = args.list_of_replicats
-    out_path = args. out_path
+    out_path = args.out_path
+    overlap_th = args.overlap_th
 
     timestr = time.strftime("%Y%m%d")
-    out_path = '/' + out_path + '/' + timestr + '_occ_out/'
+    out_path =  out_path + '/' + timestr + '_occ_out/'
     if not os.path.exists(out_path):
         os.mkdir(out_path)
         print('***added new folder***')
 
     # RRI thresholds
-    overlap_th = 0.3
+    # overlap_th = 0.3
     score_th = 0.5
     # RBP params
     seq_tag = '_RBP_side_'
@@ -258,12 +262,12 @@ def main():
 
     # filter rri file and save:
     output_name = 'rri_occupied_regions' + '_overlapTH_' + str(overlap_th) + '_scoreTH_1.cvs'
-    df_rris_filterd = df_rris[(df_rris.score_seq_1st_side >= 1) & (df_rris.score_seq_2end_side >= 1)]
-    df_final_output = df_rris_filterd[(
-                      (df_rris_filterd.IntaRNA_prediction != 'NA') |
-                      (df_rris_filterd['energy'] != '') |
-                      (df_rris_filterd['chrom_1st'] != False) |
-                      (df_rris_filterd['chrom_2end'] != False))]
+    # df_rris_filterd = df_rris[(df_rris.score_seq_1st_side >= 1) & (df_rris.score_seq_2end_side >= 1)]
+    df_rris_filterd = rl.filter_score(df_rris, 1)
+
+    df_rris_filterd = df_rris_filterd[df_rris_filterd['chrom_1st'] != False]
+    df_final_output = df_rris_filterd[df_rris_filterd['chrom_2end'] != False]
+
     df_final_output.to_csv(out_path + output_name, index=False)
 
 
