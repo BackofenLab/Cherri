@@ -896,9 +896,8 @@ def main():
                           'seedStart2,seedEnd2,seedE,E_hybrid,ED1,ED2')
 
         call_general = ('IntaRNA -t ' + target_seq + ' -q ' + query_seq +
-                       ' --outMode C --seedBP 5 --seedMinPu 0 --intLenMax=50 --accW 100' +
-                       ' --accL=80 --acc=C --temperature=37 --outMaxE=-5' +
-                       ' --outOverlap=B --outNumber=' + str(no_sub_opt) + ' --intLoopMax=3 ')
+                       ' --parameterFile=./IntaRNA_param.txt --outNumber=' +
+                       str(no_sub_opt))
 
         ####POSITIVE DATA##########################
         #### covert occupyed prositons:
