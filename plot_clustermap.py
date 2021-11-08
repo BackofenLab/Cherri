@@ -36,12 +36,19 @@ def main():
 
     # data:
     if compare == True:
-        pos_human = '/vol/scratch/data/features_files/full_maxloop3/features_HEK_con150/feature_filtered_paris_HEK293T_context_150_pos_occ_pos.csv'
-        neg_human = '/vol/scratch/data/features_files/full_maxloop3/features_HEK_con150/feature_filtered_paris_HEK293T_context_150_pos_occ_neg.csv'
-        pos_mouse = '/vol/scratch/data/features_files/full_mouse_c150_maxloop3/feature_mouse_con150/feature_filtered_paris_mouse_context_150_pos_occ_pos.csv'
-        neg_mouse = '/vol/scratch/data/features_files/full_mouse_c150_maxloop3/feature_mouse_con150/feature_filtered_paris_mouse_context_150_pos_occ_neg.csv'
-        pos_humanRBP = '/vol/scratch/data/features_files/full_c150_shortRBPs/human_sortRBP/feature_filtered_paris_HEK_context_150_pos_occ_pos.csv'
-        neg_humanRBP = '/vol/scratch/data/features_files/full_c150_shortRBPs/human_sortRBP/feature_filtered_paris_HEK_context_150_pos_occ_neg.csv'
+        #pos_human = '/vol/scratch/data/features_files/full_maxloop3/features_HEK_con150/feature_filtered_paris_HEK293T_context_150_pos_occ_pos.csv'
+        #neg_human = '/vol/scratch/data/features_files/full_maxloop3/features_HEK_con150/feature_filtered_paris_HEK293T_context_150_pos_occ_neg.csv'
+        #pos_mouse = '/vol/scratch/data/features_files/full_mouse_c150_maxloop3/feature_mouse_con150/feature_filtered_paris_mouse_context_150_pos_occ_pos.csv'
+        #neg_mouse = '/vol/scratch/data/features_files/full_mouse_c150_maxloop3/feature_mouse_con150/feature_filtered_paris_mouse_context_150_pos_occ_neg.csv'
+        #pos_humanRBP = '/vol/scratch/data/features_files/full_c150_shortRBPs/human_sortRBP/feature_filtered_paris_HEK_context_150_pos_occ_pos.csv'
+        #neg_humanRBP = '/vol/scratch/data/features_files/full_c150_shortRBPs/human_sortRBP/feature_filtered_paris_HEK_context_150_pos_occ_neg.csv'
+
+        pos_human = '/vol/scratch/data/features_files/full_maxloop3/feature_filtered_paris_HEK293T_context_150_pos_occ_pos.csv'
+        neg_human = '/vol/scratch/data/features_files/full_maxloop3/feature_filtered_paris_HEK293T_context_150_pos_occ_neg.csv'
+        pos_mouse = '/vol/scratch/data/features_files/full_mouse_c150_maxloop3/feature_filtered_paris_mouse_context_150_pos_occ_pos.csv'
+        neg_mouse = '/vol/scratch/data/features_files/full_mouse_c150_maxloop3/feature_filtered_paris_mouse_context_150_pos_occ_neg.csv'
+        pos_humanRBP = '/vol/scratch/data/features_files/full_c150_shortRBPs/feature_filtered_paris_HEK_context_150_pos_occ_pos.csv'
+        neg_humanRBP = '/vol/scratch/data/features_files/full_c150_shortRBPs/feature_filtered_paris_HEK_context_150_pos_occ_neg.csv'
 
         df_human_corr = get_corr_df(pos_human, neg_human)
         df_mouse_corr = get_corr_df(pos_mouse, neg_mouse)
