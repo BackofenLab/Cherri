@@ -510,7 +510,7 @@ def get_context_added(input_rris, output_path, genome_file, context, context_not
             datafram including the context appended sequences
         """
     df_RRIs = pd.read_table(input_rris, sep=",")
-    print(len(df_RRIs))
+    #print(df_RRIs)
 
     # adding context by including infors into the df
     df_RRIs = extention_df(df_RRIs)
@@ -775,6 +775,9 @@ def main():
     parser.add_argument("-b", "--block_ends",  nargs='?', type=int,
                         dest="block_ends",  default=0,
                         help= "# nts blocked at the ends of the sequence")
+    parser.add_argument("-s", "--no_sub_opt",  nargs='?', type=int,
+                        dest="no_sub_opt",  default=5,
+                        help= "# of ineractions IntraRNA will give is possible")
     parser.add_argument("-l", "--chrom_len_file",  action="store", dest="chrom_len_file",
                         required=True,
                         help= "tabular file containing chrom name \t chrom lenght for each chromosome")
@@ -790,8 +793,9 @@ def main():
     pos_occ = args.pos_occ
     block_ends = args.block_ends
     chrom_len_file = args.chrom_len_file
+    no_sub_opt = args.no_sub_opt
 
-    no_sub_opt = 5
+
     flag_all_neg = True
     flag_all_pos = True
     no_neg = False
@@ -805,7 +809,32 @@ def main():
                                                        output_path,
                                                        experiment_name)
     # load occupyed data
+    if input_occupyed == 'none':
+        # set only give out positive instances!!
+        no_neg = True
+        #occupyed_InteLab = defaultdict(InterLap)
+        file = input_rris.split('/')[-1]
+        i1 = input_rris.replace(file, "")
+        occ_file = output_path +  '/occupied_regions.obj'
+        call_occ_regions = 'python -W ignore find_occupied_regions.py -i1 ' + i1 + ' -r ' + file + ' -o ' + output_path
+        rl.call_script(call_occ_regions)
+        timestr = time.strftime("%Y%m%d")
+        out_path =  output_path + '/' + timestr + '_occ_out/'
+        input_occupyed = out_path + '/occupied_regions.obj'
+
     occupyed_InteLab = load_occupyed_data(input_occupyed)
+
+
+
+        #chrom_dict = rl.read_table_into_dic(chrom_len_file)
+        #occupyed_InteLab = defaultdict(InterLap)
+
+        #for i in chrom_dict:
+            #chrom = rl.check_convert_chr_id(i)
+            #if chrom != False:
+                #occupyed_InteLab[str(chrom) + ';+'].add((0, 0, ['empty']))
+                #occupyed_InteLab[str(chrom) + ';-'].add((0, 0, ['empty']))
+        #print(occupyed_InteLab)
 
 
     # Reporting how many instances did not lead to a result
@@ -917,6 +946,7 @@ def main():
             pos_param_occ = ' ' + pos_param_t + ' ' + pos_param_q + ' '
             call_pos = call_general + pos_param + pos_param_occ + output_columns
         else:
+            print('not using occupyed regions for pos data!')
             call_pos = call_general + pos_param + output_columns
 
         df_pos_data_old = df_pos_data

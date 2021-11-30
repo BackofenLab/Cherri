@@ -85,6 +85,34 @@ python create_trainings_data.py -i1 /vol/scratch/RNA_RNA_binding_evaluation/test
 - All data sources are in the 'Cherri_model_build/' folder. 
 
 
+#### evaluate_instance.py
+Input would need the postion of the interaction. And the genome file and a file stroing the chromosome length is needed to rund a evaluation. The evaluation script calls one after a other differen 
+
+
+#### Input format
+The instances which should be tested should be in a tabluar format. You should specify a header lines, with the chromosome interaction start interaction end and strand of the two interacting partners. 
+```
+chrom1,start1,stop1,strand1,chrom2,start2,stop2,strand2
+```
+With a specific setting only 'positve' instances are computed. If no occupyed regions are not given by using none this can be specifyed. If the occpyed regions for human or the mouse model used for training should be used specify mouse or human. 
+#### example call
+```
+python evaluate_instance.py -i1 /vol/scratch/data/RRIs/test/test_evalueat_rris.cvs -i2 none -g /vol/scratch/data/genomes/hg38_UCSC_20210318.2bit  -o /vol/scratch/data/test/ -c 150 -n test_data -l /vol/scratch/data/genomes/hg38_Info.tab
+```
+
+#### Input Parameter
+- i1 | RRIs_table: table containg all rris that should be evalutated in the corrct fromat
+- i2 | occupyed_regions: path to occupyed regions file or specify: human, mouse or none 
+- g | genome_file: path to 2bit genome file
+- o | out_path: path to folder all output folder of each step of the data preparation
+- c | context: how much context should be added at left an right of the sequence
+- n | experiment_name: name of the datasoruce of RRIs
+- l | chrom_len_file: tabular file containing chrom name \t chrom lenght for each chromosome
+
+#### Output 
+Within the output path a folder is created with the date of today used as name. 
+Within this folder the IntaRNA call results are stored in the positive_instance folder and the features are stored in the feature_files folder. 
+
 
 
 
@@ -201,6 +229,10 @@ python generate_pos_neg_with_context.py -i1 /vol/scratch/data/trusted_RRIs/test_
 - experiment_name: name of the datasoruce of positve trusted RRIs
 - genome_file: path to 2bit genome file
 - context: how much context should be added at left an right of the sequence
+- pos_occ/ no_pos_occ: if postived instances should have the occupyed positions blocked with the IntaRNA call
+- block_ends: number of blocked nucleotides at the start and end of the sequence
+- no_sub_opt: # of ineractions IntraRNA will give is possible
+- chrom_len_file: tabular file containing chrom name \t chrom lenght for each chromosome
 
 #### Output 
 - Positive and negative datasets stored in tabular format.

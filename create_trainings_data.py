@@ -1,13 +1,10 @@
 #!/usr/bin/env python
 import pandas as pd
-from collections import defaultdict
 import argparse
-from interlap import InterLap
-import subprocess
 import os
 import time
 import rrieval.lib as rl
-import pickle
+
 
 
 def main():

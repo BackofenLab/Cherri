@@ -199,7 +199,8 @@ def main():
 
     # RRI thresholds
     # overlap_th = 0.3
-    score_th = 0.5
+    #score_th = 0.5
+    score_th = 'non'
     # RBP params
     seq_tag = '_RBP_side_'
     # context added to the T-> C side giving us the RBP interaction side
@@ -222,13 +223,18 @@ def main():
     if len(replicats) == 1:
         print('only one experiment!')
         in_file = input_path_RRIs + replicats[0]
-        df_replicat = rl.read_chira_data(in_file)
-        df_filtered_replicat = rl.filter_score(df_replicat, score_th)
-        df_rris = rl.delet_empty_col(df_filtered_replicat)
+        # df_replicat = rl.read_chira_data(in_file)
+        df_replicat = rl.read_chira_data(in_file, header='yes', separater=",")
+        if score_th == 'non':
+            df_rris = df_replicat
+        else:
+            df_filtered_replicat = rl.filter_score(df_replicat, score_th)
+            df_rris = rl.delet_empty_col(df_filtered_replicat)
     else:
         rl.call_script(rri_call)
         print(rri_call)
         df_rris = rl.read_chira_data(rri_file, header='yes', separater=",")
+        out_path =  out_path_temp
     #df_rris = rl.read_chira_data(file_test, header='yes', separater=",")
     #print(df_rris)
     inter_rep_two = build_interlap_occ_sides(df_rris, 'two')
