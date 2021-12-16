@@ -12,9 +12,9 @@ def main():
     parser.add_argument("-i1", "--RRI_path",
                         help= "path to folder storing the ChiRA interaction summary files",
                         default="/vol/scratch/data/RRIs/Paris/")
-    parser.add_argument("-i2", "--rbp_path",
-                        help= "path to RBP side data file (bed format)",
-                        default="/vol/scratch/data/human_RBP_coverage/GSE38355_ProtOccProf_4SU_consensus_TC_hg38.bed")
+    #parser.add_argument("-i2", "--rbp_path",
+                        #help= "path to RBP side data file (bed format)",
+                        #default="/vol/scratch/data/human_RBP_coverage/GSE38355_ProtOccProf_4SU_consensus_TC_hg38.bed")
     parser.add_argument("-g", "--genome_file", action="store", dest="genome_file",
                         required=True, help= "path to 2bit genome file")
     parser.add_argument("-r", "--list_of_replicats", action="store",
@@ -33,17 +33,21 @@ def main():
     parser.add_argument("-l", "--chrom_len_file",  action="store", dest="chrom_len_file",
                         required=True,
                         help= "tabular file containing chrom name \t chrom lenght for each chromosome")
+    parser.add_argument("-p", "--param_file",
+                        help= "IntaRNA parameter file",
+                        default="./IntaRNA_param.txt")
 
 
     args = parser.parse_args()
     input_path_RRIs = args.RRI_path
-    file_rbp_pos = args.rbp_path
+    #file_rbp_pos = args.rbp_path
     genome_file = args.genome_file
     replicats = args.list_of_replicats
     out_path = args.out_path
     context = args.context
     experiment_name = args.experiment_name
     chrom_len_file = args.chrom_len_file
+    param_file = args.param_file
 
     overlap_th = 0.3
 
@@ -56,9 +60,10 @@ def main():
 
 
     ### Call find_occupied_regions.py ##########################################
-    occupied_regions_param = (' -i1 ' + input_path_RRIs + ' -i2 ' +
-                             file_rbp_pos + ' -r ' + ' '.join(replicats) +
-                             ' -o ' + out_path + ' -t ' + str(overlap_th))
+    occupied_regions_param = (' -i1 ' + input_path_RRIs + ' -i2 non' +
+                             ' -r ' + ' '.join(replicats) +
+                             ' -o ' + out_path + ' -t ' + str(overlap_th) +
+                             ' -s 0.5 ')
 
     call_occupied_regions = ('python -W ignore find_occupied_regions.py' +
                             occupied_regions_param)
@@ -81,7 +86,8 @@ def main():
     pos_neg_param = (' -i1 ' + trusted_rri_file + ' -i2 ' +
                     occupyed_regions_file + ' -d ' + pos_neg_out_path + ' -g ' +
                     genome_file + ' -n ' + experiment_name + ' -c ' +
-                    str(context) + ' --pos_occ -b 40  -l ' + chrom_len_file)
+                    str(context) + ' --pos_occ -b 40  -l ' + chrom_len_file +
+                    ' - p ' + param_file)
 
     call_pos_neg = ('python -W ignore generate_pos_neg_with_context.py' +
                             pos_neg_param)

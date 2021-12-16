@@ -781,6 +781,11 @@ def main():
     parser.add_argument("-l", "--chrom_len_file",  action="store", dest="chrom_len_file",
                         required=True,
                         help= "tabular file containing chrom name \t chrom lenght for each chromosome")
+    parser.add_argument("-p", "--param_file",
+                        help= "IntaRNA parameter file",
+                        default="./IntaRNA_param.txt")
+
+
 
 
     args = parser.parse_args()
@@ -794,6 +799,7 @@ def main():
     block_ends = args.block_ends
     chrom_len_file = args.chrom_len_file
     no_sub_opt = args.no_sub_opt
+    param_file = args.param_file
 
 
     flag_all_neg = True
@@ -816,7 +822,10 @@ def main():
         file = input_rris.split('/')[-1]
         i1 = input_rris.replace(file, "")
         occ_file = output_path +  '/occupied_regions.obj'
-        call_occ_regions = 'python -W ignore find_occupied_regions.py -i1 ' + i1 + ' -r ' + file + ' -o ' + output_path
+        call_occ_regions = ('python -W ignore find_occupied_regions.py -i1 ' +
+                            i1 + ' -i2 non -r ' + file + ' -o ' + output_path +
+                            ' -s non')
+        print(call_occ_regions)
         rl.call_script(call_occ_regions)
         timestr = time.strftime("%Y%m%d")
         out_path =  output_path + '/' + timestr + '_occ_out/'
@@ -925,7 +934,7 @@ def main():
                           'seedStart2,seedEnd2,seedE,E_hybrid,ED1,ED2')
 
         call_general = ('IntaRNA -t ' + target_seq + ' -q ' + query_seq +
-                       ' --parameterFile=./IntaRNA_param.txt --outNumber=' +
+                       ' --parameterFile=' + param_file + ' --outNumber=' +
                        str(no_sub_opt))
 
         ####POSITIVE DATA##########################

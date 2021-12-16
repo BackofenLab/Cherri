@@ -181,6 +181,9 @@ def main():
     parser.add_argument("-t", "--overlap_th",
                         help= "overlap threshold",
                         default="0.3")
+    parser.add_argument("-s", "--score_th",
+                        help= "score threshold",
+                        default="0.5")
 
 
 
@@ -190,6 +193,7 @@ def main():
     replicats = args.list_of_replicats
     out_path = args.out_path
     overlap_th = args.overlap_th
+    score_th = args.score_th
 
     timestr = time.strftime("%Y%m%d")
     out_path =  out_path + '/' + timestr + '_occ_out/'
@@ -200,13 +204,17 @@ def main():
     # RRI thresholds
     # overlap_th = 0.3
     #score_th = 0.5
-    score_th = 'non'
+    # score_th = 'non'
     # RBP params
     seq_tag = '_RBP_side_'
     # context added to the T-> C side giving us the RBP interaction side
     context = 5
     exp_score_th = 10
-    flag_prot = False
+    if file_rbp_pos == 'non':
+        flag_prot = False
+        print('no RBP occupyed postions given')
+    else:
+        flag_prot = True
 
     #### Get RRI data by calling find trusted RRI with a very low overlap th of 5%
     ### only take uniquly mapped reads but they do not need to be to stricke over the replicats:
@@ -234,7 +242,7 @@ def main():
         rl.call_script(rri_call)
         print(rri_call)
         df_rris = rl.read_chira_data(rri_file, header='yes', separater=",")
-        out_path =  out_path_temp
+        #out_path =  out_path_temp
     #df_rris = rl.read_chira_data(file_test, header='yes', separater=",")
     #print(df_rris)
     inter_rep_two = build_interlap_occ_sides(df_rris, 'two')

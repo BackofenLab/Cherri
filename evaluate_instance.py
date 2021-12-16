@@ -60,6 +60,9 @@ def main():
     parser.add_argument("-l", "--chrom_len_file",  action="store", dest="chrom_len_file",
                         required=True,
                         help= "tabular file containing chrom name \t chrom lenght for each chromosome")
+    parser.add_argument("-p", "--param_file",
+                        help= "IntaRNA parameter file",
+                        default="./IntaRNA_param.txt")
 
 
     args = parser.parse_args()
@@ -71,6 +74,7 @@ def main():
     context = args.context
     experiment_name = args.experiment_name
     chrom_len_file = args.chrom_len_file
+    param_file = args.param_file
 
     overlap_th = 0.3
 
@@ -138,7 +142,8 @@ def main():
     pos_neg_param = (' -i1 ' + eval_rri_file + ' -i2 ' +
                     occupyed_regions + ' -d ' + pos_neg_out_path + ' -g ' +
                     genome_file + ' -n ' + experiment_name + ' -c ' +
-                    str(context) + ' --no_pos_occ -s 1 -l ' + chrom_len_file)
+                    str(context) + ' --no_pos_occ -s 1 -l ' + chrom_len_file +
+                    ' - p ' + param_file)
 
     call_pos_neg = ('python -W ignore generate_pos_neg_with_context.py' +
                             pos_neg_param)
