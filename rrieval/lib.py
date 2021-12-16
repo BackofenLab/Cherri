@@ -5,11 +5,10 @@ import subprocess
 import random
 import re
 import os
-#from interlap import InterLap
+from interlap import InterLap
 from collections import defaultdict
 # training imports
 import csv
-import pandas as pd
 import numpy as np
 import pandas_profiling
 import sklearn as sk
@@ -22,8 +21,10 @@ from sklearn.neighbors import (KNeighborsClassifier)
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
+from sklearn.metrics import plot_confusion_matrix
+#from sklearn.linear_model import LogisticRegression
 #import xgboost
-#import pickle
+import pickle
 from sklearn.linear_model import Lasso
 #import seaborn as sns
 ###
@@ -49,7 +50,7 @@ def read_chira_data(in_file, header='no', separater="\t"):
 
     # inclued header
     if header == 'no':
-        df_temp = pd.read_table(in_file, header=None, sep=separater)
+        df_temp = pd.read_table(in_file, header=None, sep=separater, low_memory=False)
         header = ['#reads','chrom_1st','start_1st','end_1st', 'strand_1st',
                 'chrom_2end','start_2end','end_2end', 'strand_2end',
                 'ineraction_side_1st', 'ineraction_side_2end',
@@ -66,9 +67,65 @@ def read_chira_data(in_file, header='no', separater="\t"):
     # len(header)
         df_interactions = pd.DataFrame(df_temp.values, columns=header)
     elif header == 'yes':
-        df_interactions = pd.read_table(in_file, sep=separater)
+        df_interactions = pd.read_table(in_file, sep=separater, low_memory=False)
     return df_interactions
 
+
+def filter_score(df_interactions, score_th):
+    """
+    Filter dataframe for instances with a score of 1
+
+        Parameters
+        ----------
+        df_interactions : df including the containing all RRIs
+        score_th: threshold for the expactation maximization score of Chira
+
+
+        Returns
+        -------
+        df_interactions_single_mapped
+            dataframes filter for a score smaller equal threshold of both
+            interacting partners
+
+    >>> data = {'score_seq_1st_side':[0.3, 1, 0.9, 0.4],
+    ...         'score_seq_2end_side':[0.7, 1, 0.2, 0.5]}
+    >>> df = pd.DataFrame(data)
+    >>> filter_score(df, 1)
+       score_seq_1st_side  score_seq_2end_side
+    1                 1.0                  1.0
+
+            """
+    # filter input for score_seq_1st_side and score_seq_2end_side == 1
+    df_interactions_single_mapped = df_interactions[(df_interactions.score_seq_1st_side >= score_th) & (df_interactions.score_seq_2end_side >= score_th)]
+    #df_interactions_single_mapped
+    return df_interactions_single_mapped
+
+
+def delet_empty_col(df):
+    """
+    Filter dataframe filters out all rows with a emty column entry
+
+        Parameters
+        ----------
+        df : df including the containing all RRIs
+        col_name: name of to be filterd colum
+
+
+        Returns
+        -------
+        df_filtered
+            dataframes without empty column entrys
+
+
+    >>> df = pd.DataFrame({'a':[0.3,'',1,''],'b':[1,1,1,1]})
+    >>> delet_empty_col(df)
+         a  b
+    0  0.3  1
+    2  1.0  1
+            """
+    df_temp = df.replace('', np.nan)
+    df_filtered = df_temp.dropna()
+    return df_filtered
 
 def call_script(call,reprot_stdout=False):
     """
@@ -222,9 +279,6 @@ def check_convert_chr_id(chr_id):
         ----------
         chr_id: chromosme id string
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -328,13 +382,15 @@ def bed_extract_sequences_from_2bit(in_bed, out_fa, in_2bit,
     return seqs_dic
 
 
-def check_context(df, start, end, chrom_end, seq_tag):
+def check_context(df, seq_tag, chrom_dict):
     """
-    check that the extende contxt is not to short or long!
+    check that the extended context is not to short or long!
 
         Parameters
         ----------
-        df: bed df
+        df: df with added context
+        seq_tag: target or query
+        chrom_dict: dictionary storing chrmosome length {name->len,...}
 
 
         Returns
@@ -342,20 +398,81 @@ def check_context(df, start, end, chrom_end, seq_tag):
         df
             df with changed postions
 
-        """
-    if seq_tag == 'target':
-        if len(df[df.start_1st <=0]) > 0:
-            print('Warning: added context t is smaller than 0 for %i instances'%len(df[df.start_1st <=0]))
-            df.loc[df.start_1st <= 0, 'start_1st'] = 1
-    elif seq_tag == 'query':
-        if len(df[df.start_2end <=0]) > 0:
-            print('Warning: added context q is smaller than 0 for %i instances'%len(df[df.start_2end <=0]))
-            df.loc[df.start_2end <= 0, 'start_1st'] = 1
+    >>> chrom_dict = {'chr1':60,
+    ...         'chr2':80}
+    >>> datat = {'start_1st':[0, -40, 40, -2],
+    ...         'chrom_1st':['chr1', 'chr1', 'chr1', 'chr1'],
+    ...         'end_1st':[30, 60, 70, 70]}
+    >>> dataq = {'start_2end':[0, -40, 40, -2],
+    ...         'end_2end':[30, 60, 70, 70],
+    ...         'chrom_2end':['chr1', 'chr1', 'chr1', 'chr1']}
+    >>> dft = pd.DataFrame(datat)
+    >>> dfq = pd.DataFrame(dataq)
+    >>> check_context(dft, 'target', chrom_dict)
+    Warning: added context to target is out of bourder for 4 instances
+       start_1st chrom_1st  end_1st
+    0          0      chr1       30
 
+    >>> check_context(dfq, 'query', chrom_dict)
+    Warning: added context to query is out of bourder for 4 instances
+       start_2end  end_2end chrom_2end
+    0           0        30       chr1
+
+
+        """
+    #print(df.info())
+    #print(seq_tag)
+    no_seq_out_boder = 0
+    if seq_tag == 'target':
+        start = 'start_1st'
+        end = 'end_1st'
+        chrom = 'chrom_1st'
+    elif seq_tag == 'query':
+        start = 'start_2end'
+        end = 'end_2end'
+        chrom = 'chrom_2end'
+
+    print(df)
+    no_seq_out_boder += len(df[df[start] < 0])
+    no_seq_out_boder += len(df[df[end] > df[chrom].apply(lambda x: chrom_dict[x])])
+
+        # delet data
+    df = df.loc[df[start] >= 0]
+    df = df.loc[df[end] <= df[chrom].apply(lambda x: chrom_dict[x])]
+
+    print('Warning: added context to %s is out of bourder for %i instances'%(seq_tag,no_seq_out_boder))
     return df
 
+def filter_false_chr(df, col_name):
+    """
+    If a cell of a column has False as a entry the row will be filterd out!
 
-def get_context(seq_tag, df, out_dir, in_2bit_file, context):
+        Parameters
+        ----------
+        df: DataFrame
+        col_name: chromosome colum name
+
+
+        Returns
+        -------
+        df_filtered
+            dataframe without rows contining False rows with the col_name column
+            df with changed postions
+
+    >>> data = {'start_1st':[0, -40, 40, -2],
+    ...         'chrom_1st':['chr1', 'False', 'chr1', 'False']}
+    >>> df = pd.DataFrame(data)
+    >>> filter_false_chr(df, 'chrom_1st')
+    (   start_1st chrom_1st
+    0          0      chr1
+    2         40      chr1, 2)
+        """
+    df_filterd = df[df[col_name] != 'False']
+    no_del_entys = len(df) - len(df_filterd)
+    return df_filterd, no_del_entys
+
+
+def get_context(seq_tag, df, out_dir, in_2bit_file, context, chrom_len_file):
     """
     defining column with ID and empty colums to store the context sequences
 
@@ -367,38 +484,43 @@ def get_context(seq_tag, df, out_dir, in_2bit_file, context):
         in_2bit_file: genome 2bit file
         context: amout of nt that should be added on both sides
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
         df
-            colum update dataframe
+            column update dataframe
 
         """
     out_bed = out_dir + seq_tag + '_out.bed'
     out_fa = out_dir + seq_tag + '_out.fa'
+    no_del_entys = 0
+    chrom_dict = read_table_into_dic(chrom_len_file)
+    #print(chrom_dict)
     if seq_tag == 'target':
         df_bed = df[['chrom_1st', 'start_1st', 'end_1st', 'ID1', 'interaction_no', 'strand_1st']].copy()
         #print(df_bed.tail())
         df_bed['chrom_1st'] = df_bed['chrom_1st'].apply(lambda x: check_convert_chr_id(x))
+        #print(df_bed.tail())
         df_context =  add_context(df_bed, context, 'start_1st', 'end_1st')
-        df_context = check_context(df_context, 'start_1st', 'end_1st', 100000000000, seq_tag)
-        # check context!
+        #print(df_context.tail())
+        df_context = check_context(df_context, seq_tag, chrom_dict)
         col_name = 'con_target'
         col_id = 'ID1'
-        df_context_filted = df_context[df_context.chrom_1st != False]
-        no_del_entys = len(df_context) - len(df_context_filted)
+        df_context_filted, count = filter_false_chr(df_context, 'chrom_1st')
+        no_del_entys += count
+        #df_context_filted = df_context[df_context.chrom_1st != False]
+        #no_del_entys += len(df_context) - len(df_context_filted)
     elif seq_tag == 'query':
         df_bed = df[['chrom_2end', 'start_2end', 'end_2end', 'ID2', 'interaction_no', 'strand_2end']].copy()
         df_bed['chrom_2end'] = df_bed['chrom_2end'].apply(lambda x: check_convert_chr_id(x))
         df_context =  add_context(df_bed, context, 'start_2end', 'end_2end')
-        df_context = check_context(df_context, 'start_2end', 'end_2end', 100000000000, seq_tag)
+        df_context = check_context(df_context, seq_tag, chrom_dict)
         col_name = 'con_query'
         col_id = 'ID2'
-        df_context_filted = df_context[df_context.chrom_2end != False]
-        no_del_entys = len(df_context) - len(df_context_filted)
+        df_context_filted, count = filter_false_chr(df_context, 'chrom_2end')
+        no_del_entys += count
+        #df_context_filted = df_context[df_context.chrom_2end != False]
+        #no_del_entys += len(df_context) - len(df_context_filted)
     else:
         print('error: please specify the parameter seq_tag with target or query')
     # delet all 'False' chromosmes of in the df
@@ -448,6 +570,7 @@ def shuffle_sequence(seq, times, kind_of_shuffel):
 
     return seq_list
 
+
 def bp_suffeling(hybrid_seq, IntaRNA_prediction,times):
     """
     basepair shufelling of the given IntaRNA prediction
@@ -483,6 +606,7 @@ def bp_suffeling(hybrid_seq, IntaRNA_prediction,times):
 
     return shuffled_target_list, shuffled_query_list
 
+
 def encode_hybrid_by_BPs(dot_bracked, seq):
     """
     encode_hybrid_by_BPs
@@ -491,10 +615,6 @@ def encode_hybrid_by_BPs(dot_bracked, seq):
         ----------
         dot_bracked:
         seq: query
-
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -535,6 +655,7 @@ def encode_hybrid_by_BPs(dot_bracked, seq):
             print('hybrid encode error: unexpacted case')
     return tup_list
 
+
 def make_seq_from_list(suffled_list):
     """
     make_seq_from_list
@@ -543,9 +664,6 @@ def make_seq_from_list(suffled_list):
         ----------
         suffled_list:
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -640,6 +758,36 @@ def join_pos(pos_list):
         else:
             joint_pos_list.append((ns, ne))
     return joint_pos_list
+
+
+def read_table_into_dic(file):
+    """
+    Read in Table separated by \t and puts first line as key second as value
+        Parameters
+        ----------
+        file: file location ot the table file
+
+        Returns
+        -------
+        chrom_ends_dic:
+            chrom -> length
+
+    """
+    chrom_ends_dic = {}
+
+    # Open FASTA either as .gz or as text file.
+    if re.search(".+\.gz$", file):
+        f = gzip.open(file, 'rt')
+    else:
+        f = open(file, "r")
+
+    for line in f:
+        line_list = line.split("\t")
+        chrom_ends_dic[line_list[0]] = int(line_list[1].rstrip())
+    f.close()
+
+    return chrom_ends_dic
+
 
 
 
@@ -810,14 +958,75 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
     xgb_handle.close()
     return ""
 
+def base_model(in_positive_data_filepath,in_negative_data_filepath,output_path,name):
+
+    X, y = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)
+
+    #Create training and test dataset
+    X_training, X_test, y_training, y_test = model_selection.train_test_split(X, y, test_size=0.3, random_state=42)
+    ##comparison dummy model
+    cm = DummyClassifier()
+    cm.fit(X_training, y_training)
+    # prediction: “prior”: always predicts the class that maximizes the class prior (like “most_frequent”) and predict_proba returns the class prior.
+    params = cm.get_params(deep=True)
+    dummy_comparison_score = cm.score(X_test, y_test)
+    print("Dummy score: %f" %(dummy_comparison_score))
+    # save
+    dc_path = output_path + "/" + name + "_dc.obj"
+    dc_handle = open(dc_path,"wb")
+    pickle.dump(cm,dc_handle)
+    dc_handle.close()
+
+    # C-Support Vector Classification
+    svc = SVC()
+    svc.fit(X_training, y_training)
+    # mean accuracy
+    svc_comparison_score = svc.score(X_test, y_test)
+    print("Support Vector Classification score: %f" %svc_comparison_score)
+    svc_path = output_path + "/" + name + "_svc.obj"
+    svc_handle = open(svc_path,"wb")
+    pickle.dump(svc,svc_handle)
+    svc_handle.close()
+
+    #print('trainings data X:\n', X_training.info())
+    #print('trainings data y:\n', y_training.dtype)
+
+    # linear regerssion -> LIBLINEAR – A Library for Large Linear Classification
+    clf = LogisticRegression(solver='liblinear')
+    clf.fit(X_training, y_training)
+
+    logistic_regression_score = clf.score(X_test, y_test)
+    print("LogisticRegression score: %f" %(logistic_regression_score))
+    clf_path = output_path + "/" + name + "_clf.obj"
+    clf_handle = open(clf_path,"wb")
+    pickle.dump(clf,clf_handle)
+    clf_handle.close()
+
+    return ""
+
+
 def classify(in_data_filepath,in_model_filepath,output_path):
     X = pd.read_csv(in_data_filepath, sep=',')
     model_handle = open(in_model_filepath,'rb')
     model = pickle.load(model_handle)
     model_handle.close()
     y_pred=model.predict(X)
+    print('model predictions')
     print(y_pred)
     return y_pred
+
+def classify2(X,in_model_filepath,score_flag):
+    model_handle = open(in_model_filepath,'rb')
+    model = pickle.load(model_handle)
+    model_handle.close()
+    y_pred = model.predict(X)
+    if score_flag == 'proba':
+        y_score = model.predict_proba(X)
+    elif score_flag == 'decision':
+        y_score = model.decision_function(X)
+    #print('model predictions')
+    #print(y_pred)
+    return model, y_pred, y_score
 
 def param_optimize(in_positive_data_filepath,in_negative_data_filepath,output_path):
     X, y = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)

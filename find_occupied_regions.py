@@ -108,6 +108,61 @@ def join_pos(pos_list):
     return joint_pos_list
 
 
+def count_entrys(inter_obj, name):
+    """
+    count enteys of inter lap object and prints the the counts
+
+        Parameters
+        ----------
+        inter_obj : inter lap object
+        name: name of the data in object
+
+    """
+    count = 0
+    for key in inter_obj:
+        count += len(list(inter_obj[key]))
+        # print(key)
+        # print(list(inter_rri[key]))
+    print('##########')
+    print('entrys in list ',name, ' are: ' , count)
+
+
+def get_prot_occ_regions(file_rbp_pos, exp_score_th, context):
+    """
+    get_prot_occ_regions
+
+        Parameters
+        ----------
+        file_rbp_pos :
+        exp_score_th:
+        context:
+
+        Returns
+        -------
+        inter_rbp
+
+
+    """
+    header = ['chrom', 'start', 'end', 'info', 'score', 'strand']
+    df_bed_temp = pd.read_table(file_rbp_pos, header=None, sep="\t")
+    df_bed = pd.DataFrame(df_bed_temp.values, columns=header)
+
+    # filter by sorcre
+    #print(df_bed)
+    df_bed = df_bed[df_bed.score >= exp_score_th]
+    #print(df_bed)
+
+    # check that chorm starts with chr
+    df_bed['chrom'] = df_bed['chrom'].apply(lambda x: rl.check_convert_chr_id(x))
+    # add context
+    df_context =  rl.add_context(df_bed, context, 'start', 'end')
+    #print(df_context)
+
+    inter_rep_one = build_interlap_occ_sides(df_context, 'one')
+    inter_rbp = rl.mearge_overlaps(inter_rep_one, 'rbp')
+    return inter_rbp
+
+
 def main():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument("-i1", "--RRI_path",
@@ -123,6 +178,12 @@ def main():
     parser.add_argument("-o", "--out_path",
                         help= "path to folder storing outputfiles",
                         default="/vol/scratch/data/RRIs/")
+    parser.add_argument("-t", "--overlap_th",
+                        help= "overlap threshold",
+                        default="0.3")
+    parser.add_argument("-s", "--score_th",
+                        help= "score threshold",
+                        default="0.5")
 
 
 
@@ -130,21 +191,30 @@ def main():
     input_path_RRIs = args.RRI_path
     file_rbp_pos = args.rbp_path
     replicats = args.list_of_replicats
-    out_path = args. out_path
+    out_path = args.out_path
+    overlap_th = args.overlap_th
+    score_th = args.score_th
 
     timestr = time.strftime("%Y%m%d")
-    out_path = '/' + out_path + '/' + timestr + '_occ_out/'
+    out_path =  out_path + '/' + timestr + '_occ_out/'
     if not os.path.exists(out_path):
         os.mkdir(out_path)
+        print('***added new folder***')
 
     # RRI thresholds
-    overlap_th = 0.3
-    score_th = 0.5
+    # overlap_th = 0.3
+    #score_th = 0.5
+    # score_th = 'non'
     # RBP params
     seq_tag = '_RBP_side_'
     # context added to the T-> C side giving us the RBP interaction side
-    context = 20
+    context = 5
     exp_score_th = 10
+    if file_rbp_pos == 'non':
+        flag_prot = False
+        print('no RBP occupyed postions given')
+    else:
+        flag_prot = True
 
     #### Get RRI data by calling find trusted RRI with a very low overlap th of 5%
     ### only take uniquly mapped reads but they do not need to be to stricke over the replicats:
@@ -158,81 +228,44 @@ def main():
     rri_file = (out_path + 'rri_occupied_regions_overlap_' +
                 str(overlap_th) + '.cvs')
 
-    rl.call_script(rri_call)
-
-    #print(rri_call)
-    #file_test =  '/vol/scratch/data/trusted_RRIs/paris_HEK293T_overlap_0.6_snoRNA.cvs'
-    df_rris = rl.read_chira_data(rri_file, header='yes', separater=",")
+    if len(replicats) == 1:
+        print('only one experiment!')
+        in_file = input_path_RRIs + replicats[0]
+        # df_replicat = rl.read_chira_data(in_file)
+        df_replicat = rl.read_chira_data(in_file, header='yes', separater=",")
+        if score_th == 'non':
+            df_rris = df_replicat
+        else:
+            df_filtered_replicat = rl.filter_score(df_replicat, score_th)
+            df_rris = rl.delet_empty_col(df_filtered_replicat)
+    else:
+        rl.call_script(rri_call)
+        print(rri_call)
+        df_rris = rl.read_chira_data(rri_file, header='yes', separater=",")
+        #out_path =  out_path_temp
     #df_rris = rl.read_chira_data(file_test, header='yes', separater=",")
     #print(df_rris)
     inter_rep_two = build_interlap_occ_sides(df_rris, 'two')
-
-
-    #for key in inter_rep_two:
-        #print(key)
-        #print(list(inter_rep_two[key]))
-
-    ####### Get protein data
-
-    ## Read protein data in bed format
-    header = ['chrom', 'start', 'end', 'info', 'score', 'strand']
-    df_bed_temp = pd.read_table(file_rbp_pos, header=None, sep="\t")
-    df_bed = pd.DataFrame(df_bed_temp.values, columns=header)
-
-    # filter by sorcre
-    #print(df_bed)
-    df_bed = df_bed[df_bed.score >= exp_score_th]
-    #print(df_bed)
-
-
-    # check that chorm starts with chr
-    df_bed['chrom'] = df_bed['chrom'].apply(lambda x: rl.check_convert_chr_id(x))
-    # add context
-    df_context =  rl.add_context(df_bed, context, 'start', 'end')
-    #print(df_context)
-
-    inter_rep_one = build_interlap_occ_sides(df_context, 'one')
-    # print('$$$$$$$$$$')
-    # for key in inter_rep_one:
-    #     print(key)
-    #     print([(i[0],i[1]) for i in list(inter_rep_one[key])])
-    # print('$$$$$$$$$$')
     inter_rri = rl.mearge_overlaps(inter_rep_two, 'rri')
-    inter_rbp = rl.mearge_overlaps(inter_rep_one, 'rbp')
 
 #check data:
     print('##RRI results ###')
-    count2 = 0
-    for key in inter_rep_two:
-        count2 += len(list(inter_rep_two[key]))
-        #print(key)
-        #print([(i[0],i[1]) for i in list(inter_rep_two[key])])
-    print('##########')
-    print('entrys in List rri: %i' %count2)
+    count_entrys(inter_rri, 'rri')
 
-    count3 = 0
-    for key in inter_rbp:
-        count3 += len(list(inter_rbp[key]))
-        # print(key)
-        # print(list(inter_rbp[key]))
-    print('##########')
-    print('entrys in List rbp: %i' %count3)
+    ####### Get protein data
+    if flag_prot:
+        inter_rbp = get_prot_occ_regions(file_rbp_pos, exp_score_th, context)
+        print('##RBP results ###')
+        count_entrys(inter_rbp, 'rbp')
 
+        # add the two inter laps together
+        for key in inter_rri:
+            if key in inter_rbp:
+                inter_rri[key].add(list(inter_rbp[key]))
 
-
-    # add the two inter laps together
-    for key in inter_rri:
-        if key in inter_rbp:
-            inter_rri[key].add(list(inter_rbp[key]))
-
-    #check data:
-    count = 0
-    for key in inter_rri:
-        count += len(list(inter_rri[key]))
-        # print(key)
-        # print(list(inter_rri[key]))
-    print('##########')
-    print('entrys in List both: %i' %count)
+        #check data:
+        print('##Results of both lists###')
+        count_entrys(inter_rri, 'both')
 
     # save files
     or_path = out_path + "/occupied_regions.obj"
@@ -240,6 +273,16 @@ def main():
     pickle.dump(inter_rri,or_handle)
     or_handle.close()
     print('object contining InteLab object with start and end postions:\n%s'%or_path)
+
+    # filter rri file and save:
+    output_name = 'rri_occupied_regions' + '_overlapTH_' + str(overlap_th) + '_scoreTH_1.cvs'
+    # df_rris_filterd = df_rris[(df_rris.score_seq_1st_side >= 1) & (df_rris.score_seq_2end_side >= 1)]
+    df_rris_filterd = rl.filter_score(df_rris, 1)
+
+    df_rris_filterd = df_rris_filterd[df_rris_filterd['chrom_1st'] != False]
+    df_final_output = df_rris_filterd[df_rris_filterd['chrom_2end'] != False]
+
+    df_final_output.to_csv(out_path + output_name, index=False)
 
 
 

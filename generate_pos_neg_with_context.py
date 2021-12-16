@@ -165,10 +165,12 @@ def convert_positions(s_seq, e_seq, s_side, e_side, strand):
         new_s_side
             one based start postion of occupied side
      >>> convert_positions(20,30,22,24,'+')
-     3-5
+     [3, 4]
      >>> convert_positions(20,30,12,34,'+')
-     1-11
-
+     Warning: full context is overlaped
+     [1, 10]
+     >>> convert_positions(20,30,22,24,'+')
+     [3, 4]
         """
     # check than side are outside the sequence
     if (s_side <= s_seq) or (e_side >= e_seq):
@@ -287,12 +289,15 @@ def get_neg_pos_intarna_str(occupied_regions, neg_param, pos_s, pos_e):
 
 def join_result_and_infos(df, lost_inst, row, list_rows_add):
     """
-    join_result_and_infos
+    The function checks whether IntaRNA could predict anything. If it did
+    than additional infomation are appende to the inarna results staming from
+    the original trusted RRI instace. This additional coulum naes are stored
+    in the list_rows_add list.
 
         Parameters
         ----------
         df: IntaRNA result df
-        lost_inst: list of colum names to add
+        lost_inst: no of already lost instances
         row: row of RRI dataframe
         list_rows_add: header line for to extract from row
 
@@ -310,6 +315,7 @@ def join_result_and_infos(df, lost_inst, row, list_rows_add):
         return df, lost_inst
     else:
         val = {}
+        # appeding information for the RRI that is not predicted by IntaRNA
         for col_n in list_rows_add:
             #print(col_n)
             val[col_n] = [row[col_n]]*len(df)
@@ -365,6 +371,12 @@ def get_pos_occ_list(seq_s, seq_e, seed_s, seed_e, strand, converted_occ_list):
         -------
         pos_occ_list
             list not containing seed postions
+        >>> get_pos_occ_list(1, 100, 50, 59, '+', [(2,10),(55,60),(62,70)])
+        [(2, 10), (62, 70)]
+        >>> get_pos_occ_list(1, 100, 30, 40, '+', [(30,40)])
+        []
+        >>> get_pos_occ_list(1, 100, 30, 40, '+', [(25,30), (39,45), (60,70)])
+        [(60, 70)]
         """
     seed_pos = convert_positions(seq_s, seq_e, seed_s, seed_e, strand)
     pos_occ_list = []
@@ -438,40 +450,305 @@ def decode_IntaRNA_call(call, lost_inst, row, list_rows_add, df_data, no_sub_opt
 
         Parameters
         ----------
-        call_pos:
-        lost_inst:
-        row:
+        call: IntaRNA call
+        lost_inst: no of lost instances so fare
+        row: infos of the curren RRI (line of df)
         list_rows_add:
-        df_data:
-        no_sub_opt:
-        no_less_sub_opt:
+        df_data: df contining the already calculated training instances
+        no_sub_opt: suboptimals that should reported by IntaRNA if possible
+        no_less_sub_opt: no of suboptimals that could not be predicted
 
         Returns
         -------
-        new_occ_list
-            list with updated postions
+        df_data
+            calculated instaces including the new prediction if prediction was sucessfull
+        lost_inst
+            number of lost instaces so fare. Inceased of one if prediction failed
+        no_less_sub_opt
+            no of suboptimal that could not be predicted so fare!
         """
     out = rl.call_script(call,reprot_stdout=True)
     #print(call)
     df = decode_Intarna_output(out)
     #print(df)
+    # reset the indix of the df and avoid the old index being added as a column
     df = df.reset_index(drop=True)
 
-    df_result_pos, lost_inst_new = join_result_and_infos(df,
+    df_result, lost_inst_new = join_result_and_infos(df,
                                                          lost_inst,
                                                          row, list_rows_add)
     if lost_inst < lost_inst_new:
-        #print('lost instace')
+        # IntaRNA could not predict anything!
         lost_inst = lost_inst_new
     else:
         #print('instace appended to data')
         # check if found all number of subotpimals
-        if no_sub_opt != len(df_result_pos):
-            print('Warning IntaRNA could not find %i interaction but %i interactions for a particular call'%(no_sub_opt, len(df_result_pos)))
-            no_less_sub_opt += 1
+        if no_sub_opt != len(df_result):
+            print('Warning IntaRNA could not find %i interaction but %i interactions for a particular call'%(no_sub_opt, len(df_result)))
+            no_less_sub_opt += no_sub_opt - len(df_result)
 
-        df_data = pd.concat([df_data, df_result_pos])
+        df_data = pd.concat([df_data, df_result])
     return df_data, lost_inst, no_less_sub_opt
+
+
+def get_context_added(input_rris, output_path, genome_file, context, context_not_full,context_file,chrom_len_file):
+    """
+    get_context
+
+        Parameters
+        ----------
+        input_rris:
+        output_path:
+        genome_file:
+        context:
+        context_not_full:
+        context_file:
+
+        Returns
+        -------
+        df_contex
+            datafram including the context appended sequences
+        """
+    df_RRIs = pd.read_table(input_rris, sep=",")
+    #print(df_RRIs)
+
+    # adding context by including infors into the df
+    df_RRIs = extention_df(df_RRIs)
+    df_target = rl.get_context('target', df_RRIs, output_path,
+                                genome_file, context, chrom_len_file)
+        #print(df_target)
+    df_context_seq = rl.get_context('query', df_target, output_path,
+                                    genome_file, context, chrom_len_file)
+        # print(df_context)
+
+
+    df_filted_RRIs, context_not_full = check_context_extention(df_context_seq,
+                                                               context,
+                                                               output_path,
+                                                               context_not_full)
+    #### context added df saved!
+
+    df_contex = get_context_pos(df_filted_RRIs, context, 'start_1st',
+                                    'end_1st', 'target')
+    df_contex = get_context_pos(df_contex, context, 'start_2end',
+                                    'end_2end', 'query')
+
+    df_contex['chrom_1st'] = df_contex['chrom_1st'].apply(lambda x: rl.check_convert_chr_id(x))
+    df_contex['chrom_2end'] = df_contex['chrom_2end'].apply(lambda x: rl.check_convert_chr_id(x))
+
+    df_contex['target_key'] =  df_contex['chrom_1st'].astype(str)+ ';' + df_contex['strand_1st'].astype(str)
+    df_contex['query_key'] =  df_contex['chrom_2end'].astype(str)+ ';' + df_contex['strand_2end'].astype(str)
+
+    df_contex.to_csv(context_file, index=False)
+    return df_contex
+
+
+def load_occupyed_data(input_occupyed):
+    """
+    load occupyed data
+
+        Parameters
+        ----------
+        input_occupyed: input file path
+
+        Returns
+        -------
+        occupyed_InteLab: Interlab object of occupyed regions
+        """
+    overlap_handle = open(input_occupyed,'rb')
+    occupyed_InteLab = pickle.load(overlap_handle)
+    # print(overlap_avg_val)
+    overlap_handle.close()
+    return occupyed_InteLab
+
+
+def get_occ_regions(target_key, query_key, target_pos_s,target_pos_e, occupyed_InteLab, query_pos_s,query_pos_e,strand_t, strand_q, block_ends, target_seed_s, target_seed_e, query_seed_s, query_seed_e):
+    """
+    get_occ_regions
+
+        Parameters
+        ----------
+        target_key:
+        query_key:
+        target_pos_s:
+        target_pos_e:
+        occupyed_InteLab:
+        query_pos_s:
+        query_pos_e:
+        strand_t:
+        strand_q:
+        block_ends:
+        target_seed_s:
+        target_seed_e:
+        query_seed_s:
+        query_seed_e:
+
+
+        Returns
+        -------
+        pos_param_t:
+        pos_param_q:
+        neg_param_t:
+        neg_param_q:
+        """
+    occupied_regions_target = find_occu_overlaps(target_key,
+                                                 target_pos_s,target_pos_e,
+                                                 occupyed_InteLab)
+    occupied_regions_query = find_occu_overlaps(query_key,
+                                                query_pos_s,query_pos_e,
+                                                occupyed_InteLab)
+
+    # covert occupyed prositons:
+    new_occupied_reg_t, pos_occ_list_t = convert_occu_positons(target_pos_s,
+                                               target_pos_e,
+                                               occupied_regions_target,
+                                               strand_t, block_ends,
+                                               target_seed_s, target_seed_e)
+    new_occupied_reg_q, pos_occ_list_q = convert_occu_positons(query_pos_s,
+                                               query_pos_e,
+                                               occupied_regions_query,
+                                               strand_q, block_ends,
+                                               query_seed_s, query_seed_e)
+
+    if pos_occ_list_t:
+        pos_param_t = get_neg_pos_intarna_str(pos_occ_list_t, '--tAccConstr=\"b:', target_pos_s, target_pos_e)
+    else:
+        pos_param_t = ''
+    if pos_occ_list_q:
+        pos_param_q = get_neg_pos_intarna_str(pos_occ_list_q, '--qAccConstr=\"b:', query_pos_s, query_pos_e)
+    else:
+        pos_param_q= ''
+
+    neg_param_t = get_neg_pos_intarna_str(new_occupied_reg_t, '--tAccConstr=\"b:', target_pos_s, target_pos_e)
+    neg_param_q = get_neg_pos_intarna_str(new_occupied_reg_q, '--qAccConstr=\"b:', query_pos_s, query_pos_e)
+    if neg_param_t == '' or neg_param_q == '':
+        print('Warining: full sequence is occupyed!')
+        full_seq_occ += 1
+        return '', '', '', ''
+    return pos_param_t, pos_param_q, neg_param_t, neg_param_q
+
+
+def report(context_not_full,full_seq_occ,no_neg,lost_inst_pos,lost_inst_neg,no_less_sub_opt_pos,no_less_sub_opt_neg):
+    """
+    Repots number of lost sequences
+
+        Parameters
+        ----------
+        context_not_full:
+        full_seq_occ:
+        neg_param:
+        lost_inst_pos:
+        lost_inst_neg:
+        no_less_sub_opt_pos:
+        no_less_sub_opt_neg:
+
+        """
+    print('####\nContext could not be extended for %i sequences'%context_not_full)
+    print('####\nFor %i sequences target and or query is full occupyed'%full_seq_occ)
+
+    print('####\nIntaRNA calls failed:')
+    print('%i number of positive IntaRNA calls did not lead to a result'%lost_inst_pos)
+    if not no_neg:
+        print('%i number of negative IntaRNA calls did not lead to a result'%lost_inst_neg)
+
+
+    print('####\nNumber of sequences haveing not all suboptimals:')
+    print('%i number of positive IntaRNA calls not all suboptimals'%no_less_sub_opt_pos)
+    if not no_neg:
+        print('%i number of negative IntaRNA calls not all suboptimals'%no_less_sub_opt_neg)
+
+
+def get_context_file_name(context, pos_occ, block_ends, output_path, experiment_name):
+    """
+    get_context_file_name
+
+        Parameters
+        ----------
+        context:
+        pos_occ:
+        block_ends:
+        output_path:
+        experiment_name:
+
+        Returns
+        -------
+        context_file: all no of instaces (trusted rris)
+        """
+    context_info = '_context_' +  str(context)
+    if pos_occ:
+        print('%%%%%\nIntaRNA calls including occupied regions for pos and neg instances!!!!\n%%%%%')
+        context_info = context_info + '_pos_occ_'
+    out_info =  '_block_ends_' +  str(block_ends) + '_'
+    context_file = (output_path + experiment_name +  context_info + out_info +
+                    'RRI_dataset.csv')
+    return context_file, context_info
+
+
+def get_report_steps(df_contex):
+    """
+    get_report_steps
+
+        Parameters
+        ----------
+        df_contex: datafram continig all instances that will be computed
+
+        Returns
+        -------
+        data_100: all no of instaces (trusted rris)
+        data_25: 25 % of number of instances
+        data_50: 50 % of number of instances
+        date_75: 75 % of number of instances
+        """
+    data_100 = len(df_contex)
+    data_25 = int(data_100*25/100)
+    data_50 = int(data_100*50/100)
+    date_75 = int(data_100*75/100)
+    return data_100, data_25, data_50, date_75
+
+def print_status(index, data_100, data_25, data_50, date_75):
+    """
+    Report status of the call!
+
+        Parameters
+        ----------
+        index:
+        data_100: all no of instaces (trusted rris)
+        data_25: 25 % of number of instances
+        data_50: 50 % of number of instances
+        date_75: 75 % of number of instances
+
+        """
+    if (index+1) == data_100:
+        print('***\n full data (%i sequences)\n****' %(data_100))
+    elif (index+1) == data_25:
+        print('***\n25 percent of the data (%i sequences)\n****' %(data_25))
+    elif (index+1) == data_50:
+        print('***\n50 percent of the data (%i sequences)\n****' %(data_50))
+    elif (index+1) == date_75:
+        print('***\n75 percent of the data (%i sequences)\n****' %(date_75))
+
+    # header:
+def get_header():
+    """
+    gets df header and header for IntaRNA call
+
+        Returns
+        ----------
+        index:
+        header: df header
+        list_rows_add: output format for IntaRNA call
+
+
+        """
+    list_rows_add = ['score_seq_1st_side', 'score_seq_2end_side',
+                     'biotype_region_1st', 'biotype_region_2end',
+                     'ID_1st','ID_2end','con_target','con_query',
+                     'target_con_s','target_con_e','query_con_s',
+                     'query_con_e', 'target_key', 'query_key']
+    intaRNA_col_name = 'id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E,seedStart1,seedEnd1,seedStart2,seedEnd2,seedE,E_hybrid,ED1,ED2'
+    list_intaRNA_col_name = intaRNA_col_name.split(',')
+    header = list_intaRNA_col_name + list_rows_add
+    return header, list_rows_add
 
 
 def main():
@@ -498,6 +775,17 @@ def main():
     parser.add_argument("-b", "--block_ends",  nargs='?', type=int,
                         dest="block_ends",  default=0,
                         help= "# nts blocked at the ends of the sequence")
+    parser.add_argument("-s", "--no_sub_opt",  nargs='?', type=int,
+                        dest="no_sub_opt",  default=5,
+                        help= "# of ineractions IntraRNA will give is possible")
+    parser.add_argument("-l", "--chrom_len_file",  action="store", dest="chrom_len_file",
+                        required=True,
+                        help= "tabular file containing chrom name \t chrom lenght for each chromosome")
+    parser.add_argument("-p", "--param_file",
+                        help= "IntaRNA parameter file",
+                        default="./IntaRNA_param.txt")
+
+
 
 
     args = parser.parse_args()
@@ -509,102 +797,81 @@ def main():
     context = args.context
     pos_occ = args.pos_occ
     block_ends = args.block_ends
+    chrom_len_file = args.chrom_len_file
+    no_sub_opt = args.no_sub_opt
+    param_file = args.param_file
 
-    no_sub_opt = 5
+
     flag_all_neg = True
     flag_all_pos = True
+    no_neg = False
     #block_ends = 20
     # pos_occ = False
+    #chrom_len_file = '/vol/scratch/data/genomes/mm10.chrom.sizes'
+    #chrom_len_file = '/vol/scratch/data/genomes/hg38_Info.tab'
 
-    context_info = '_context_' +  str(context)
-    if pos_occ:
-        print(pos_occ)
-        print('%%%%%\npos occ on!!!!\n%%%%%')
-        context_info = context_info + '_pos_occ_'
-    out_info =  '_block_ends_' +  str(block_ends) + '_'
-    context_file = (output_path + experiment_name +  context_info + out_info +
-                    'RRI_dataset.csv')
-
+    context_file, context_info = get_context_file_name(context, pos_occ,
+                                                       block_ends,
+                                                       output_path,
+                                                       experiment_name)
     # load occupyed data
-    overlap_handle = open(input_occupyed,'rb')
-    occupyed_InteLab = pickle.load(overlap_handle)
-    # print(overlap_avg_val)
-    overlap_handle.close()
+    if input_occupyed == 'none':
+        # set only give out positive instances!!
+        no_neg = True
+        #occupyed_InteLab = defaultdict(InterLap)
+        file = input_rris.split('/')[-1]
+        i1 = input_rris.replace(file, "")
+        occ_file = output_path +  '/occupied_regions.obj'
+        call_occ_regions = ('python -W ignore find_occupied_regions.py -i1 ' +
+                            i1 + ' -i2 non -r ' + file + ' -o ' + output_path +
+                            ' -s non')
+        print(call_occ_regions)
+        rl.call_script(call_occ_regions)
+        timestr = time.strftime("%Y%m%d")
+        out_path =  output_path + '/' + timestr + '_occ_out/'
+        input_occupyed = out_path + '/occupied_regions.obj'
 
+    occupyed_InteLab = load_occupyed_data(input_occupyed)
+
+
+
+        #chrom_dict = rl.read_table_into_dic(chrom_len_file)
+        #occupyed_InteLab = defaultdict(InterLap)
+
+        #for i in chrom_dict:
+            #chrom = rl.check_convert_chr_id(i)
+            #if chrom != False:
+                #occupyed_InteLab[str(chrom) + ';+'].add((0, 0, ['empty']))
+                #occupyed_InteLab[str(chrom) + ';-'].add((0, 0, ['empty']))
+        #print(occupyed_InteLab)
+
+
+    # Reporting how many instances did not lead to a result
     context_not_full = 0
-
-
-    if os.path.isfile(context_file):
-        df_contex = pd.read_table(context_file, sep=",")
-        #df_pos_RRIs_result = inial_df()
-        #df_neg_RRIs_result = inial_df()
-        print('used existing context file: %s'%(context_file))
-    else:
-        df_RRIs = pd.read_table(input_rris, sep=",")
-
-        # adding context by including infors into the df
-        df_RRIs = extention_df(df_RRIs)
-        df_target = rl.get_context('target', df_RRIs, output_path,
-                                   genome_file, context)
-        #print(df_target)
-        df_context_seq = rl.get_context('query', df_target, output_path,
-                                        genome_file, context)
-        # print(df_context)
-
-
-        df_filted_RRIs, context_not_full = check_context_extention(df_context_seq,
-                                                                   context,
-                                                                   output_path,
-                                                                   context_not_full)
-        #### context added df saved!
-
-
-        df_contex = get_context_pos(df_filted_RRIs, context, 'start_1st',
-                                    'end_1st', 'target')
-        df_contex = get_context_pos(df_contex, context, 'start_2end',
-                                    'end_2end', 'query')
-
-        #df_contex['target_key'] = (''.join(df_contex['chrom_1st'].astype(str)+ ';' + df_contex['strand_1st'].astype(str)))
-        #df_contex['query_key'] = (''.join(df_contex['chrom_2end'].astype(str)+ ';' + df_contex['strand_2end'].astype(str)))
-
-        df_contex['chrom_1st'] = df_contex['chrom_1st'].apply(lambda x: rl.check_convert_chr_id(x))
-        df_contex['chrom_2end'] = df_contex['chrom_2end'].apply(lambda x: rl.check_convert_chr_id(x))
-
-        df_contex['target_key'] =  df_contex['chrom_1st'].astype(str)+ ';' + df_contex['strand_1st'].astype(str)
-        df_contex['query_key'] =  df_contex['chrom_2end'].astype(str)+ ';' + df_contex['strand_2end'].astype(str)
-        #print(df_contex['target_key'])
-
-        #print(df_contex)
-        df_contex.to_csv(context_file, index=False)
-
-        print('***\ncontext is appende pos and negative data generation is starting:\n****')
-
-
-
-    ## Generate report steps:
-    data_100 = len(df_contex)
-    data_25 = int(data_100*25/100)
-    data_50 = int(data_100*50/100)
-    date_75 = int(data_100*75/100)
-
     lost_inst_pos = 0
     lost_inst_neg = 0
     no_less_sub_opt_pos = 0
     no_less_sub_opt_neg = 0
     full_seq_occ = 0
-    # header:
-    list_rows_add = ['score_seq_1st_side', 'score_seq_2end_side',
-                     'biotype_region_1st', 'biotype_region_2end',
-                     'ID_1st','ID_2end','con_target','con_query',
-                     'target_con_s','target_con_e','query_con_s',
-                     'query_con_e', 'target_key', 'query_key']
-    intaRNA_col_name = 'id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E,seedStart1,seedEnd1,seedStart2,seedEnd2,seedE,E_hybrid,ED1,ED2'
-    list_intaRNA_col_name = intaRNA_col_name.split(',')
-    header = list_intaRNA_col_name + list_rows_add
+
+    ####### Context ###########
+    if os.path.isfile(context_file):
+        df_contex = pd.read_table(context_file, sep=",")
+        print('used existing context file: %s'%(context_file))
+    else:
+        df_contex = get_context_added(input_rris, output_path, genome_file, context, context_not_full, context_file,chrom_len_file)
+        print('***\ncontext is appende pos and negative data generation is starting:\n****')
+
+
+    ### prepare calling ########################
+    data_100, data_25, data_50, date_75 = get_report_steps(df_contex)
+
+    header, list_rows_add = get_header()
 
     df_pos_data = pd.DataFrame(columns=header)
     df_neg_data = pd.DataFrame(columns=header)
 
+    ### Start producing training instances ###########
     for index, row in df_contex.iterrows():
         # sequences
         target_seq = row['con_target']
@@ -631,6 +898,12 @@ def main():
         #t_id = t_chr + ';' + strand_t
         #q_id = q_chr + ';' + strand_q
 
+        ########### Interacting sequeces
+        #print('### RRI Interacting sequeces ########')
+        #print('target inter seq: ',row['ineraction_side_1st'])
+        #print('target inter seq: ',row['ineraction_side_2end'])
+
+
         ########### find places which are occupyed
         #print('### RRI strands ########')
         #print('target side infos: ',strand_t)
@@ -649,61 +922,26 @@ def main():
 
         ##### occupyed regions:
 
-        occupied_regions_target = find_occu_overlaps(row['target_key'],
-                                                     target_pos_s,target_pos_e,
-                                                     occupyed_InteLab)
-        occupied_regions_query = find_occu_overlaps(row['query_key'],
-                                                    query_pos_s,query_pos_e,
-                                                    occupyed_InteLab)
-
-        # covert occupyed prositons:
-        new_occupied_reg_t, pos_occ_list_t = convert_occu_positons(target_pos_s, target_pos_e,
-                                                   occupied_regions_target,
-                                                   strand_t, block_ends,
-                                                   target_seed_s, target_seed_e)
-        new_occupied_reg_q, pos_occ_list_q = convert_occu_positons(query_pos_s, query_pos_e,
-                                                   occupied_regions_query,
-                                                   strand_q, block_ends,
-                                                   query_seed_s, query_seed_e)
-
-
-        # get strings for call!
-        #print('pos occ list')
-        #print(pos_occ_list_t)
-        if pos_occ_list_t:
-            pos_param_t = get_neg_pos_intarna_str(pos_occ_list_t, '--tAccConstr=\"b:', target_pos_s, target_pos_e)
-        else:
-            pos_param_t = ''
-        if pos_occ_list_q:
-            pos_param_q = get_neg_pos_intarna_str(pos_occ_list_q, '--qAccConstr=\"b:', query_pos_s, query_pos_e)
-        else:
-            pos_param_q= ''
-        neg_param_t = get_neg_pos_intarna_str(new_occupied_reg_t, '--tAccConstr=\"b:', target_pos_s, target_pos_e)
-        neg_param_q = get_neg_pos_intarna_str(new_occupied_reg_q, '--qAccConstr=\"b:', query_pos_s, query_pos_e)
-        if neg_param_t == '' or neg_param_q == '':
-            print('Warining: full sequence is occupyed!')
-            full_seq_occ += 1
+        pos_param_t, pos_param_q, neg_param_t, neg_param_q = get_occ_regions(row['target_key'], row['query_key'], target_pos_s,target_pos_e, occupyed_InteLab, query_pos_s,query_pos_e,strand_t, strand_q, block_ends, target_seed_s, target_seed_e, query_seed_s, query_seed_e)
+        if not neg_param_t:
+            # this instance will be ignored!
             continue
-
         #print(occupied_regions_target)
 
         ####### IntaRNA_call preparation: ######################
         output_columns = ('--outCsvCols id1,start1,end1,id2,start2,end2,' +
                           'subseqDP,hybridDP,E,seedStart1,seedEnd1,' +
                           'seedStart2,seedEnd2,seedE,E_hybrid,ED1,ED2')
-        # call_general = ('IntaRNA -t ' + target_seq + ' -q ' + query_seq +
-        #                ' --outMode C --seedBP 5 --seedMinPu 0 --accW 150' +
-        #                ' --acc N --temperature=37 --outMaxE=-5' +
-        #                ' --outOverlap=B ')
+
         call_general = ('IntaRNA -t ' + target_seq + ' -q ' + query_seq +
-                       ' --outMode C --seedBP 5 --seedMinPu 0 --intLenMax=50 --accW 100' +
-                       ' --accL=80 --acc=C --temperature=37 --outMaxE=-5' +
-                       ' --outOverlap=B --outNumber=' + str(no_sub_opt) + ' ')
+                       ' --parameterFile=' + param_file + ' --outNumber=' +
+                       str(no_sub_opt))
 
         ####POSITIVE DATA##########################
         #### covert occupyed prositons:
         t_seed_pos_new = convert_positions(target_pos_s, target_pos_e,
-                                           target_seed_s, target_seed_e, strand_t)
+                                           target_seed_s, target_seed_e,
+                                           strand_t)
         q_seed_pos_new = convert_positions(query_pos_s, query_pos_e,
                                            query_seed_s, query_seed_e, strand_q)
 
@@ -711,13 +949,13 @@ def main():
         pos_param = (' --seedQRange='+ str(q_seed_pos_new[0]) + '-' +
                      str(q_seed_pos_new[1]) + ' --seedTRange=' +
                      str(t_seed_pos_new[0]) + '-' +
-                     str(t_seed_pos_new[1]) + ' ')
-
+                     str(t_seed_pos_new[1]) + ' --seedMaxE=0 ')
 
         if pos_occ:
             pos_param_occ = ' ' + pos_param_t + ' ' + pos_param_q + ' '
             call_pos = call_general + pos_param + pos_param_occ + output_columns
         else:
+            print('not using occupyed regions for pos data!')
             call_pos = call_general + pos_param + output_columns
 
         df_pos_data_old = df_pos_data
@@ -731,70 +969,55 @@ def main():
 
         ####NEGATIV DATA##########################
 
-        neg_param = ' ' + neg_param_t + ' ' + neg_param_q + ' '
+        if not no_neg:
+            neg_param = ' ' + neg_param_t + ' ' + neg_param_q + ' '
 
-        call_neg = call_general + neg_param + output_columns
-        #print('call neg data:\n%s'%call_neg)
-        #print('lost instaces last call:%i\nthis call:%i'%(lost_inst_pos,lost_inst_pos_new))
-        if lost_inst_pos_new == lost_inst_pos:
-            df_neg_data, lost_i_neg_new, no_less_sub_opt_neg = decode_IntaRNA_call(call_neg,
-                                                         lost_inst_neg, row,
-                                                         list_rows_add,
-                                                         df_neg_data,
-                                                         no_sub_opt,
-                                                         no_less_sub_opt_neg)
-            #print('losst neg?: ', lost_i_neg_new)
-            #print('neg instaces:',len(df_neg_data))
-            #print('pos instaces:',len(df_pos_data))
-        elif lost_inst_pos_new > lost_inst_pos and flag_all_neg:
-            lost_inst_pos = lost_inst_pos_new
-            print('appeded neg data although pos data is not fully found!')
-            df_neg_data, lost_i_neg_new, no_less_sub_opt_neg = decode_IntaRNA_call(call_neg,
-                                                         lost_inst_neg, row,
-                                                         list_rows_add,
-                                                         df_neg_data,
-                                                         no_sub_opt,
-                                                         no_less_sub_opt_neg)
-            #print('neg instaces:',len(df_neg_data))
-            #print('pos instaces:',len(df_pos_data))
-        elif lost_inst_pos_new > lost_inst_pos:
-            print('negative data not appended because positive not all suboptimals')
-            lost_inst_pos = lost_inst_pos_new
+            call_neg = call_general + neg_param + output_columns
+            #print('call neg data:\n%s'%call_neg)
+            #print('lost instaces last call:%i\nthis call:%i'%(lost_inst_pos,lost_inst_pos_new))
+            if lost_inst_pos_new == lost_inst_pos:
+                df_neg_data, lost_i_neg_new, no_less_sub_opt_neg = decode_IntaRNA_call(call_neg,
+                                                             lost_inst_neg, row,
+                                                             list_rows_add,
+                                                             df_neg_data,
+                                                             no_sub_opt,
+                                                             no_less_sub_opt_neg)
+            elif lost_inst_pos_new > lost_inst_pos and flag_all_neg:
+                print('appeded neg data although pos data is not found!')
+                print('call pos data:\n%s'%call_pos)
+                print('call neg data:\n%s'%call_neg)
+                df_neg_data, lost_i_neg_new, no_less_sub_opt_neg = decode_IntaRNA_call(call_neg,
+                                                             lost_inst_neg, row,
+                                                             list_rows_add,
+                                                             df_neg_data,
+                                                             no_sub_opt,
+                                                             no_less_sub_opt_neg)
+                #print('neg instaces:',len(df_neg_data))
+                #print('pos instaces:',len(df_pos_data))
+            elif lost_inst_pos_new > lost_inst_pos:
+                print('negative data not appended because positive not all suboptimals')
 
-        if not flag_all_pos and lost_i_neg_new > lost_inst_neg:
-            df_pos_data = df_pos_data_old
-            lost_inst_neg = lost_i_neg_new
-        elif lost_i_neg_new > lost_inst_neg:
-            lost_inst_neg = lost_i_neg_new
+            # if negative instance could not be computed check if postive should be ignored
+            if not flag_all_pos and lost_i_neg_new > lost_inst_neg:
+                df_pos_data = df_pos_data_old
+                lost_inst_neg = lost_i_neg_new
+            elif lost_i_neg_new > lost_inst_neg:
+                lost_inst_neg = lost_i_neg_new
+        lost_inst_pos = lost_inst_pos_new
 
 
-        if (index+1) == data_100:
-            print('***\n full data (%i sequences)\n****' %(data_100))
-        elif (index+1) == data_25:
-            print('***\n25 percent of the data (%i sequences)\n****' %(data_25))
-        elif (index+1) == data_50:
-            print('***\n50 percent of the data (%i sequences)\n****' %(data_50))
-        elif (index+1) == date_75:
-            print('***\n75 percent of the data (%i sequences)\n****' %(date_75))
+        print_status(index, data_100, data_25, data_50, date_75)
 
     #print(df_result_neg['start1'], df_result_neg['end1'])
     #print(df_pos_data['start1'],  df_result_neg['end1'])
     result_file = output_path + experiment_name +  context_info
-    df_neg_data.to_csv(result_file + 'neg.csv', index=False)
-    df_pos_data.to_csv(result_file + 'pos.csv', index=False)
+    if no_neg:
+        df_pos_data.to_csv(result_file + 'pos.csv', index=False)
+    else:
+        df_neg_data.to_csv(result_file + 'neg.csv', index=False)
+        df_pos_data.to_csv(result_file + 'pos.csv', index=False)
 
-    #### Report
-    print('####\nContext could not be extended for %i sequences'%context_not_full)
-    print('####\nFor %i sequences target and or query is full occupyed'%full_seq_occ)
-
-    print('####\nIntaRNA calls failed:')
-    print('%i number of positive IntaRNA calls did not lead to a result'%lost_inst_pos)
-    print('%i number of negative IntaRNA calls did not lead to a result'%lost_inst_neg)
-
-
-    print('####\nNuber of sequences haveing not all suboptimals:')
-    print('%i number of positive IntaRNA calls not all suboptimals'%no_less_sub_opt_pos)
-    print('%i number of negative IntaRNA calls not all suboptimals'%no_less_sub_opt_neg)
+    report(context_not_full,full_seq_occ,no_neg,lost_inst_pos,lost_inst_neg,no_less_sub_opt_pos,no_less_sub_opt_neg)
 
 
 if __name__ == '__main__':
