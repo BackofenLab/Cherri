@@ -10,7 +10,7 @@ with open('LICENSE') as f:
     license = f.read()
 
 setup(
-    name='Cherri',
+    name='cherri',
     version='0.1',
     description='Cherri is a tool for classification of RNA RNA interactions.',
     long_description=readme,

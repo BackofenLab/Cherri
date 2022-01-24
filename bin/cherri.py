@@ -1,9 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import pandas as pd
 import argparse
 import os
 import re
 import time
+import sys
 import rrieval.lib as rl
 
 # from peakhood import hoodlib
@@ -61,9 +62,9 @@ def setup_argument_parser():
     """
     Context extraction mode.
     """
-    p_ex = subparsers.add_parser('evaluate',
+    p_ex = subparsers.add_parser('eval',
                                   help='evaluate or classify RRI')
-    p_ex.set_defaults(which='evaluate')
+    p_ex.set_defaults(which='eval')
     # Add required arguments group.
     p_exm = p_ex.add_argument_group("required arguments")
     # Required arguments for evaluate.
@@ -77,18 +78,14 @@ def setup_argument_parser():
                        required=True,
                        help= "Genomic sequences .2bit file")
     p_exm.add_argument("-o", "--out_path",
-                       dest="list_bam",
-                       required = True,
+                       required=True,
                        help= "path to folder all output folder of each step of the data preparation")
     p_exm.add_argument("-l", "--chrom_len_file",
                        action="store",
                        dest="chrom_len_file",
                        required=True,
                        help= "tabular file containing chrom name \t chrom lenght for each chromosome")
-    p_exm.add_argument("-p", "--param_file",
-                       dest="param_file",
-                       required = True,
-                       help= "IntaRNA parameter file")
+
 
     # Optional arguments for evaluate.
     p_ex.add_argument("-i2", "--occupyed_regions",
@@ -98,53 +95,71 @@ def setup_argument_parser():
                       nargs='?',
                       type=int,
                       dest="context",
-                      default=5,
+                      default=50,
                       help= "how much context should be added at left an right of the sequence")
     p_ex.add_argument("-n", "--experiment_name",
                       action="store",
                       dest="experiment_name",
                       default='eval_rri',
                       help= "name of the datasoruce of RRIs")
+    p_ex.add_argument("-p", "--param_file",
+                       dest="param_file",
+                       default="../IntaRNA_param.txt",
+                       help= "IntaRNA parameter file")
 
 
     """
-    Build a model form new data: training
+    Build a model form new data: train
     """
-    p_mrg = subparsers.add_parser('training',
+    p_mrg = subparsers.add_parser('train',
                                   help='Build a model form new data: training')
-    p_mrg.set_defaults(which='training')
+    p_mrg.set_defaults(which='train')
     # Add required arguments group.
     p_mrgm = p_mrg.add_argument_group("required arguments")
     # Required arguments for merge.
-    p_mrgm.add_argument("-i1", "--RRI_path", required=True,
+    p_mrgm.add_argument("-i1", "--RRI_path",
+                        required=True,
                         help= "path to folder storing the ChiRA interaction summary files",
                         default="/vol/scratch/data/RRIs/Paris/")
     #p_mrgm.add_argument("-i2", "--rbp_path",
                         #help= "path to RBP side data file (bed format)",
                         #default="/vol/scratch/data/human_RBP_coverage/GSE38355_ProtOccProf_4SU_consensus_TC_hg38.bed")
-    p_mrgm.add_argument("-o", "--out_path", required=True,
-                        help= "path to folder all output folder of each step of the data preparation",
-                        default="/vol/scratch/data/RRIs/")
-    p_mrgm.add_argument("-r", "--list_of_replicats", action="store",
+    p_mrgm.add_argument("-o", "--out_path",
+                        required=True,
+                        help= "path to folder all output folder of each step of the data preparation")
+    p_mrgm.add_argument("-r", "--list_of_replicats",
+                        action="store",
+                        required=True,
                         nargs='+',
-                        dest="list_of_replicats", required=True,
+                        dest="list_of_replicats",
                         help= "list ChiRA interaction summary files names of all replicats")
-    p_mrgm.add_argument("-l", "--chrom_len_file",  action="store", dest="chrom_len_file",
+    p_mrgm.add_argument("-l", "--chrom_len_file",
+                        action="store",
+                        dest="chrom_len_file",
                         required=True,
                         help= "tabular file containing chrom name \t chrom lenght for each chromosome")
-    p_mrgm.add_argument("-g", "--genome_file", action="store", dest="genome_file",
-                        required=True, help= "path to 2bit genome file")
+    p_mrgm.add_argument("-g", "--genome_file",
+                        action="store",
+                        dest="genome_file",
+                        required=True,
+                        help= "path to 2bit genome file")
 
     # Optional arguments for merge.
-    p_mrg.add_argument("-c", "--context",  nargs='?', type=int,
-                        dest="context",  default=5,
-                        help= "how much context should be added at left an right of the sequence")
-    p_mrg.add_argument("-n", "--experiment_name", action="store",
-                        dest="experiment_name", default='model_rri',
-                        help= "name of the datasoruce of RRIs")
+    p_mrg.add_argument("-c", "--context",
+                       nargs='?',
+                       type=int,
+                       dest="context",
+                       default=50,
+                       help= "how much context should be added at left an right of the sequence")
+    p_mrg.add_argument("-n", "--experiment_name",
+                       action="store",
+                       dest="experiment_name",
+                       default='model_rri',
+                       help= "name of the datasoruce of RRIs")
     p_mrg.add_argument("-p", "--param_file",
-                        help= "IntaRNA parameter file",
-                        default="../IntaRNA_param.txt")
+                       dest="param_file",
+                       help= "IntaRNA parameter file",
+                       default="../IntaRNA_param.txt")
 
     return p
 
@@ -186,7 +201,7 @@ def read_RRI_table(file):
 
 
 
-def main_evaluate(args):
+def main_eval(args):
     """
 
     Useful output:
@@ -279,7 +294,7 @@ def main_evaluate(args):
                     occupyed_regions + ' -d ' + pos_neg_out_path + ' -g ' +
                     genome_file + ' -n ' + experiment_name + ' -c ' +
                     str(context) + ' --no_pos_occ -s 1 -l ' + chrom_len_file +
-                    ' - p ' + param_file)
+                    ' -p ' + param_file)
 
     call_pos_neg = ('python -W ignore generate_pos_neg_with_context.py' +
                             pos_neg_param)
@@ -306,7 +321,7 @@ def main_evaluate(args):
 
 ################################################################################
 
-def main_training(args):
+def main_train(args):
     """
     Generat a model
 
@@ -393,6 +408,9 @@ def main_training(args):
     rl.call_script(call_neg_feature)
 
 
+    # Convert function from biofilm to prepare data?
+
+
 
 ################################################################################
 
@@ -408,15 +426,15 @@ if __name__ == '__main__':
 
 
     # Are my tools ready?
-    assert hoodlib.is_tool("bedtools"), "bedtools not in PATH"
-    assert hoodlib.is_tool("twoBitToFa"), "twoBitToFa not in PATH"
-    assert hoodlib.is_tool("twoBitInfo"), "twoBitInfo not in PATH"
+    #assert hoodlib.is_tool("bedtools"), "bedtools not in PATH"
+    #assert hoodlib.is_tool("twoBitToFa"), "twoBitToFa not in PATH"
+    #assert hoodlib.is_tool("twoBitInfo"), "twoBitInfo not in PATH"
 
     # Run selected mode.
-    if args.which == 'evaluate':
-        main_evaluate(args)
-    elif args.which == 'training':
-        main_training(args)
+    if args.which == 'eval':
+        main_eval(args)
+    elif args.which == 'train':
+        main_train(args)
 
 
 
