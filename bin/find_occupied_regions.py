@@ -223,7 +223,7 @@ def main():
     rri_call_param = ('-i ' + input_path_RRIs + ' -r ' + ' '.join(replicats) + ' -o ' +
                      str(overlap_th) +' -n rri_occupied_regions -d ' + out_path+
                      ' -s ' +  str(score_th))
-    rri_call  = 'python -W ignore find_trusted_RRI.py '  + rri_call_param
+    rri_call  = 'find_trusted_RRI.py '  + rri_call_param
 
     rri_file = (out_path + 'rri_occupied_regions_overlap_' +
                 str(overlap_th) + '.cvs')

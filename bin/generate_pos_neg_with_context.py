@@ -290,8 +290,8 @@ def get_neg_pos_intarna_str(occupied_regions, neg_param, pos_s, pos_e):
 def join_result_and_infos(df, lost_inst, row, list_rows_add):
     """
     The function checks whether IntaRNA could predict anything. If it did
-    than additional infomation are appende to the inarna results staming from
-    the original trusted RRI instace. This additional coulum naes are stored
+    than additional infomation are appende to the IntaRNA results staming from
+    the original trusted RRI instace. This additional coulum nans are stored
     in the list_rows_add list.
 
         Parameters
@@ -309,13 +309,14 @@ def join_result_and_infos(df, lost_inst, row, list_rows_add):
         lost_inst
             number of instances lost
         """
-
+    print(df)
     if df['hybridDP'][0] == 'nan':
         lost_inst += 1
+        #print('one nan')
         return df, lost_inst
     else:
         val = {}
-        # appeding information for the RRI that is not predicted by IntaRNA
+        # information of RRI is prepared to attach to predictions by IntaRNA
         for col_n in list_rows_add:
             #print(col_n)
             val[col_n] = [row[col_n]]*len(df)
@@ -473,6 +474,7 @@ def decode_IntaRNA_call(call, lost_inst, row, list_rows_add, df_data, no_sub_opt
     #print(df)
     # reset the indix of the df and avoid the old index being added as a column
     df = df.reset_index(drop=True)
+    #print(df)
 
     df_result, lost_inst_new = join_result_and_infos(df,
                                                          lost_inst,
@@ -822,7 +824,7 @@ def main():
         file = input_rris.split('/')[-1]
         i1 = input_rris.replace(file, "")
         occ_file = output_path +  '/occupied_regions.obj'
-        call_occ_regions = ('python -W ignore find_occupied_regions.py -i1 ' +
+        call_occ_regions = ('find_occupied_regions.py -i1 ' +
                             i1 + ' -i2 non -r ' + file + ' -o ' + output_path +
                             ' -s non')
         print(call_occ_regions)

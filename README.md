@@ -6,7 +6,91 @@ Sofare we developed models base on the human and mouse RNA-RNA interactiom.
 Futher more the option of training a novel model basted on RNA-RNA interactom data is given.
 
 
-### Instalation
+## Instalation
+
+Cherri developed in Linux and tested on Ubuntu (18.04 LTS). For the installation on your conda is requierd. 
+
+
+### Install Conda
+
+If you do not have Conda yet, you can e.g. install miniconda, a free + lightweight Conda installer. Get miniconda [here](https://docs.conda.io/en/latest/miniconda.html), choose the Python 3.8 Miniconda3 Linux 64-bit installer and follow the installation instructions. In the end, Conda should be evocable on the command line via (possibly in a more advanced version):
+
+```
+$ conda --version
+conda 4.10.1
+```
+
+### Install Cherri Conda package 
+
+
+Cherri is available as a Conda package [here](https://anaconda.org/bioconda/).
+
+We recommend to create a new Conda environment inside which we will then install cherri:
+
+```
+conda create -n cherri python=3.8 cherri -c conda-forge -c bioconda
+```
+Or install it into your faivorint existing enviorment
+```
+conda install -c bioconda cherri
+```
+
+If you are experiencing problems while running `conda install -c bioconda cherri` (e.g. complaints about conflicting dependencies), the following commands should do the trick:
+
+```
+conda config --add channels bioconda
+conda config --add channels conda-forge
+```
+
+This tells conda to explicitly look for packages in the specified channels, stored in the `.condarc` [conda configuration file](https://conda.io/projects/conda/en/latest/user-guide/configuration/use-condarc.html).
+
+
+Now Cherri should be available inside the environment:
+
+
+```
+cherri -h
+```
+
+### Manual installation
+
+To manually install Cherri, we first create a Conda environment. Once inside the environment, we need to install the following dependencies:
+
+```
+conda create -n cherri python=3.8 -c conda-forge -c bioconda
+conda activate cherri
+```
+
+And than install the following dependencies:
+
+```
+
+conda install -c conda-forge markdown
+conda install -c bioconda ucsc-twobitinfo
+conda install -c bioconda ucsc-twobittofa
+conda install -c bioconda IntaRNA
+
+conda create -n test_biofilm -c smautner -c conda-forge -c bioconda biofilm scipy networkx
+
+pip install eden-kernel
+```
+
+Cherri was tested with the following versions: . 
+Finally, to install the tool itself, we simply clone the repository and execute the installation script inside the folder:
+
+```
+git clone https://github.com/teresa-m/Cherri.git
+cd Cherri
+python -m pip install . --ignore-installed --no-deps -vv 
+```
+
+Now we can run Cherri from any given folder (just remember to re-activate the environment once you open a new shell):
+
+```
+cherri -h
+```
+
+
 
 ### Usage
 You can use Cherri in two modes. The first mode to prdict weather your RRI prediction biolocical relevant. You can used the current model for human or mouse data. If you would like build a model based on novel RRI interactome data you can use the seciond mode.

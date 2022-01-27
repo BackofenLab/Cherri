@@ -6,6 +6,7 @@ import re
 import time
 import sys
 import rrieval.lib as rl
+#from rrieval import lib as rl
 
 # from peakhood import hoodlib
 # from peakhood.hoodlib import extract_multicore_wrapper
@@ -104,7 +105,7 @@ def setup_argument_parser():
                       help= "name of the datasoruce of RRIs")
     p_ex.add_argument("-p", "--param_file",
                        dest="param_file",
-                       default="../IntaRNA_param.txt",
+                       default="not_set",
                        help= "IntaRNA parameter file")
 
 
@@ -159,7 +160,7 @@ def setup_argument_parser():
     p_mrg.add_argument("-p", "--param_file",
                        dest="param_file",
                        help= "IntaRNA parameter file",
-                       default="../IntaRNA_param.txt")
+                       default="not_set")
 
     return p
 
@@ -229,6 +230,11 @@ def main_eval(args):
 
     overlap_th = 0.3
 
+    if param_file == 'not_set':
+        lib_path = os.path.dirname(rl.__file__)
+        param_file = lib_path + "/IntaRNA_param/IntaRNA_param.txt"
+
+
     # define output folder
     timestr = time.strftime("%Y%m%d")
     out_path = '/' + out_path + '/' + timestr + '_Cherri_evaluating_RRIs/'
@@ -296,7 +302,7 @@ def main_eval(args):
                     str(context) + ' --no_pos_occ -s 1 -l ' + chrom_len_file +
                     ' -p ' + param_file)
 
-    call_pos_neg = ('python -W ignore generate_pos_neg_with_context.py' +
+    call_pos_neg = ('generate_pos_neg_with_context.py' +
                             pos_neg_param)
     print('Positive and negative instaces call:')
     print(call_pos_neg)
@@ -313,7 +319,7 @@ def main_eval(args):
 
 
     pos_feature_param = ' -i ' + file_pos + ' -f all -o ' + feature_pos
-    call_pos_feature = 'python -W ignore get_features.py' + pos_feature_param
+    call_pos_feature = 'get_features.py' + pos_feature_param
     print('Positive feature call:')
     print(call_pos_feature)
     rl.call_script(call_pos_feature)
@@ -337,6 +343,10 @@ def main_train(args):
     chrom_len_file = args.chrom_len_file
     param_file = args.param_file
 
+    if param_file == 'not_set':
+        lib_path = os.path.dirname(rl.__file__)
+        param_file = lib_path + "/IntaRNA_param/IntaRNA_param.txt"
+
     overlap_th = 0.3
 
     # define output folder
@@ -353,7 +363,7 @@ def main_train(args):
                              ' -o ' + out_path + ' -t ' + str(overlap_th) +
                              ' -s 0.5 ')
 
-    call_occupied_regions = ('python -W ignore find_occupied_regions.py' +
+    call_occupied_regions = ('find_occupied_regions.py' +
                             occupied_regions_param)
     print('occupyed regions call:')
     print(call_occupied_regions)
@@ -375,9 +385,9 @@ def main_train(args):
                     occupyed_regions_file + ' -d ' + pos_neg_out_path + ' -g ' +
                     genome_file + ' -n ' + experiment_name + ' -c ' +
                     str(context) + ' --pos_occ -b 40  -l ' + chrom_len_file +
-                    ' - p ' + param_file)
+                    ' -p ' + param_file)
 
-    call_pos_neg = ('python -W ignore generate_pos_neg_with_context.py' +
+    call_pos_neg = ('generate_pos_neg_with_context.py' +
                             pos_neg_param)
     print('Positive and negative instaces call:')
     print(call_pos_neg)
@@ -396,13 +406,13 @@ def main_train(args):
                   '_pos_occ_neg.csv')
 
     pos_feature_param = ' -i ' + file_pos + ' -f all -o ' + feature_pos
-    call_pos_feature = 'python -W ignore get_features.py' + pos_feature_param
+    call_pos_feature = 'get_features.py' + pos_feature_param
     print('Positive feature call:')
     print(call_pos_feature)
     rl.call_script(call_pos_feature)
 
     neg_feature_param = ' -i ' + file_neg + ' -f all -o ' + feature_neg
-    call_neg_feature = 'python -W ignore get_features.py' + neg_feature_param
+    call_neg_feature = 'get_features.py' + neg_feature_param
     print('Negative feature call:')
     print(call_neg_feature)
     rl.call_script(call_neg_feature)
