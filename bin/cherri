@@ -6,10 +6,7 @@ import re
 import time
 import sys
 import rrieval.lib as rl
-#from rrieval import lib as rl
 
-# from peakhood import hoodlib
-# from peakhood.hoodlib import extract_multicore_wrapper
 
 __version__ = "0.1"
 
@@ -23,15 +20,15 @@ __version__ = "0.1"
 Check out available modes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-peakhood -h
+cherri -h
 
 
 ~~~~~~~~~~~~~
 Run doctests
 ~~~~~~~~~~~~~
 
-cd peakhood
-python3 -m doctest hoodlib.py
+cd rrieval
+python3 -m doctest lib.py
 
 
 """
@@ -44,7 +41,7 @@ def setup_argument_parser():
     # Tool description text.
     help_description = """
 
-    Classification predicted of RNA RNA Interactions (RRI)
+    Classification of predicted RNA-RNA Interactions (RRI)
 
     """
 
@@ -61,10 +58,10 @@ def setup_argument_parser():
     subparsers = p.add_subparsers(help='Program modes')
 
     """
-    Context extraction mode.
+    Evlauate predicted RRIs: evaluations mode.
     """
     p_ex = subparsers.add_parser('eval',
-                                  help='evaluate or classify RRI')
+                                  help='classify predicted RRI')
     p_ex.set_defaults(which='eval')
     # Add required arguments group.
     p_exm = p_ex.add_argument_group("required arguments")
@@ -107,10 +104,22 @@ def setup_argument_parser():
                        dest="param_file",
                        default="not_set",
                        help= "IntaRNA parameter file")
-
+    p_ex.add_argument("-m", "--model_file",
+                       dest="model_file",
+                       default="not_set",
+                       help= "set if a new model created with train module")
+    p_ex.add_argument("-mp", "--model_params",
+                       dest="model_params",
+                       default="not_set",
+                       help= "set path to feature file of new model if model_file is changed")
+    p_ex.add_argument("-st", "--use_structure",
+                       dest="use_structure",
+                       default="on",
+                       help= "set off if you want to disable structure")
+model_params
 
     """
-    Build a model form new data: train
+    Build a model form new data: trainings mode
     """
     p_mrg = subparsers.add_parser('train',
                                   help='Build a model form new data: training')
@@ -161,6 +170,10 @@ def setup_argument_parser():
                        dest="param_file",
                        help= "IntaRNA parameter file",
                        default="not_set")
+    p_mrg.add_argument("-st", "--use_structure",
+                       dest="use_structure",
+                       default="on",
+                       help= "set off if you want to disable structure")
 
     return p
 
@@ -209,11 +222,27 @@ def main_eval(args):
 
     """
 
-    print("Running for you in EXTRACT mode ... ")
+    print("Running for you in EVALUATION mode ... ")
 
 
     """
     Output files.
+    - date_Cherri_evaluation_mode
+    -- evaluate_RRIs.table
+    |
+    -- positive_instance
+    --- test_eval_context_{context}pos.csv
+    |
+    --- date_occ_out
+    ---- occupied_regions.obj
+    ---- rri_occupied_regions_overlapTH_0.3_scoreTH_1.cvs
+    |
+    -- feature_files
+    --- feature_filtered_test_eval_context_150_pos.csv
+    --- training_data_test_eval_context_150.npz
+    |
+    -- evaluation
+    --- evaluation_results
 
     """
 
@@ -227,12 +256,27 @@ def main_eval(args):
     experiment_name = args.experiment_name
     chrom_len_file = args.chrom_len_file
     param_file = args.param_file
+    use_structure = args.use_structure
+    model_file = args.model_file
 
     overlap_th = 0.3
 
     if param_file == 'not_set':
         lib_path = os.path.dirname(rl.__file__)
         param_file = lib_path + "/IntaRNA_param/IntaRNA_param.txt"
+
+    if model_file == 'not_set':
+        lib_path = os.path.dirname(rl.__file__)
+        model_file = lib_path + "/model/test_train_context_50.model"
+        model_params = lib_path + '/model/test_train_context_50.npz'
+    else:
+        if not os.path.exists(model_file):
+            print('Error: please set the path to your model or keep not_set')
+        if model_params == 'not_set':
+            print('Error: please set the path to your feature file of your model')
+        if not os.path.exists(model_params):
+            print('Error: please set the path to your feature file of your model')
+
 
 
     # define output folder
@@ -294,7 +338,9 @@ def main_eval(args):
 
     #### Call pos data call #########################################
     pos_neg_out_path = out_path + 'positive_instance/'
-    os.mkdir(pos_neg_out_path)
+    #os.mkdir(pos_neg_out_path)
+    if not os.path.exists(pos_neg_out_path):
+        os.mkdir(pos_neg_out_path)
 
     pos_neg_param = (' -i1 ' + eval_rri_file + ' -i2 ' +
                     occupyed_regions + ' -d ' + pos_neg_out_path + ' -g ' +
@@ -311,7 +357,9 @@ def main_eval(args):
 
     ### Call get_features.py ###################################################
     feature_out_path = out_path + 'feature_files/'
-    os.mkdir(feature_out_path)
+    if not os.path.exists(feature_out_path):
+        os.mkdir(feature_out_path)
+
     midel_name =  experiment_name + '_context_' + str(context)
     file_pos = pos_neg_out_path + midel_name + 'pos.csv'
     feature_pos = (feature_out_path +  'feature_filtered_' + midel_name +
@@ -324,14 +372,51 @@ def main_eval(args):
     print(call_pos_feature)
     rl.call_script(call_pos_feature)
 
+    ### Add structure ###################################################
+    feat_output = f'{feature_out_path}training_data_{midel_name}'
+
+    df_data = pd.read_csv(feature_pos, sep=',')
+    df_data['label'] = '?'
+    y = df_data.label
+    X = df_data.drop(columns="label")
+
+
+    if use_structure == 'ON' or use_structure == 'on':
+        X,y = rl.convert(X, y , feat_output, graphfeatures=True)
+        print('?c. Compute structure feature:')
+    elif use_structure == 'OFF' or use_structure == 'off':
+        X,y = rl.convert(X, y, feat_output)
+
+
+    ### Predict ###########################################################
+    eval_path =  f'{out_path}/evaluation/'
+    if not os.path.exists(eval_path):
+        os.mkdir(eval_path)
+    X_filterd = rl.filter_features(X,model_params)
+    #print(X_filterd.info())
+    df_eval = rl.classify(X_filterd,model_file, f'{eval_path}evaluation_results')
+
 
 ################################################################################
 
 def main_train(args):
+
     """
+
     Generat a model
 
     """
+
+    print("Running for you in TRAININGS mode ... ")
+
+
+    """
+    Output files:
+
+    """
+
+
+
     args = parser.parse_args()
     input_path_RRIs = args.RRI_path
     #file_rbp_pos = args.rbp_path
@@ -342,6 +427,10 @@ def main_train(args):
     experiment_name = args.experiment_name
     chrom_len_file = args.chrom_len_file
     param_file = args.param_file
+    use_structure = args.use_structure
+
+
+
 
     if param_file == 'not_set':
         lib_path = os.path.dirname(rl.__file__)
@@ -365,8 +454,8 @@ def main_train(args):
 
     call_occupied_regions = ('find_occupied_regions.py' +
                             occupied_regions_param)
-    print('occupyed regions call:')
-    print(call_occupied_regions)
+    print('1. find occupyed regions:')
+    #print(call_occupied_regions)
     rl.call_script(call_occupied_regions)
 
     # output:
@@ -376,7 +465,8 @@ def main_train(args):
 
     #### Call find_occupied_regions.py #########################################
     pos_neg_out_path = out_path + 'pos_neg_data/'
-    os.mkdir(pos_neg_out_path)
+    if not os.path.exists(pos_neg_out_path):
+        os.mkdir(pos_neg_out_path)
     trusted_rri_file = (occupyed_outfile + 'rri_occupied_regions_overlapTH_' +
                        str(overlap_th) + '_scoreTH_1.cvs')
     occupyed_regions_file =  occupyed_outfile + 'occupied_regions.obj'
@@ -389,14 +479,15 @@ def main_train(args):
 
     call_pos_neg = ('generate_pos_neg_with_context.py' +
                             pos_neg_param)
-    print('Positive and negative instaces call:')
-    print(call_pos_neg)
+    print('2. Compute positive and negative instaces:')
+    #print(call_pos_neg)
     rl.call_script(call_pos_neg)
 
 
     ### Call get_features.py ###################################################
     feature_out_path = out_path + 'feature_files/'
-    os.mkdir(feature_out_path)
+    if not os.path.exists(feature_out_path):
+        os.mkdir(feature_out_path)
     midel_name =  experiment_name + '_context_' + str(context)
     file_neg = pos_neg_out_path + midel_name + '_pos_occ_neg.csv'
     file_pos = pos_neg_out_path + midel_name + '_pos_occ_pos.csv'
@@ -407,18 +498,66 @@ def main_train(args):
 
     pos_feature_param = ' -i ' + file_pos + ' -f all -o ' + feature_pos
     call_pos_feature = 'get_features.py' + pos_feature_param
-    print('Positive feature call:')
-    print(call_pos_feature)
+    print('3a. Compute positive feature:')
+    #print(call_pos_feature)
     rl.call_script(call_pos_feature)
 
     neg_feature_param = ' -i ' + file_neg + ' -f all -o ' + feature_neg
     call_neg_feature = 'get_features.py' + neg_feature_param
-    print('Negative feature call:')
-    print(call_neg_feature)
+    print('3b. Compute negative feature:')
+    #print(call_neg_feature)
     rl.call_script(call_neg_feature)
 
 
     # Convert function from biofilm to prepare data?
+
+    ### Add structure ###################################################
+    feat_output = f'{feature_out_path}_training_data_{midel_name}'
+    X, y = rl.read_pos_neg_data(feature_neg, feature_pos)
+
+    if use_structure == 'ON' or use_structure == 'on':
+        X,y = rl.convert(X, y , feat_output, graphfeatures=True)
+        print('3c. Compute structure feature:')
+    elif use_structure == 'OFF' or use_structure == 'off':
+        X,y = rl.convert(X, y, feat_output)
+
+
+    ## feature ###############################################################
+    print('4. Compute model:')
+    out_path_model = f'{out_path}/model/'
+    if not os.path.exists(out_path_model):
+        os.mkdir(out_path_model)
+
+    feat_path =  f'{out_path_model}/features/'
+    if not os.path.exists(feat_path):
+        os.mkdir(feat_path)
+    # Was macht subsample?????
+    loaddata_feat = f'--infile {feat_output} --subsample 20000 '
+    out_feat = f'{feat_path}{midel_name}'
+    call_feat = f'python -m biofilm.biofilm-features {loaddata_feat} --method forest --out {out_feat}'
+    #print(call_feat)
+    print('4a. Select features:')
+    rl.call_script(call_feat)
+
+    ## optimize ###############################################################
+
+    opt_path =  f'{out_path_model}/optimized/'
+    if not os.path.exists(opt_path):
+        os.mkdir(opt_path)
+
+    loaddata = f' --infile {feat_output} --folds 0 --subsample 100 --featurefile {out_feat}'
+
+    #out  = f'{opt_path}{dataset}'
+    opt_call = f'python -W ignore -m biofilm.biofilm-optimize6 {loaddata} --out {opt_path}{midel_name} --preprocess True --n_jobs 30 --time 100'
+    #print(opt_call)
+    print('4b. Optimize model:')
+    rl.call_script(opt_call)
+    model_path = f'{opt_path}{midel_name}.model'
+
+    print(f'final model can be found here: {model_path}')
+
+
+
 
 
 

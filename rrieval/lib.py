@@ -28,6 +28,14 @@ from sklearn.metrics import plot_confusion_matrix
 #import xgboost
 import pickle
 from sklearn.linear_model import Lasso
+from scipy.sparse import csr_matrix, vstack #  hstack, load_npz, save_npz,
+partner =  {a:b for a,b in zip("({[<",")}]>")  }
+import eden.graph as eg
+import networkx as nx
+from ubergauss import tools
+from ubergauss.tools import loadfile, dumpfile
+from lmz import *
+from itertools import compress
 
 
 
@@ -1034,15 +1042,20 @@ def base_model(in_positive_data_filepath,in_negative_data_filepath,output_path,n
 
 ################################################################################
 
-def classify(in_data_filepath,in_model_filepath,output_path):
-    X = pd.read_csv(in_data_filepath, sep=',')
-    model_handle = open(in_model_filepath,'rb')
-    model = pickle.load(model_handle)
-    model_handle.close()
-    y_pred=model.predict(X)
+def classify(df_eval,in_model_filepath, output_path):
+    #X = pd.read_csv(in_data_filepath, sep=',')
+    #model_handle = open(in_model_filepath,'rb')
+    #model = pickle.load(model_handle)
+    #model_handle.close()
+    #params = loadfile(in_model_filepath)['params']
+    #print(params)
+    model = loadfile(in_model_filepath)['estimator']
+    y_pred=model.predict(df_eval)
     print('model predictions')
+    df_eval['prediction'] = y_pred
     print(y_pred)
-    return y_pred
+    df_eval.to_csv(output_path)
+    return df_eval
 
 
 ################################################################################
@@ -1131,3 +1144,77 @@ def evaluate(model, test_features, test_labels):
     print('Accuracy = {:0.2f}%.'.format(accuracy))
 
     return accuracy
+
+
+################################################################################
+
+def filter_features(X,featurefile):
+    ft = np.load(featurefile)['arr_0']
+    print(X.info())
+    header = X.columns
+    header_list = header.tolist()
+    features_filterd=list(compress(header_list, ft))
+    print(features_filterd)
+    X_filterd = X[features_filterd]
+    print('dfInfo after:')
+    print(X_filterd.info())
+
+    return X_filterd
+
+
+
+################################################################################
+
+def convert(X, y, outname, graphfeatures=True):
+
+    if graphfeatures:
+        # makes list of subseqDP and hybridDP tupels
+        data = [a for a in zip(X['subseqDP'],X['hybridDP'])]
+        #print(len(data))
+        graphs = tools.xmap(mkgr, data,32)
+        #print(graphs)
+        #X2 = eg.vectorize(graphs)
+        X2 = csr_matrix(vstack(tools.xmap(eg.vectorize,[[g] for g in graphs])))
+        #print(len(X2))
+        df_X = pd.DataFrame(X2.todense())
+        #print(len(df_X))
+
+        #X = pd.concat([X, df_X], axis=1)
+        X.join(df_X)
+    X = X.drop(columns="subseqDP")
+    X = X.drop(columns="hybridDP")
+
+    # Convert dfs
+    y_np = np.array(y.tolist())
+    X_np = X.to_numpy()
+    list = [ X_np,y_np, X.columns.tolist() + Range(X.shape[1] - len(X.columns.tolist()))]
+    # saves object as 'np.savez_compressed'
+    tools.ndumpfile(list , outname)
+    return X,y
+
+
+
+def mkgraph(sequence, structure):
+    graph = nx.Graph()
+    lifo = defaultdict(list)
+    cut = structure.index("&")
+
+    structure = structure.replace("&","")
+    sequence = sequence.replace("&","")
+    for i,(s,n) in enumerate(zip(structure, sequence)):
+        graph.add_node(i, label=n)
+        if i > 0 and  i != cut:
+            graph.add_edge(i, i-1, label='-')
+
+        # ADD PAIRED BASES
+        if s in ['(','[','<']:
+            lifo[partner[s]].append(i)
+        if s in [')',']','>']:
+            j = lifo[s].pop()
+            graph.add_edge(i, j, label='=')
+    return graph
+    #return eg.vectorize([graph], discrete = False) # keep here in case i want nested edges ...
+
+
+def mkgr(x):
+    return mkgraph(*x)

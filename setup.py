@@ -23,7 +23,9 @@ setup(
              'bin/find_trusted_RRI.py', 'bin/generate_pos_neg_with_context.py',
              'bin/get_features.py'],
     packages=find_packages(exclude=('tests', 'docs')),
+    package_data={'': ['IntaRNA_param/*','model/*']},
+    include_package_data=True,
     #packages=['rrieval'],
-    #package_data={'rrieval': ['IntaRNA_param/*']},
+    # package_data={'rrieval': ['lib.py','IntaRNA_param/IntaRNA_param.txt']},
     zip_safe=False
 )

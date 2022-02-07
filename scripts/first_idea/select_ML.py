@@ -25,7 +25,8 @@ def main():
     X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, y, random_state=1)
 
     automl = autosklearn.classification.AutoSklearnClassifier(
-                                                time_left_for_this_task=360, # increas means better mdel can be found
+                                                n_jobs=30,
+                                                time_left_for_this_task=3600, # increas means better mdel can be found
                                                 per_run_time_limit=36, # default=1/10 of time_left_for_this_task
                                                 initial_configurations_via_metalearning=25, # Disable if the hyperparameter optimization algorithm should start from scratch.
                                                 ensemble_size =50, # Number of models from libraries of models
