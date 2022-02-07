@@ -65,12 +65,22 @@ And than install the following dependencies:
 
 ```
 
-conda install -c conda-forge markdown
+conda install -c conda-forge scikit-learn
+conda install -c conda-forge auto-sklearn
+conda install -c conda-forge networkx
 conda install -c bioconda ucsc-twobitinfo
 conda install -c bioconda ucsc-twobittofa
+conda install -c bioconda interlap
 conda install -c bioconda IntaRNA
+conda install -c bioconda numpy
+conda install -c bioconda seaborn
+conda install -c bioconda pandas
+conda install -c smautner eden-kernel
+conda install -c smautner ubergauss
 
 conda create -n test_biofilm -c smautner -c conda-forge -c bioconda biofilm scipy networkx
+
+conda create -n test_cherri -c conda-forge -c bioconda -c smautner scikit-learn auto-sklearn networkx ucsc-twobitinfo ucsc-twobittofa interlap IntaRNA eden-kernel ubergauss
 
 pip install eden-kernel
 ```
@@ -95,10 +105,10 @@ cherri -h
 ### Usage
 You can use Cherri in two modes. The first mode to prdict weather your RRI prediction biolocical relevant. You can used the current model for human or mouse data. If you would like build a model based on novel RRI interactome data you can use the seciond mode.
 
-#### First mode: evaluation of RRIs
+#### First mode eval:  evaluation of RRIs
 Based on a tabluar file containing chromosomal position data of the RRIs, it classify if the interaction region is likly to be a relevant one.
 
-#### Second mode: build new Cherri model
+#### Second mode train: build new Cherri model
 Using Chira RRI output data the build model mode will generate a prediction classifier. 
 
 ### Backround of scripts which are wrapped
