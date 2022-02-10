@@ -570,8 +570,8 @@ def get_occ_regions(target_key, query_key, target_pos_s,target_pos_e, occupyed_I
 
         Parameters
         ----------
-        target_key:
-        query_key:
+        target_key: chrom;strand as key for interlap object of target sequences
+        query_key: chrom;strand as key for interlap object of query sequences
         target_pos_s:
         target_pos_e:
         occupyed_InteLab:
@@ -786,6 +786,9 @@ def main():
     parser.add_argument("-p", "--param_file",
                         help= "IntaRNA parameter file",
                         default="./IntaRNA_param.txt")
+    parser.add_argument("-m", "--mode",
+                        help= "which Cherri mode is running",
+                        default="eval")
 
 
 
@@ -802,11 +805,18 @@ def main():
     chrom_len_file = args.chrom_len_file
     no_sub_opt = args.no_sub_opt
     param_file = args.param_file
-
+    mode = args.mode
 
     flag_all_neg = True
     flag_all_pos = True
-    no_neg = False
+
+    if mode == 'train':
+        no_neg = False
+    elif mode == 'eval':
+        no_neg = False
+    else:
+        print('ERORR: please specify train or eval as cherri mode')
+
     #block_ends = 20
     # pos_occ = False
     #chrom_len_file = '/vol/scratch/data/genomes/mm10.chrom.sizes'
@@ -816,6 +826,9 @@ def main():
                                                        block_ends,
                                                        output_path,
                                                        experiment_name)
+
+
+###########Not needed any more!!!!!!!###################################
     # load occupyed data
     if input_occupyed == 'none':
         # set only give out positive instances!!
@@ -833,7 +846,9 @@ def main():
         out_path =  output_path + '/' + timestr + '_occ_out/'
         input_occupyed = out_path + '/occupied_regions.obj'
 
-    occupyed_InteLab = load_occupyed_data(input_occupyed)
+############################################################################
+
+    occupyed_InteLab = rl.load_occupyed_data(input_occupyed)
 
 
 
