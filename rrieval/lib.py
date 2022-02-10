@@ -28,7 +28,7 @@ from sklearn.metrics import plot_confusion_matrix
 #import xgboost
 import pickle
 from sklearn.linear_model import Lasso
-from scipy.sparse import csr_matrix, vstack #  hstack, load_npz, save_npz,
+from scipy.sparse import csr_matrix, vstack, hstack, load_npz, save_npz
 partner =  {a:b for a,b in zip("({[<",")}]>")  }
 import eden.graph as eg
 import networkx as nx
@@ -253,7 +253,7 @@ def get_chrom_list_no_numbers(df_interactions, chrom):
         Parameters
         ----------
         df_interactions : df including the filtered RRIs
-        chrom :  string indicating from wich seq the chromosome is
+        chrom : string indicating from wich seq the chromosome is
 
 
         Returns
@@ -645,6 +645,25 @@ def bp_suffeling(hybrid_seq, IntaRNA_prediction,times):
 
     return shuffled_target_list, shuffled_query_list
 
+################################################################################
+
+def load_occupyed_data(input_occupyed):
+    """
+    load occupyed data
+
+        Parameters
+        ----------
+        input_occupyed: input file path
+
+        Returns
+        -------
+        occupyed_InteLab: Interlab object of occupyed regions
+        """
+    overlap_handle = open(input_occupyed,'rb')
+    occupyed_InteLab = pickle.load(overlap_handle)
+    # print(overlap_avg_val)
+    overlap_handle.close()
+    return occupyed_InteLab
 
 ################################################################################
 
@@ -1051,11 +1070,13 @@ def classify(df_eval,in_model_filepath, output_path):
     #print(params)
     model = loadfile(in_model_filepath)['estimator']
     y_pred=model.predict(df_eval)
-    print('model predictions')
-    df_eval['prediction'] = y_pred
-    print(y_pred)
-    df_eval.to_csv(output_path)
-    return df_eval
+    #print('model predictions')
+    xtra = pd.DataFrame({'prediction': y_pred})
+    df_result = pd.concat([df_eval, xtra], axis=1)
+    # df_eval['prediction'] = y_pred
+    #print(y_pred)
+    df_result.to_csv(output_path)
+    return df_result
 
 
 ################################################################################
@@ -1150,14 +1171,14 @@ def evaluate(model, test_features, test_labels):
 
 def filter_features(X,featurefile):
     ft = np.load(featurefile)['arr_0']
-    print(X.info())
+    #print(X.info())
     header = X.columns
     header_list = header.tolist()
     features_filterd=list(compress(header_list, ft))
-    print(features_filterd)
+    #print(features_filterd)
     X_filterd = X[features_filterd]
-    print('dfInfo after:')
-    print(X_filterd.info())
+    #print('dfInfo after:')
+    #print(X_filterd.info())
 
     return X_filterd
 
@@ -1165,31 +1186,38 @@ def filter_features(X,featurefile):
 
 ################################################################################
 
-def convert(X, y, outname, graphfeatures=True):
-
-    if graphfeatures:
-        # makes list of subseqDP and hybridDP tupels
-        data = [a for a in zip(X['subseqDP'],X['hybridDP'])]
-        #print(len(data))
-        graphs = tools.xmap(mkgr, data,32)
-        #print(graphs)
-        #X2 = eg.vectorize(graphs)
-        X2 = csr_matrix(vstack(tools.xmap(eg.vectorize,[[g] for g in graphs])))
-        #print(len(X2))
-        df_X = pd.DataFrame(X2.todense())
-        #print(len(df_X))
-
-        #X = pd.concat([X, df_X], axis=1)
-        X.join(df_X)
+def convert(X, y, outname, graphfeatures=False):
+    call_script(f'export PYTHONHASHSEED=31337')
+    # makes list of subseqDP and hybridDP tupels
+    data = [a for a in zip(X['subseqDP'],X['hybridDP'])]
     X = X.drop(columns="subseqDP")
     X = X.drop(columns="hybridDP")
+    #print(len(X.columns.tolist()))
+    if graphfeatures:
+        # convert # XXX:
+        X_from_df = csr_matrix(X.to_numpy().astype(np.float64))
+
+        graphs = tools.xmap(mkgr, data,32)
+        X2 = csr_matrix(vstack(tools.xmap(eg.vectorize,[[g] for g in graphs])))
+        X_csr= csr_matrix(hstack((X_from_df,X2)))
+        X_np= X_csr.todense()
+        head_X2 = [str(int) for int in np.arange(0, X2.get_shape()[1], 1).tolist()]
+        #print(head_X2)
+        header = X.columns.tolist() + head_X2
+        #print(header)
+        X = pd.DataFrame(X_np, columns=header)
+    else:
+        X_np = X.to_numpy()
 
     # Convert dfs
     y_np = np.array(y.tolist())
-    X_np = X.to_numpy()
+
+    #X_np = csr_matrix(X_np.astype(np.float64))
     list = [ X_np,y_np, X.columns.tolist() + Range(X.shape[1] - len(X.columns.tolist()))]
     # saves object as 'np.savez_compressed'
     tools.ndumpfile(list , outname)
+    #print(f'total amount of features:\n {len(X.columns.tolist())}')
+    #print()
     return X,y
 
 

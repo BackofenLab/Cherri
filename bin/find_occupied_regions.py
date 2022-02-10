@@ -18,7 +18,8 @@ def build_interlap_occ_sides(df_interactions, flag):
         Parameters
         ----------
         df_interactions : df including the filtered RRIs
-
+        flag : one for rbps (only one sequences stretch in df),
+               two for rris (two interacting sequences stretches in df)
 
         Returns
         -------
@@ -27,7 +28,6 @@ def build_interlap_occ_sides(df_interactions, flag):
 
         """
 
-    first_key = ''
     flag_name = 'crl'
     # use defaultdict to key by chromosome.
     inter_rep = defaultdict(InterLap)
@@ -56,8 +56,6 @@ def build_interlap_occ_sides(df_interactions, flag):
             else:
                 both_keys2 = str(row[names_second[0]]) + ';' + row[names_second[1]]
                 inter_rep[both_keys2].add((row[names_second[2]], row[names_second[3]], [row]))
-
-
     elif flag == 'one':
         list_chrom_no_int = rl.get_chrom_list_no_numbers(df_interactions, 'chrom')
         for index, row in df_interactions.iterrows():
@@ -184,6 +182,9 @@ def main():
     parser.add_argument("-s", "--score_th",
                         help= "score threshold",
                         default="0.5")
+    parser.add_argument("-e", "--external_object",
+                        help= "external rri object in the Interlap object format",
+                        default="non")
 
 
 
@@ -194,6 +195,7 @@ def main():
     out_path = args.out_path
     overlap_th = args.overlap_th
     score_th = args.score_th
+    external_object = args.external_object
 
     timestr = time.strftime("%Y%m%d")
     out_path =  out_path + '/' + timestr + '_occ_out/'
@@ -220,9 +222,9 @@ def main():
     ### only take uniquly mapped reads but they do not need to be to stricke over the replicats:
 
     ####### Get RRI data
-    rri_call_param = ('-i ' + input_path_RRIs + ' -r ' + ' '.join(replicats) + ' -o ' +
-                     str(overlap_th) +' -n rri_occupied_regions -d ' + out_path+
-                     ' -s ' +  str(score_th))
+    rri_call_param = ('-i ' + input_path_RRIs + ' -r ' + ' '.join(replicats) +
+                     ' -o ' + str(overlap_th) +' -n rri_occupied_regions -d ' +
+                     out_path + ' -s ' +  str(score_th))
     rri_call  = 'find_trusted_RRI.py '  + rri_call_param
 
     rri_file = (out_path + 'rri_occupied_regions_overlap_' +
@@ -266,6 +268,13 @@ def main():
         #check data:
         print('##Results of both lists###')
         count_entrys(inter_rri, 'both')
+
+    if external_object != 'non':
+        inter_external = rl.load_occupyed_data(external_object)
+        count_entrys(inter_external, 'external')
+        for key in inter_rri:
+            if key in inter_external:
+                inter_rri[key].add(list(inter_external[key]))
 
     # save files
     or_path = out_path + "/occupied_regions.obj"

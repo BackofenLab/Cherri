@@ -1,7 +1,7 @@
 # :cherries: Cherri (Computational Help Evaluating RNA-RNA interactions) :cherries:
 
 ## Progamm Idea:
-We are developing a tool that distinguishes between biological relevant or real RRIs and RRIs which most likely would not occurs in nature. Giving the tool a RRI prediction it will evaluate weather a prediction is likly to be a real prediction. 
+Cherri is a tool that distinguishes between biological relevant or real RRIs and RRIs which most likely would not occurs in nature. Giving the tool a RRI prediction it will evaluate weather a prediction is likly to be a real prediction. 
 Sofare we developed models base on the human and mouse RNA-RNA interactiom. 
 Futher more the option of training a novel model basted on RNA-RNA interactom data is given.
 
@@ -17,10 +17,10 @@ If you do not have Conda yet, you can e.g. install miniconda, a free + lightweig
 
 ```
 $ conda --version
-conda 4.10.1
+conda 4.10.3
 ```
 
-### Install Cherri Conda package 
+### Install Cherri Conda package **not woring jet**
 
 
 Cherri is available as a Conda package [here](https://anaconda.org/bioconda/).
@@ -66,23 +66,22 @@ And than install the following dependencies:
 ```
 
 conda install -c conda-forge scikit-learn
-conda install -c conda-forge auto-sklearn
 conda install -c conda-forge networkx
-conda install -c bioconda ucsc-twobitinfo
+?conda install -c conda-forge auto-sklearn?
+?conda install -c bioconda ucsc-twobitinfo?
 conda install -c bioconda ucsc-twobittofa
 conda install -c bioconda interlap
 conda install -c bioconda IntaRNA
 conda install -c bioconda numpy
-conda install -c bioconda seaborn
 conda install -c bioconda pandas
 conda install -c smautner eden-kernel
-conda install -c smautner ubergauss
+conda install -c smautner biofilm
+```
+Or directly:
 
-conda create -n test_biofilm -c smautner -c conda-forge -c bioconda biofilm scipy networkx
+```
+conda create -n test_cherri -c conda-forge -c bioconda -c smautner scikit-learn networkx ucsc-twobittofa interlap pandas IntaRNA eden-kernel biofilm=0.0.78
 
-conda create -n test_cherri -c conda-forge -c bioconda -c smautner scikit-learn auto-sklearn networkx ucsc-twobitinfo ucsc-twobittofa interlap IntaRNA eden-kernel ubergauss
-
-pip install eden-kernel
 ```
 
 Cherri was tested with the following versions: . 
@@ -102,73 +101,99 @@ cherri -h
 
 
 
-### Usage
+## Usage
 You can use Cherri in two modes. The first mode to prdict weather your RRI prediction biolocical relevant. You can used the current model for human or mouse data. If you would like build a model based on novel RRI interactome data you can use the seciond mode.
 
-#### First mode eval:  evaluation of RRIs
+### First mode **eval** :  evaluation of RRIs
 Based on a tabluar file containing chromosomal position data of the RRIs, it classify if the interaction region is likly to be a relevant one.
 
-#### Second mode train: build new Cherri model
-Using Chira RRI output data the build model mode will generate a prediction classifier. 
+Cherri holds a model for human and mouse dataset. Cherris model can be used to predict RRIs of different organisms. However, if there exists a RNA-interactome dataset for your prefered organism we recomend to train your own organism specific model using cherris train mode. This model can be than use in the eval mode for the classification of your predicted RRIs.
 
-### Backround of scripts which are wrapped
-The following scripts are needed to build the trainings data to build a model.
-
-
-#### First mode: evaluate_instance.py
-Input would need the postion of the interaction. And the genome file and a file stroing the chromosome length is needed to rund a evaluation. The evaluation script calls one after a other differen 
-
-
-#### Input format
+#### Input format of the RRIs to evaluate
 The instances which should be tested should be in a tabluar format. You should specify a header lines, with the chromosome interaction start interaction end and strand of the two interacting partners. 
 ```
 chrom1,start1,stop1,strand1,chrom2,start2,stop2,strand2
 ```
 With a specific setting only 'positve' instances are computed. If no occupyed regions are not given by using none this can be specifyed. If the occpyed regions for human or the mouse model used for training should be used specify mouse or human. 
-#### example call
-```
-python evaluate_instance.py -i1 /vol/scratch/data/RRIs/test/test_evalueat_rris.cvs -i2 none -g /vol/scratch/data/genomes/hg38_UCSC_20210318.2bit  -o /vol/scratch/data/test/ -c 150 -n test_data -l /vol/scratch/data/genomes/hg38_Info.tab
-```
+
 
 #### Input Parameter
-- i1 | RRIs_table: table containg all rris that should be evalutated in the corrct fromat
-- i2 | occupyed_regions: path to occupyed regions file or specify: human, mouse or none 
+- i1 | RRIs_table: table containg all rris that should be evalutated in the corrct fromat 
 - g | genome_file: path to 2bit genome file
 - o | out_path: path to folder all output folder of each step of the data preparation
+- l | chrom_len_file: tabular file containing chrom name \t chrom lenght for each chromosome
+
+- i2 | occupyed_regions: path to occupyed regions file or specify: human, mouse or none
 - c | context: how much context should be added at left an right of the sequence
 - n | experiment_name: name of the datasoruce of RRIs
-- l | chrom_len_file: tabular file containing chrom name \t chrom lenght for each chromosome
 - p | param_file: IntaRNA parameter file
+- m | model_file: set if a new model created with train module
+- mp | model_params: set path to feature file of new model if model_file is changed
+- st | use_structure: set off if you want to disable structure
+
 
 #### Output 
-Within the output path a folder is created with the date of today used as name. 
-Within this folder the IntaRNA call results are stored in the positive_instance folder and the features are stored in the feature_files folder.
+At the end of the run the location of the result table is given. Here you find all information of the input table and the additional prediction colum, where you find the class of the RRI (0 or 1).
+
+Thought the program seveal output files are generated in the following structure:
+
+    ├── date_Cherri_evaluation_mode
+    |   ├── evaluate_RRIs.table
+    |   ├── positive_instance
+    |       ├── test_eval_context_{context}pos.csv
+    |       ├── date_occ_out
+    |           ├── occupied_regions.obj
+    |           ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.cvs
+    |   ├── feature_files
+    |       ├── feature_filtered_test_eval_context_150_pos.csv
+    |       ├── training_data_test_eval_context_150.npz
+    |   ├── evaluation
+    |       ├── evaluation_results
 
 
-#### Second mode: create_trainings_data.py
-Is a wrapper script that will take RNA-RNA interacting subsequences data generated by CheRRI. The wrapper will call the following scripts afte each other: 
-1. find_occupied_regions.py: outputs in the folder 'occ_out' a trusted rri file and a occpyed_region object.
-2. generate_pos_neg_with_context.py: outputs in the folder 'pos_neg_data/' the positive and negative instances 
-3. get_features.py: outputs in the 'feature_files/' folder the postive and negative tablular feature files
+### Second mode **train** : build new Cherri model
+Using Chira RRI output data the build model mode will generate a prediction classifier. 
 
 
-#### example call
-```
-python create_trainings_data.py -i1 /vol/scratch/RNA_RNA_binding_evaluation/test_data/training/Paris/ -i2 /vol/scratch/data/ -g /vol/scratch/data/genomes/hg38_UCSC_20210318.2bit -r test_rep1.tabular test_rep2.tabular test_rep3.tabular  -o /vol/scratch/data/test/ -c 150 -n test_data -l /vol/scratch/data/genomes/hg38_Info.tab
-```
+#### Input format of the RRIs to evaluate
+Please select the Chira RRI output files as input for cherri train. 
+
 
 #### Input Parameter
 - i1 | RRI_path: path to folder storing the ChiRA interaction summary files
-- g | genome_file: path to 2bit genome file
-- r | list_of_replicats: list ChiRA interaction summary files names of all replicats
 - o | out_path: path to folder all output folder of each step of the data preparation
+- r | list_of_replicats: list ChiRA interaction summary files names of all replicats
+- l | chrom_len_file: tabular file containing chrom name \t chrom lenght for each chromosome
+- g | genome_file: path to 2bit genome file
+
 - c | context: how much context should be added at left an right of the sequence
 - n | experiment_name: name of the datasoruce of RRIs
-- l | chrom_len_file: tabular file containing chrom name \t chrom lenght for each chromosome
 - p | param_file: IntaRNA parameter file
+- st | use_structure: set off if you want to disable structure 
+
 
 #### Output 
-- All data sources are in the 'Cherri_model_build/' folder. 
+At the end of the run the location of the trained model is given.
+
+Thought the program seveal output files are generated in the following structure:
+
+    ├── date_Cherri_model_build
+    |   ├── date_occ_out
+    |       ├── occupied_regions.obj
+    |       ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.cvs
+    |   ├── read_pos_neg_data
+    |       ├── test_train_context_50_pos_occ_neg.csv
+    |       ├── test_train_context_50_pos_occ_pos.csv
+    |   ├── feature_files
+    |       ├── feature_filtered_test_eval_context_150_pos.csv
+    |       ├── feature_filtered_test_eval_context_150_neg.csv
+    |       ├── training_data_test_eval_context_150.npz
+    |   ├── model
+    |       ├── features
+    |           ├── test_train_context_50.npz
+    |       ├── optimized
+    |           ├── test_train_context_50.model
+    |           ├── test_train_context_50.cvs
 
 
 
@@ -214,7 +239,9 @@ To generate the current features we need:
 |  interacting query sequence | query |
 
 
-## Script explanations:
+### Backround of scripts which are wrapped
+The following scripts are needed to build the trainings data to build a model.
+
 
 ### find_trusted_RRI.py
 Here we search for trusted RRIs, so RRIs which can be found in all replicates. In a first filter step only uniquely mapped RRIs are taken. Than RRI sequence partners in all replicas are found, using a overlap threshold. Output are the Chira input tables, now containing only the trusted RRIs. Only one of the sequence RRI pairs is added to the output. 
@@ -279,7 +306,7 @@ python find_occupied_regions.py -i1 /vol/scratch/data/RRIs/Paris/ -r test_rep1.t
 ### generate_pos_neg_with_context.pl
 Given trusted RRI and the occupyed regions a given context is appended. Than positive sequences are computed by calling IntaRNA specifiying the the seed region with the trusted RRI regions. The negative interactions are computed by calling IntaRNA given regions, which should not be in the interaction 'occupied regions'. 
 
-**sofare we can only coumpute the this data for HEK293T RRIs**
+
 
 #### example call
 ```

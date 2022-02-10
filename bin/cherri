@@ -6,6 +6,7 @@ import re
 import time
 import sys
 import rrieval.lib as rl
+from scipy.sparse import csr_matrix, vstack, hstack, load_npz, save_npz
 
 
 __version__ = "0.1"
@@ -87,8 +88,8 @@ def setup_argument_parser():
 
     # Optional arguments for evaluate.
     p_ex.add_argument("-i2", "--occupyed_regions",
-                      default="none",
-                      help= "path to occupyed regions file or specify: human, mouse or none")
+                      default="non",
+                      help= "path to occupyed regions file or specify: human, mouse or non")
     p_ex.add_argument("-c", "--context",
                       nargs='?',
                       type=int,
@@ -116,7 +117,7 @@ def setup_argument_parser():
                        dest="use_structure",
                        default="on",
                        help= "set off if you want to disable structure")
-model_params
+
 
     """
     Build a model form new data: trainings mode
@@ -212,6 +213,24 @@ def read_RRI_table(file):
 
     return RRI_dict
 
+def call_occupyed_regions_eval(eval_rri_file, output_path,external_file='non'):
+    # set only give out positive instances!!
+    no_neg = True
+    #occupyed_InteLab = defaultdict(InterLap)
+    file = eval_rri_file.split('/')[-1]
+    i1 = eval_rri_file.replace(file, "")
+    # brauche glaube nicht!!!!!
+    occ_file = output_path +  '/occupied_regions.obj'
+    ###################
+    call_occ_regions = ('find_occupied_regions.py -i1 ' +
+                        i1 + ' -i2 non -r ' + file + ' -o ' + output_path +
+                        ' -s non'+ ' -e ' + external_file)
+    #print(call_occ_regions)
+    rl.call_script(call_occ_regions)
+    timestr = time.strftime("%Y%m%d")
+    out_path =  output_path + '/' + timestr + '_occ_out/'
+    input_occupyed = out_path + '/occupied_regions.obj'
+    return input_occupyed
 
 
 
@@ -226,23 +245,19 @@ def main_eval(args):
 
 
     """
-    Output files.
-    - date_Cherri_evaluation_mode
-    -- evaluate_RRIs.table
-    |
-    -- positive_instance
-    --- test_eval_context_{context}pos.csv
-    |
-    --- date_occ_out
-    ---- occupied_regions.obj
-    ---- rri_occupied_regions_overlapTH_0.3_scoreTH_1.cvs
-    |
-    -- feature_files
-    --- feature_filtered_test_eval_context_150_pos.csv
-    --- training_data_test_eval_context_150.npz
-    |
-    -- evaluation
-    --- evaluation_results
+    Output files:
+    ├── date_Cherri_evaluation_mode
+    |   ├── evaluate_RRIs.table
+    |   ├── positive_instance
+    |       ├── test_eval_context_{context}pos.csv
+    |       ├── date_occ_out
+    |           ├── occupied_regions.obj
+    |           ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.cvs
+    |   ├── feature_files
+    |       ├── feature_filtered_test_eval_context_150_pos.csv
+    |       ├── training_data_test_eval_context_150.npz
+    |   ├── evaluation
+    |       ├── evaluation_results
 
     """
 
@@ -258,6 +273,7 @@ def main_eval(args):
     param_file = args.param_file
     use_structure = args.use_structure
     model_file = args.model_file
+    model_params = args.model_params
 
     overlap_th = 0.3
 
@@ -267,8 +283,10 @@ def main_eval(args):
 
     if model_file == 'not_set':
         lib_path = os.path.dirname(rl.__file__)
-        model_file = lib_path + "/model/test_train_context_50.model"
-        model_params = lib_path + '/model/test_train_context_50.npz'
+        #model_file = lib_path + "/model/test_train_context_50.model"
+        #model_params = lib_path + '/model/test_train_context_50.npz'
+        model_file = lib_path + '/model/NEWMODEL.model'
+        model_params = lib_path + '/model/NEWFEATUREFILE.npz'
     else:
         if not os.path.exists(model_file):
             print('Error: please set the path to your model or keep not_set')
@@ -327,13 +345,16 @@ def main_eval(args):
 
     ### Call find_occupied_regions.py ##########################################
     if occupyed_regions == 'human':
-        occupyed_regions = '/vol/scratch/data/RRIs/20210907_occ_out_rbp_c5/occupied_regions.obj'
+        occupyed_regions_file = '/vol/scratch/data_storage/ata/RRIs/20210907_occ_out_rbp_c5/occupied_regions.obj'
+        occupyed_regions = call_occupyed_regions_eval(eval_rri_file, out_path, occupyed_regions_file)
     elif occupyed_regions == 'mouse':
-        occupyed_regions = '/vol/scratch/data/RRIs/20210923_occ_out/occupied_regions.obj'
-    elif occupyed_regions == 'none':
-        occupyed_regions = 'none'
+        occupyed_regions_file = '/vol/scratch/data_storage/data/RRIs/20210923_occ_out/occupied_regions.obj'
+        occupyed_regions = call_occupyed_regions_eval(eval_rri_file, out_path, occupyed_regions_file)
+    elif occupyed_regions == 'non':
+        occupyed_regions = call_occupyed_regions_eval(eval_rri_file, out_path)
     else:
         print('using your own occupyed regions objects')
+        occupyed_regions = call_occupyed_regions_eval(eval_rri_file, output_path, occupyed_regions)
 
 
     #### Call pos data call #########################################
@@ -346,12 +367,12 @@ def main_eval(args):
                     occupyed_regions + ' -d ' + pos_neg_out_path + ' -g ' +
                     genome_file + ' -n ' + experiment_name + ' -c ' +
                     str(context) + ' --no_pos_occ -s 1 -l ' + chrom_len_file +
-                    ' -p ' + param_file)
+                    ' -p ' + param_file + ' -m eval' )
 
     call_pos_neg = ('generate_pos_neg_with_context.py' +
                             pos_neg_param)
-    print('Positive and negative instaces call:')
-    print(call_pos_neg)
+    print('1. Prepater RRI instances')
+    #print(call_pos_neg)
     rl.call_script(call_pos_neg)
 
 
@@ -359,6 +380,7 @@ def main_eval(args):
     feature_out_path = out_path + 'feature_files/'
     if not os.path.exists(feature_out_path):
         os.mkdir(feature_out_path)
+
 
     midel_name =  experiment_name + '_context_' + str(context)
     file_pos = pos_neg_out_path + midel_name + 'pos.csv'
@@ -368,8 +390,8 @@ def main_eval(args):
 
     pos_feature_param = ' -i ' + file_pos + ' -f all -o ' + feature_pos
     call_pos_feature = 'get_features.py' + pos_feature_param
-    print('Positive feature call:')
-    print(call_pos_feature)
+    print('2. Compute features')
+    #print(call_pos_feature)
     rl.call_script(call_pos_feature)
 
     ### Add structure ###################################################
@@ -382,19 +404,25 @@ def main_eval(args):
 
 
     if use_structure == 'ON' or use_structure == 'on':
+        print('2a. Compute structure feature')
         X,y = rl.convert(X, y , feat_output, graphfeatures=True)
-        print('?c. Compute structure feature:')
     elif use_structure == 'OFF' or use_structure == 'off':
         X,y = rl.convert(X, y, feat_output)
-
+        print('2a. not preparing structure feature')
 
     ### Predict ###########################################################
     eval_path =  f'{out_path}/evaluation/'
     if not os.path.exists(eval_path):
         os.mkdir(eval_path)
+    print('2b. Classify RRI instances')
     X_filterd = rl.filter_features(X,model_params)
     #print(X_filterd.info())
-    df_eval = rl.classify(X_filterd,model_file, f'{eval_path}evaluation_results')
+    #print(X_filterd.columns.tolist())
+    df_eval = rl.classify(X_filterd, model_file, f'{eval_path}evaluation_results')
+    #print(df_eval)
+    print('##########################################')
+    print(f'Result file: {eval_path}evaluation_results')
+    print('##########################################')
 
 
 ################################################################################
@@ -412,24 +440,37 @@ def main_train(args):
 
     """
     Output files:
-
+    ├── date_Cherri_model_build
+    |   ├── date_occ_out
+    |       ├── occupied_regions.obj
+    |       ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.cvs
+    |   ├── read_pos_neg_data
+    |       ├── test_train_context_50_pos_occ_neg.csv
+    |       ├── test_train_context_50_pos_occ_pos.csv
+    |   ├── feature_files
+    |       ├── feature_filtered_test_eval_context_150_pos.csv
+    |       ├── feature_filtered_test_eval_context_150_neg.csv
+    |       ├── training_data_test_eval_context_150.npz
+    |   ├── model
+    |       ├── features
+    |           ├── test_train_context_50.npz
+    |       ├── optimized
+    |           ├── test_train_context_50.model
+    |           ├── test_train_context_50.cvs
     """
-
-
 
     args = parser.parse_args()
     input_path_RRIs = args.RRI_path
-    #file_rbp_pos = args.rbp_path
-    genome_file = args.genome_file
     replicats = args.list_of_replicats
-    out_path = args.out_path
-    context = args.context
-    experiment_name = args.experiment_name
+    genome_file = args.genome_file
     chrom_len_file = args.chrom_len_file
+    out_path = args.out_path
+    # not necessary to set params
+    experiment_name = args.experiment_name
+    context = args.context
     param_file = args.param_file
     use_structure = args.use_structure
-
-
+    file_rbp_pos = 'non'
 
 
     if param_file == 'not_set':
@@ -440,22 +481,24 @@ def main_train(args):
 
     # define output folder
     timestr = time.strftime("%Y%m%d")
-    out_path = '/' + out_path + '/' + timestr + '_Cherri_model_build/'
+    out_path = '/' + out_path + '/' + timestr + '_Cherri_build_model/'
     if not os.path.exists(out_path):
         os.mkdir(out_path)
-        print('***added new folder***')
+        print('***created top level output folder***')
+    else:
+        print('***using todays build output folder***')
 
 
     ### Call find_occupied_regions.py ##########################################
-    occupied_regions_param = (' -i1 ' + input_path_RRIs + ' -i2 non' +
-                             ' -r ' + ' '.join(replicats) +
+    occupied_regions_param = (' -i1 ' + input_path_RRIs + ' -i2 ' +
+                             file_rbp_pos + ' -r ' + ' '.join(replicats) +
                              ' -o ' + out_path + ' -t ' + str(overlap_th) +
                              ' -s 0.5 ')
 
     call_occupied_regions = ('find_occupied_regions.py' +
                             occupied_regions_param)
-    print('1. find occupyed regions:')
-    #print(call_occupied_regions)
+    print('1. find occupyed regions')
+    # print(call_occupied_regions)
     rl.call_script(call_occupied_regions)
 
     # output:
@@ -475,11 +518,11 @@ def main_train(args):
                     occupyed_regions_file + ' -d ' + pos_neg_out_path + ' -g ' +
                     genome_file + ' -n ' + experiment_name + ' -c ' +
                     str(context) + ' --pos_occ -b 40  -l ' + chrom_len_file +
-                    ' -p ' + param_file)
+                    ' -p ' + param_file + ' -m train')
 
     call_pos_neg = ('generate_pos_neg_with_context.py' +
                             pos_neg_param)
-    print('2. Compute positive and negative instaces:')
+    print('2. Compute positive and negative instaces')
     #print(call_pos_neg)
     rl.call_script(call_pos_neg)
 
@@ -498,13 +541,13 @@ def main_train(args):
 
     pos_feature_param = ' -i ' + file_pos + ' -f all -o ' + feature_pos
     call_pos_feature = 'get_features.py' + pos_feature_param
-    print('3a. Compute positive feature:')
+    print('3a. Compute positive feature')
     #print(call_pos_feature)
     rl.call_script(call_pos_feature)
 
     neg_feature_param = ' -i ' + file_neg + ' -f all -o ' + feature_neg
     call_neg_feature = 'get_features.py' + neg_feature_param
-    print('3b. Compute negative feature:')
+    print('3b. Compute negative feature')
     #print(call_neg_feature)
     rl.call_script(call_neg_feature)
 
@@ -517,7 +560,7 @@ def main_train(args):
 
     if use_structure == 'ON' or use_structure == 'on':
         X,y = rl.convert(X, y , feat_output, graphfeatures=True)
-        print('3c. Compute structure feature:')
+        print('3c. Compute structure feature')
     elif use_structure == 'OFF' or use_structure == 'off':
         X,y = rl.convert(X, y, feat_output)
 
@@ -536,7 +579,7 @@ def main_train(args):
     out_feat = f'{feat_path}{midel_name}'
     call_feat = f'python -m biofilm.biofilm-features {loaddata_feat} --method forest --out {out_feat}'
     #print(call_feat)
-    print('4a. Select features:')
+    print('4a. Select features')
     rl.call_script(call_feat)
 
     ## optimize ###############################################################
@@ -550,14 +593,13 @@ def main_train(args):
     #out  = f'{opt_path}{dataset}'
     opt_call = f'python -W ignore -m biofilm.biofilm-optimize6 {loaddata} --out {opt_path}{midel_name} --preprocess True --n_jobs 30 --time 100'
     #print(opt_call)
-    print('4b. Optimize model:')
+    print('4b. Optimize model')
     rl.call_script(opt_call)
     model_path = f'{opt_path}{midel_name}.model'
 
-    print(f'final model can be found here: {model_path}')
-
-
-
+    print('##########################################')
+    print(f'Final model can be found here: {model_path}')
+    print('##########################################')
 
 
 
