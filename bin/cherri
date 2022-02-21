@@ -7,6 +7,8 @@ import time
 import sys
 import rrieval.lib as rl
 from scipy.sparse import csr_matrix, vstack, hstack, load_npz, save_npz
+import subprocess
+
 
 
 __version__ = "0.1"
@@ -405,9 +407,9 @@ def main_eval(args):
 
     if use_structure == 'ON' or use_structure == 'on':
         print('2a. Compute structure feature')
-        X,y = rl.convert(X, y , feat_output, graphfeatures=True)
+        X,y = rl.convert(X, y , feat_output, True, 'eval')
     elif use_structure == 'OFF' or use_structure == 'off':
-        X,y = rl.convert(X, y, feat_output)
+        X,y = rl.convert(X, y, feat_output, False, 'eval')
         print('2a. not preparing structure feature')
 
     ### Predict ###########################################################
@@ -472,6 +474,8 @@ def main_train(args):
     use_structure = args.use_structure
     file_rbp_pos = 'non'
 
+    set_path = 'off'
+
 
     if param_file == 'not_set':
         lib_path = os.path.dirname(rl.__file__)
@@ -482,11 +486,14 @@ def main_train(args):
     # define output folder
     timestr = time.strftime("%Y%m%d")
     out_path = '/' + out_path + '/' + timestr + '_Cherri_build_model/'
-    if not os.path.exists(out_path):
-        os.mkdir(out_path)
-        print('***created top level output folder***')
-    else:
-        print('***using todays build output folder***')
+    if set_path == 'off':
+        if not os.path.exists(out_path):
+            os.mkdir(out_path)
+            print('***created top level output folder***')
+        else:
+            print('***using todays build output folder***')
+    elif set_path == 'on':
+        out_path = '/vol/scratch/data_storage/20220215_Cherri_build_model/'
 
 
     ### Call find_occupied_regions.py ##########################################
@@ -523,7 +530,7 @@ def main_train(args):
     call_pos_neg = ('generate_pos_neg_with_context.py' +
                             pos_neg_param)
     print('2. Compute positive and negative instaces')
-    #print(call_pos_neg)
+    # print(call_pos_neg)
     rl.call_script(call_pos_neg)
 
 
@@ -555,14 +562,18 @@ def main_train(args):
     # Convert function from biofilm to prepare data?
 
     ### Add structure ###################################################
-    feat_output = f'{feature_out_path}_training_data_{midel_name}'
+    feat_output = f'{feature_out_path}training_data_{midel_name}'
+    #print(feat_output)
     X, y = rl.read_pos_neg_data(feature_neg, feature_pos)
+    # print(X.info())
 
     if use_structure == 'ON' or use_structure == 'on':
-        X,y = rl.convert(X, y , feat_output, graphfeatures=True)
         print('3c. Compute structure feature')
+        rl.convert(X, y , feat_output, True, 'train')
     elif use_structure == 'OFF' or use_structure == 'off':
-        X,y = rl.convert(X, y, feat_output)
+        print('3c. Features without strecture features')
+        rl.convert(X, y, feat_output, False, 'train')
+
 
 
     ## feature ###############################################################
@@ -578,9 +589,18 @@ def main_train(args):
     loaddata_feat = f'--infile {feat_output} --subsample 20000 '
     out_feat = f'{feat_path}{midel_name}'
     call_feat = f'python -m biofilm.biofilm-features {loaddata_feat} --method forest --out {out_feat}'
-    #print(call_feat)
+    # print(call_feat)
     print('4a. Select features')
     rl.call_script(call_feat)
+    #p2 = subprocess.run(call_feat, stdout=subprocess.PIPE,
+                        #stderr=subprocess.PIPE, shell=True)
+    #p2.terminate()
+    #p2.wait()
+    #print(p2.stderr.decode())
+    #print(p2.stdout.decode())
+    #output = subprocess.getoutput(call_feat)
+    #print(output)
+
 
     ## optimize ###############################################################
 

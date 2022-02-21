@@ -44,7 +44,7 @@ from itertools import compress
 ~~~~~~ OPEN FOR BUSINESS ~~~~~~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-AuthoR: muellert [at] informatik.uni-freiburg.de
+Author: muellert [at] informatik.uni-freiburg.de
 
 ~~~~~~~~~~~~~
 Run doctests
@@ -180,8 +180,9 @@ def call_script(call,reprot_stdout=False):
     """
     process = subprocess.Popen(call, stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE, shell=True)
+    #process.wait()
     out, err = process.communicate()
-    #print(out.decode('utf-8'))
+    #print(err.decode('utf-8'))
     error = err.decode('utf-8')
 
     assert not error, "script is complaining:\n%s\n%s" %(call, error)
@@ -1186,26 +1187,23 @@ def filter_features(X,featurefile):
 
 ################################################################################
 
-def convert(X, y, outname, graphfeatures=False):
+def convert(X, y, outname, graphfeatures, mode):
     call_script(f'export PYTHONHASHSEED=31337')
     # makes list of subseqDP and hybridDP tupels
-    data = [a for a in zip(X['subseqDP'],X['hybridDP'])]
+    hybrid_seq_list = [a for a in zip(X['subseqDP'],X['hybridDP'])]
     X = X.drop(columns="subseqDP")
     X = X.drop(columns="hybridDP")
     #print(len(X.columns.tolist()))
     if graphfeatures:
-        # convert # XXX:
+        # convert df into a csr matrix
         X_from_df = csr_matrix(X.to_numpy().astype(np.float64))
-
-        graphs = tools.xmap(mkgr, data,32)
+        graphs = tools.xmap(mkgr, hybrid_seq_list ,32)
         X2 = csr_matrix(vstack(tools.xmap(eg.vectorize,[[g] for g in graphs])))
         X_csr= csr_matrix(hstack((X_from_df,X2)))
         X_np= X_csr.todense()
         head_X2 = [str(int) for int in np.arange(0, X2.get_shape()[1], 1).tolist()]
         #print(head_X2)
         header = X.columns.tolist() + head_X2
-        #print(header)
-        X = pd.DataFrame(X_np, columns=header)
     else:
         X_np = X.to_numpy()
 
@@ -1213,12 +1211,15 @@ def convert(X, y, outname, graphfeatures=False):
     y_np = np.array(y.tolist())
 
     #X_np = csr_matrix(X_np.astype(np.float64))
-    list = [ X_np,y_np, X.columns.tolist() + Range(X.shape[1] - len(X.columns.tolist()))]
+    list = [ X_np,y_np, header + Range(X.shape[1] - len(X.columns.tolist()))]
     # saves object as 'np.savez_compressed'
+    # breakpoint()
     tools.ndumpfile(list , outname)
     #print(f'total amount of features:\n {len(X.columns.tolist())}')
     #print()
-    return X,y
+    if mode == 'eval':
+        X = pd.DataFrame(X_np, columns=header)
+        return X,y
 
 
 

@@ -67,8 +67,6 @@ And than install the following dependencies:
 
 conda install -c conda-forge scikit-learn
 conda install -c conda-forge networkx
-?conda install -c conda-forge auto-sklearn?
-?conda install -c bioconda ucsc-twobitinfo?
 conda install -c bioconda ucsc-twobittofa
 conda install -c bioconda interlap
 conda install -c bioconda IntaRNA
