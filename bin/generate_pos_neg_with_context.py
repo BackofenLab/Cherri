@@ -309,7 +309,7 @@ def join_result_and_infos(df, lost_inst, row, list_rows_add):
         lost_inst
             number of instances lost
         """
-    print(df)
+    #print(df)
     if df['hybridDP'][0] == 'nan':
         lost_inst += 1
         #print('one nan')
@@ -813,7 +813,7 @@ def main():
     if mode == 'train':
         no_neg = False
     elif mode == 'eval':
-        no_neg = False
+        no_neg = True
     else:
         print('ERORR: please specify train or eval as cherri mode')
 
@@ -840,7 +840,7 @@ def main():
         call_occ_regions = ('find_occupied_regions.py -i1 ' +
                             i1 + ' -i2 non -r ' + file + ' -o ' + output_path +
                             ' -s non')
-        print(call_occ_regions)
+        #print(call_occ_regions)
         rl.call_script(call_occ_regions)
         timestr = time.strftime("%Y%m%d")
         out_path =  output_path + '/' + timestr + '_occ_out/'
@@ -1000,9 +1000,9 @@ def main():
                                                              no_sub_opt,
                                                              no_less_sub_opt_neg)
             elif lost_inst_pos_new > lost_inst_pos and flag_all_neg:
-                print('appeded neg data although pos data is not found!')
-                print('call pos data:\n%s'%call_pos)
-                print('call neg data:\n%s'%call_neg)
+                #print('appeded neg data although pos data is not found!')
+                #print('call pos data:\n%s'%call_pos)
+                #print('call neg data:\n%s'%call_neg)
                 df_neg_data, lost_i_neg_new, no_less_sub_opt_neg = decode_IntaRNA_call(call_neg,
                                                              lost_inst_neg, row,
                                                              list_rows_add,

@@ -7,6 +7,7 @@ import time
 import sys
 import rrieval.lib as rl
 from scipy.sparse import csr_matrix, vstack, hstack, load_npz, save_npz
+from ubergauss.tools import loadfile, dumpfile
 import subprocess
 
 
@@ -119,6 +120,9 @@ def setup_argument_parser():
                        dest="use_structure",
                        default="on",
                        help= "set off if you want to disable structure")
+    p_ex.add_argument("-on", "--out_name",
+                      default="non",
+                      help= "name for output dir instead of the current data")
 
 
     """
@@ -177,6 +181,9 @@ def setup_argument_parser():
                        dest="use_structure",
                        default="on",
                        help= "set off if you want to disable structure")
+    p_mrgm.add_argument("-i2", "--RBP_path",
+                        help= "path to RBP binding location file in bed format",
+                        default="non")
 
     return p
 
@@ -276,8 +283,10 @@ def main_eval(args):
     use_structure = args.use_structure
     model_file = args.model_file
     model_params = args.model_params
+    out_name = args.out_name
 
     overlap_th = 0.3
+
 
     if param_file == 'not_set':
         lib_path = os.path.dirname(rl.__file__)
@@ -301,7 +310,15 @@ def main_eval(args):
 
     # define output folder
     timestr = time.strftime("%Y%m%d")
-    out_path = '/' + out_path + '/' + timestr + '_Cherri_evaluating_RRIs/'
+
+    if out_name == 'non':
+        out_path = '/' + out_path + '/' + timestr + '_Cherri_evaluating_RRIs/'
+    else:
+        out_path = '/' + out_path + '/' + out_name + '/'
+
+
+
+
     if not os.path.exists(out_path):
         os.mkdir(out_path)
         print('***added new folder***')
@@ -326,9 +343,12 @@ def main_eval(args):
                 'nan','nan', 'nan','nan','nan','nan', 'nan', 'nan','nan', 'nan',
                 'nan','nan', 'nan', 'nan','nan']
 
+
     RRI_dict = read_RRI_table(RRIs_table)
 
+
     df_content_list = []
+    print(len(RRI_dict))
     for key in RRI_dict:
         pos_data = RRI_dict[key]
         #print(pos_data)
@@ -336,7 +356,7 @@ def main_eval(args):
         data =  ['nan'] + RRI_dict[key] + end_data
         #print(data)
         df_content_list.append(data)
-
+    # print(df_content_list[-2])
     df_rris = pd.DataFrame(df_content_list,columns=header)
     eval_rri_file = out_path + 'evaluete_RRIs.table'
     df_rris.to_csv(eval_rri_file, index=False, sep=',')
@@ -472,9 +492,12 @@ def main_train(args):
     context = args.context
     param_file = args.param_file
     use_structure = args.use_structure
-    file_rbp_pos = 'non'
+    file_rbp_pos = args.RBP_path
+
 
     set_path = 'off'
+    mixed = 'off'
+
 
 
     if param_file == 'not_set':
@@ -486,14 +509,19 @@ def main_train(args):
     # define output folder
     timestr = time.strftime("%Y%m%d")
     out_path = '/' + out_path + '/' + timestr + '_Cherri_build_model/'
-    if set_path == 'off':
+    if set_path == 'off' and mixed == 'off':
         if not os.path.exists(out_path):
             os.mkdir(out_path)
             print('***created top level output folder***')
         else:
             print('***using todays build output folder***')
+    elif mixed == 'on':
+        print('***You are in mixed model mode***')
+        out_path = '/' + input_path_RRIs + '/' + experiment_name + '/'
+        if not os.path.exists(out_path):
+            os.mkdir(out_path)
     elif set_path == 'on':
-        out_path = '/vol/scratch/data_storage/20220215_Cherri_build_model/'
+        out_path = '/vol/scratch/data_storage/20220222_Cherri_build_model/'
 
 
     ### Call find_occupied_regions.py ##########################################
@@ -504,67 +532,86 @@ def main_train(args):
 
     call_occupied_regions = ('find_occupied_regions.py' +
                             occupied_regions_param)
-    print('1. find occupyed regions')
-    # print(call_occupied_regions)
-    rl.call_script(call_occupied_regions)
+    if mixed == 'off':
+        print('1. find occupyed regions')
+        #print(call_occupied_regions)
+        rl.call_script(call_occupied_regions)
 
-    # output:
-    occupyed_outfile =  out_path + '/' + timestr + '_occ_out/'
+        # output:
+        occupyed_outfile =  out_path + '/' + timestr + '_occ_out/'
 
 
 
-    #### Call find_occupied_regions.py #########################################
-    pos_neg_out_path = out_path + 'pos_neg_data/'
-    if not os.path.exists(pos_neg_out_path):
-        os.mkdir(pos_neg_out_path)
-    trusted_rri_file = (occupyed_outfile + 'rri_occupied_regions_overlapTH_' +
-                       str(overlap_th) + '_scoreTH_1.cvs')
-    occupyed_regions_file =  occupyed_outfile + 'occupied_regions.obj'
+        #### Call find_occupied_regions.py #########################################
+        pos_neg_out_path = out_path + 'pos_neg_data/'
+        if not os.path.exists(pos_neg_out_path):
+            os.mkdir(pos_neg_out_path)
+        trusted_rri_file = (occupyed_outfile + 'rri_occupied_regions_overlapTH_' +
+                                str(overlap_th) + '_scoreTH_1.cvs')
+        occupyed_regions_file =  occupyed_outfile + 'occupied_regions.obj'
 
-    pos_neg_param = (' -i1 ' + trusted_rri_file + ' -i2 ' +
-                    occupyed_regions_file + ' -d ' + pos_neg_out_path + ' -g ' +
-                    genome_file + ' -n ' + experiment_name + ' -c ' +
-                    str(context) + ' --pos_occ -b 40  -l ' + chrom_len_file +
-                    ' -p ' + param_file + ' -m train')
+        pos_neg_param = (' -i1 ' + trusted_rri_file + ' -i2 ' +
+                        occupyed_regions_file + ' -d ' + pos_neg_out_path + ' -g ' +
+                        genome_file + ' -n ' + experiment_name + ' -c ' +
+                        str(context) + ' --pos_occ -b 40  -l ' + chrom_len_file +
+                        ' -p ' + param_file + ' -m train')
 
-    call_pos_neg = ('generate_pos_neg_with_context.py' +
+        call_pos_neg = ('generate_pos_neg_with_context.py' +
                             pos_neg_param)
-    print('2. Compute positive and negative instaces')
-    # print(call_pos_neg)
-    rl.call_script(call_pos_neg)
+        print('2. Compute positive and negative instaces')
+        # print(call_pos_neg)
+        out_pos_neg = rl.call_script(call_pos_neg,True)
+        # print(out_pos_neg)
 
 
-    ### Call get_features.py ###################################################
-    feature_out_path = out_path + 'feature_files/'
-    if not os.path.exists(feature_out_path):
-        os.mkdir(feature_out_path)
-    midel_name =  experiment_name + '_context_' + str(context)
-    file_neg = pos_neg_out_path + midel_name + '_pos_occ_neg.csv'
-    file_pos = pos_neg_out_path + midel_name + '_pos_occ_pos.csv'
-    feature_pos = (feature_out_path +  'feature_filtered_' + midel_name +
-                  '_pos_occ_pos.csv')
-    feature_neg = (feature_out_path +  'feature_filtered_' + midel_name +
+        ### Call get_features.py ###################################################
+        feature_out_path = out_path + 'feature_files/'
+        if not os.path.exists(feature_out_path):
+            os.mkdir(feature_out_path)
+        midel_name =  experiment_name + '_context_' + str(context)
+        file_neg = pos_neg_out_path + midel_name + '_pos_occ_neg.csv'
+        file_pos = pos_neg_out_path + midel_name + '_pos_occ_pos.csv'
+        feature_pos = (feature_out_path +  'feature_filtered_' + midel_name +
+                    '_pos_occ_pos.csv')
+        feature_neg = (feature_out_path +  'feature_filtered_' + midel_name +
                   '_pos_occ_neg.csv')
 
-    pos_feature_param = ' -i ' + file_pos + ' -f all -o ' + feature_pos
-    call_pos_feature = 'get_features.py' + pos_feature_param
-    print('3a. Compute positive feature')
-    #print(call_pos_feature)
-    rl.call_script(call_pos_feature)
+        pos_feature_param = ' -i ' + file_pos + ' -f all -o ' + feature_pos
+        call_pos_feature = 'get_features.py' + pos_feature_param
+        print('3a. Compute positive feature')
+        # print(call_pos_feature)
+        rl.call_script(call_pos_feature)
 
-    neg_feature_param = ' -i ' + file_neg + ' -f all -o ' + feature_neg
-    call_neg_feature = 'get_features.py' + neg_feature_param
-    print('3b. Compute negative feature')
-    #print(call_neg_feature)
-    rl.call_script(call_neg_feature)
+        neg_feature_param = ' -i ' + file_neg + ' -f all -o ' + feature_neg
+        call_neg_feature = 'get_features.py' + neg_feature_param
+        print('3b. Compute negative feature')
+        #print(call_neg_feature)
+        rl.call_script(call_neg_feature)
+        X, y = rl.read_pos_neg_data(feature_pos, feature_neg)
 
+    elif mixed == 'on':
+        feature_out_path = out_path + 'feature_files/'
+        if not os.path.exists(feature_out_path):
+            os.mkdir(feature_out_path)
+        midel_name =  experiment_name + '_context_' + str(context)
+        X_list = []
+        y_list = []
+        for data in replicats:
+            feature_path = f'{input_path_RRIs}/{data}/feature_files/'
+            feature_neg = f'{feature_path}/feature_filtered_{data}_context_{str(context)}_pos_occ_neg.csv'
+            feature_pos = f'{feature_path}/feature_filtered_{data}_context_{str(context)}_pos_occ_pos.csv'
+            X_sub, y_sub = rl.read_pos_neg_data(feature_pos, feature_neg)
+            X_list.append(X_sub)
+            y_list.append(y_sub)
+        X = pd.concat(X_list)
+        y = pd.concat(y_list)
+        # print(X.info())
 
-    # Convert function from biofilm to prepare data?
 
     ### Add structure ###################################################
-    feat_output = f'{feature_out_path}training_data_{midel_name}'
+    feat_output = f'{feature_out_path}/training_data_{midel_name}'
     #print(feat_output)
-    X, y = rl.read_pos_neg_data(feature_neg, feature_pos)
+
     # print(X.info())
 
     if use_structure == 'ON' or use_structure == 'on':
@@ -592,14 +639,7 @@ def main_train(args):
     # print(call_feat)
     print('4a. Select features')
     rl.call_script(call_feat)
-    #p2 = subprocess.run(call_feat, stdout=subprocess.PIPE,
-                        #stderr=subprocess.PIPE, shell=True)
-    #p2.terminate()
-    #p2.wait()
-    #print(p2.stderr.decode())
-    #print(p2.stdout.decode())
-    #output = subprocess.getoutput(call_feat)
-    #print(output)
+
 
 
     ## optimize ###############################################################
@@ -608,17 +648,30 @@ def main_train(args):
     if not os.path.exists(opt_path):
         os.mkdir(opt_path)
 
-    loaddata = f' --infile {feat_output} --folds 0 --subsample 100 --featurefile {out_feat}'
+    loaddata = f' --infile {feat_output} --folds 0 --subsample 10000 --featurefile {out_feat}'
 
     #out  = f'{opt_path}{dataset}'
-    opt_call = f'python -W ignore -m biofilm.biofilm-optimize6 {loaddata} --out {opt_path}{midel_name} --preprocess True --n_jobs 30 --time 100'
+    opt_call = f'python -W ignore -m biofilm.biofilm-optimize6 {loaddata} --out {opt_path}{midel_name} --preprocess True --n_jobs 30 --time 1000'
     #print(opt_call)
     print('4b. Optimize model')
-    rl.call_script(opt_call)
+    out = rl.call_script(opt_call, True)
     model_path = f'{opt_path}{midel_name}.model'
+    full_model_path = f'{opt_path}full_{midel_name}'
+
+    call_refit = f'$(which python) -m biofilm.biofilm-cv --infile {feat_output} --folds 0 --featurefile {out_feat} --model {model_path} --out {full_model_path}'
+    #print(call_refit)
+    rl.call_script(call_refit)
+
+    # print(out)
+    model_file = f'{full_model_path}.model'
+
+    # extract score from out!
+    score = loadfile(model_path)['score']
+    #score = loadfile(f'{full_model_path}.model')['score']
 
     print('##########################################')
-    print(f'Final model can be found here: {model_path}')
+    print(f'Final model can be found here: {model_file}')
+    print(f'with trainings score:{score}')
     print('##########################################')
 
 
@@ -635,11 +688,6 @@ if __name__ == '__main__':
     # Read in command line arguments.
     args = parser.parse_args()
 
-
-    # Are my tools ready?
-    #assert hoodlib.is_tool("bedtools"), "bedtools not in PATH"
-    #assert hoodlib.is_tool("twoBitToFa"), "twoBitToFa not in PATH"
-    #assert hoodlib.is_tool("twoBitInfo"), "twoBitInfo not in PATH"
 
     # Run selected mode.
     if args.which == 'eval':

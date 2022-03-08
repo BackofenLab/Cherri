@@ -187,7 +187,7 @@ def call_script(call,reprot_stdout=False):
 
     assert not error, "script is complaining:\n%s\n%s" %(call, error)
     if reprot_stdout == True:
-        # out = out.decode('utf-8')
+        #out = out.decode('utf-8')
         return out
 
 
@@ -490,7 +490,7 @@ def filter_false_chr(df, col_name):
         Parameters
         ----------
         df: DataFrame
-        col_name: chromosome colum name
+        col_name: chromosome column name
 
 
         Returns
@@ -1187,6 +1187,9 @@ def filter_features(X,featurefile):
 
 ################################################################################
 
+def call_vectorize(g):
+    return eg.vectorize(g,nbits=12)
+
 def convert(X, y, outname, graphfeatures, mode):
     call_script(f'export PYTHONHASHSEED=31337')
     # makes list of subseqDP and hybridDP tupels
@@ -1197,8 +1200,13 @@ def convert(X, y, outname, graphfeatures, mode):
     if graphfeatures:
         # convert df into a csr matrix
         X_from_df = csr_matrix(X.to_numpy().astype(np.float64))
-        graphs = tools.xmap(mkgr, hybrid_seq_list ,32)
-        X2 = csr_matrix(vstack(tools.xmap(eg.vectorize,[[g] for g in graphs])))
+        graphs = tools.xmap(mkgr, hybrid_seq_list ,14)
+        #print('computed mkgr!!')
+        X2 = csr_matrix(vstack(tools.xmap(call_vectorize,[[g] for g in graphs],10)))
+        #print('computed call_verctorize!!')
+        # print(X2)
+        #print(X2.shape())
+        #print(X2.__len__())
         X_csr= csr_matrix(hstack((X_from_df,X2)))
         X_np= X_csr.todense()
         head_X2 = [str(int) for int in np.arange(0, X2.get_shape()[1], 1).tolist()]

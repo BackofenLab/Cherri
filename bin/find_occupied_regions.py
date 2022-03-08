@@ -49,13 +49,14 @@ def build_interlap_occ_sides(df_interactions, flag):
                 print('can not use chromosome')
             else:
                 both_keys1 = str(row[names_first[0]]) + ';' + row[names_first[1]]
-                inter_rep[both_keys1].add((row[names_first[2]], row[names_first[3]], [row]))
+                #print(f'########\n{row[names_first[3]]}\n###########')
+                inter_rep[both_keys1].add((int(row[names_first[2]]), int(row[names_first[3]]), [row]))
 
             if not row[names_second[0]]:
                 print('can not use chromosome')
             else:
                 both_keys2 = str(row[names_second[0]]) + ';' + row[names_second[1]]
-                inter_rep[both_keys2].add((row[names_second[2]], row[names_second[3]], [row]))
+                inter_rep[both_keys2].add((int(row[names_second[2]]), int(row[names_second[3]]), [row]))
     elif flag == 'one':
         list_chrom_no_int = rl.get_chrom_list_no_numbers(df_interactions, 'chrom')
         for index, row in df_interactions.iterrows():
@@ -154,7 +155,7 @@ def get_prot_occ_regions(file_rbp_pos, exp_score_th, context):
     df_bed['chrom'] = df_bed['chrom'].apply(lambda x: rl.check_convert_chr_id(x))
     # add context
     df_context =  rl.add_context(df_bed, context, 'start', 'end')
-    #print(df_context)
+    #print(df_context.info())
 
     inter_rep_one = build_interlap_occ_sides(df_context, 'one')
     inter_rbp = rl.mearge_overlaps(inter_rep_one, 'rbp')
@@ -233,6 +234,7 @@ def main():
     if len(replicats) == 1:
         print('only one experiment!')
         in_file = input_path_RRIs + replicats[0]
+        print(in_file)
         # df_replicat = rl.read_chira_data(in_file)
         df_replicat = rl.read_chira_data(in_file, header='yes', separater=",")
         if score_th == 'non':
@@ -242,11 +244,11 @@ def main():
             df_rris = rl.delet_empty_col(df_filtered_replicat)
     else:
         rl.call_script(rri_call)
-        print(rri_call)
+        #print(rri_call)
         df_rris = rl.read_chira_data(rri_file, header='yes', separater=",")
         #out_path =  out_path_temp
     #df_rris = rl.read_chira_data(file_test, header='yes', separater=",")
-    #print(df_rris)
+    #print(df_rris.info())
     inter_rep_two = build_interlap_occ_sides(df_rris, 'two')
     inter_rri = rl.mearge_overlaps(inter_rep_two, 'rri')
 

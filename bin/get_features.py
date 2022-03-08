@@ -162,8 +162,8 @@ def comput_complexity(seq):
 
         Returns
         -------
-        GC_content
-            GC_content
+        complexity
+            sequence complexety
 
 
         """
@@ -189,7 +189,7 @@ def get_GC_content(interacting_seq):
             GC_content
 
     >>> seq = 'AAAACCCGGU&ACUGGGUUUU'
-    >>> get_GC_skew(seq)
+    >>> get_GC_content(seq)
     0.45
 
      """

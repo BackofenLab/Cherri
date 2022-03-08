@@ -1,5 +1,5 @@
 #################################################################
-# my parameter.cfg file to simulate RNAup predictions
+# my parameter.cfg file to run IntaRNA within Cherri
 #################################################################
 outMode = C 
 seedBP = 5 
