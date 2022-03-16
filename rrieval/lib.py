@@ -1069,7 +1069,8 @@ def classify(df_eval,in_model_filepath, output_path):
     #model_handle.close()
     #params = loadfile(in_model_filepath)['params']
     #print(params)
-    model = loadfile(in_model_filepath)['estimator']
+    #model = loadfile(in_model_filepath)['estimator']
+    model = loadfile(in_model_filepath)
     y_pred=model.predict(df_eval)
     #print('model predictions')
     xtra = pd.DataFrame({'prediction': y_pred})

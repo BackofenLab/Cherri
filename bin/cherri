@@ -184,6 +184,15 @@ def setup_argument_parser():
     p_mrgm.add_argument("-i2", "--RBP_path",
                         help= "path to RBP binding location file in bed format",
                         default="non")
+    p_mrgm.add_argument("-t", "--run_time",
+                        help= "time used for the optimization",
+                        default=43200)
+    p_mrgm.add_argument("-me", "--memoryPerThread",
+                        help= "memory in MB which each thred can use (total ram/threds)",
+                        default=4300)
+    p_mrgm.add_argument("-j", "--n_jobs",
+                        help= "number of jobs for the optimization",
+                        default=4300)
 
     return p
 
@@ -296,8 +305,8 @@ def main_eval(args):
         lib_path = os.path.dirname(rl.__file__)
         #model_file = lib_path + "/model/test_train_context_50.model"
         #model_params = lib_path + '/model/test_train_context_50.npz'
-        model_file = lib_path + '/model/NEWMODEL.model'
-        model_params = lib_path + '/model/NEWFEATUREFILE.npz'
+        model_file = lib_path + '/model/full_Full_context_150.model'
+        model_params = lib_path + '/model/full_Full_context_150.npz'
     else:
         if not os.path.exists(model_file):
             print('Error: please set the path to your model or keep not_set')
@@ -367,7 +376,7 @@ def main_eval(args):
 
     ### Call find_occupied_regions.py ##########################################
     if occupyed_regions == 'human':
-        occupyed_regions_file = '/vol/scratch/data_storage/ata/RRIs/20210907_occ_out_rbp_c5/occupied_regions.obj'
+        occupyed_regions_file = '/vol/scratch/data_storage/data/RRIs/20210907_occ_out_rbp_c5/occupied_regions.obj'
         occupyed_regions = call_occupyed_regions_eval(eval_rri_file, out_path, occupyed_regions_file)
     elif occupyed_regions == 'mouse':
         occupyed_regions_file = '/vol/scratch/data_storage/data/RRIs/20210923_occ_out/occupied_regions.obj'
@@ -493,6 +502,9 @@ def main_train(args):
     param_file = args.param_file
     use_structure = args.use_structure
     file_rbp_pos = args.RBP_path
+    run_time = args.run_time
+    memoryPerThread = args.memoryPerThread
+    n_jobs = args.n_jobs
 
 
     set_path = 'off'
@@ -636,7 +648,7 @@ def main_train(args):
     loaddata_feat = f'--infile {feat_output} --subsample 20000 '
     out_feat = f'{feat_path}{midel_name}'
     call_feat = f'python -m biofilm.biofilm-features {loaddata_feat} --method forest --out {out_feat}'
-    # print(call_feat)
+    print(call_feat)
     print('4a. Select features')
     rl.call_script(call_feat)
 
@@ -648,18 +660,20 @@ def main_train(args):
     if not os.path.exists(opt_path):
         os.mkdir(opt_path)
 
-    loaddata = f' --infile {feat_output} --folds 0 --subsample 10000 --featurefile {out_feat}'
+    #--subsample 1000000
+
+    loaddata = f' --infile {feat_output}  --featurefile {out_feat}'
 
     #out  = f'{opt_path}{dataset}'
-    opt_call = f'python -W ignore -m biofilm.biofilm-optimize6 {loaddata} --out {opt_path}{midel_name} --preprocess True --n_jobs 30 --time 1000'
-    #print(opt_call)
+    opt_call = f'python -W ignore -m biofilm.biofilm-optimize6 {loaddata} --memoryMBthread {memoryPerThread} --folds 0 --out {opt_path}{midel_name} --preprocess True --n_jobs {n_jobs} --time {run_time}'
+    print(opt_call)
     print('4b. Optimize model')
     out = rl.call_script(opt_call, True)
     model_path = f'{opt_path}{midel_name}.model'
     full_model_path = f'{opt_path}full_{midel_name}'
 
     call_refit = f'$(which python) -m biofilm.biofilm-cv --infile {feat_output} --folds 0 --featurefile {out_feat} --model {model_path} --out {full_model_path}'
-    #print(call_refit)
+    print(call_refit)
     rl.call_script(call_refit)
 
     # print(out)
@@ -667,7 +681,7 @@ def main_train(args):
 
     # extract score from out!
     score = loadfile(model_path)['score']
-    #score = loadfile(f'{full_model_path}.model')['score']
+    score = loadfile(f'{full_model_path}.model')['score']
 
     print('##########################################')
     print(f'Final model can be found here: {model_file}')
