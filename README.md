@@ -73,12 +73,12 @@ conda install -c bioconda IntaRNA
 conda install -c bioconda numpy
 conda install -c bioconda pandas
 conda install -c smautner eden-kernel
-conda install -c smautner biofilm=0.0.78
+conda install -c smautner biofilm=0.0.81
 ```
 Or directly:
 
 ```
-conda create -n cherri -c conda-forge -c bioconda -c smautner scikit-learn networkx ucsc-twobittofa interlap pandas IntaRNA eden-kernel biofilm=0.0.78
+conda create -n cherri -c conda-forge -c bioconda -c smautner scikit-learn networkx ucsc-twobittofa interlap pandas IntaRNA eden-kernel biofilm=0.0.81
 
 ```
 
@@ -196,9 +196,21 @@ Thought the program seveal output files are generated in the following structure
 
 
 
+### Get to know cherr with a test run Cherri
+Using test data stored in this reposetory under 'test_data' you can see how Cherri is running. First please install Cherri via conda. 
+
+#### Test Cherri train model mode
+```
+cherri eval -i1 /vol/scratch/Cherri/test_data/evaluate/test_evalueat_rris.cvs -g /vol/scratch/data_storage/data/genomes/hg38_UCSC_20210318.2bit -l /vol/scratch/data_storage/data/genomes/hg38_Info.tab -o /vol/scratch/data_storage/ -n test_eval -c 150 -st on
+```
+
+#### Test Cherri train evaluation mode
+```
+cherri train -i1 ./Cherri/test_data/training/Paris/ -r miRNA_human_1.tabular miRNA_human_2.tabular miRNA_human_3.tabular -g /vol/scratch/data_storage/data/genomes/hg38_UCSC_20210318.2bit -l /vol/scratch/data_storage/data/genomes/hg38_Info.tab -o /vol/scratch/data_storage/ -n paris_human_test -c 50 -st on -t 10000 -me 8000 -j 7
+```
 
 ### Backround of scripts which are wrapped in Cherri
-The following scripts are needed to build the trainings data to build a model.
+Cherri is build as a modular tool calling individual scrips doing specific tasks. If you would like to only perform one step of the Cherri piplein you can do this by calling the individal scrips. A shord description of this scipts is given in the following.
 
 
 ### find_trusted_RRI.py
