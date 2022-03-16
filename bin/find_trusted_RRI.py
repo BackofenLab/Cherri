@@ -811,12 +811,11 @@ def main():
     score_th = args.score_th
 
 
-    plot_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/RNA_RNA_binding_evaluation/plots/'
-    #output_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/output/'
-    #output_tag = 'PARIS_mES'
+    #plot_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/RNA_RNA_binding_evaluation/plots/'
+
     output_name = experiment_name + '_overlap_' + str(overlap_th) + '.cvs'
 
-    plot_path_full = plot_path + '_' + str(overlap_th) + '_'
+    #plot_path_full = plot_path + '_' + str(overlap_th) + '_'
 
 
     inter_replicat_list, no_replicats, rep_size_list = build_replicat_library_to_compare(input_path, list_of_replicats, score_th)

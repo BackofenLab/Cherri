@@ -69,44 +69,6 @@ def build_interlap_occ_sides(df_interactions, flag):
 
 
 
-
-
-def join_pos(pos_list):
-    """
-    join positons will join start end end postions whick are overlaping
-
-        Parameters
-        ----------
-        pos_list : list of tupels containg (start, end) position
-        info: information what inter object
-
-        Returns
-        -------
-        inter_obj_new
-            inerlap objects with the mearged positons
-
-    >>> join_pos([(2, 4), (4, 9)])
-    [(2, 4), (4, 9)]
-    >>> join_pos([(2, 6), (4, 10)])
-    [(2, 10)]
-    !!! COPY !!!
-    """
-    if len(pos_list) < 2: return pos_list
-    pos_list.sort()
-    joint_pos_list = [pos_list[0]]
-    for next_i, (s, e) in enumerate(pos_list, start=1):
-        if next_i == len(pos_list):
-            joint_pos_list[-1] = joint_pos_list[-1][0], max(joint_pos_list[-1][1], e)
-            break
-
-        ns, ne = pos_list[next_i]
-        if e > ns or joint_pos_list[-1][1] > ns:
-            joint_pos_list[-1] = joint_pos_list[-1][0], max(e, ne, joint_pos_list[-1][1])
-        else:
-            joint_pos_list.append((ns, ne))
-    return joint_pos_list
-
-
 def count_entrys(inter_obj, name):
     """
     count enteys of inter lap object and prints the the counts
@@ -132,13 +94,14 @@ def get_prot_occ_regions(file_rbp_pos, exp_score_th, context):
 
         Parameters
         ----------
-        file_rbp_pos :
-        exp_score_th:
-        context:
+        file_rbp_pos: bed file storing singel interaction positions
+        exp_score_th: threshold to filter sequences with bed file
+        context: number of nucleotide postions added to the interaction position
 
         Returns
         -------
         inter_rbp
+            interLab object storing all cromosomal RBP sided {chrom:strand}->[s,e,rbp]
 
 
     """
