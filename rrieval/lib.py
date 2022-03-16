@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 #general imports
 
 import pandas as pd
@@ -10,7 +12,7 @@ from collections import defaultdict
 # training imports
 import csv
 import numpy as np
-import pandas_profiling
+#import pandas_profiling
 import sklearn as sk
 from sklearn import model_selection
 from sklearn.dummy import DummyClassifier
@@ -26,8 +28,34 @@ from sklearn.metrics import plot_confusion_matrix
 #import xgboost
 import pickle
 from sklearn.linear_model import Lasso
-#import seaborn as sns
-###
+from scipy.sparse import csr_matrix, vstack, hstack, load_npz, save_npz
+partner =  {a:b for a,b in zip("({[<",")}]>")  }
+import eden.graph as eg
+import networkx as nx
+from ubergauss import tools
+from ubergauss.tools import loadfile, dumpfile
+from lmz import *
+from itertools import compress
+
+
+
+"""
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~ OPEN FOR BUSINESS ~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Author: muellert [at] informatik.uni-freiburg.de
+
+~~~~~~~~~~~~~
+Run doctests
+~~~~~~~~~~~~~
+
+python3 -m doctest lib.py
+
+"""
+
+
+################################################################################
 
 def read_chira_data(in_file, header='no', separater="\t"):
     """
@@ -50,7 +78,8 @@ def read_chira_data(in_file, header='no', separater="\t"):
 
     # inclued header
     if header == 'no':
-        df_temp = pd.read_table(in_file, header=None, sep=separater, low_memory=False)
+        df_temp = pd.read_table(in_file, header=None, sep=separater,
+                                low_memory=False)
         header = ['#reads','chrom_1st','start_1st','end_1st', 'strand_1st',
                 'chrom_2end','start_2end','end_2end', 'strand_2end',
                 'ineraction_side_1st', 'ineraction_side_2end',
@@ -67,23 +96,26 @@ def read_chira_data(in_file, header='no', separater="\t"):
     # len(header)
         df_interactions = pd.DataFrame(df_temp.values, columns=header)
     elif header == 'yes':
-        df_interactions = pd.read_table(in_file, sep=separater, low_memory=False)
+        df_interactions = pd.read_table(in_file, sep=separater,
+                                        low_memory=False)
     return df_interactions
 
 
-def filter_score(df_interactions, score_th):
+################################################################################
+
+def filter_score(df, score_th):
     """
     Filter dataframe for instances with a score of 1
 
         Parameters
         ----------
-        df_interactions : df including the containing all RRIs
+        df : df including the containing all RRIs (Interactions)
         score_th: threshold for the expactation maximization score of Chira
 
 
         Returns
         -------
-        df_interactions_single_mapped
+        df_filterd
             dataframes filter for a score smaller equal threshold of both
             interacting partners
 
@@ -96,14 +128,16 @@ def filter_score(df_interactions, score_th):
 
             """
     # filter input for score_seq_1st_side and score_seq_2end_side == 1
-    df_interactions_single_mapped = df_interactions[(df_interactions.score_seq_1st_side >= score_th) & (df_interactions.score_seq_2end_side >= score_th)]
+    df_filterd = df[(df.score_seq_1st_side >= score_th) &
+                    (df.score_seq_2end_side >= score_th)]
     #df_interactions_single_mapped
-    return df_interactions_single_mapped
+    return df_filterd
 
+################################################################################
 
 def delet_empty_col(df):
     """
-    Filter dataframe filters out all rows with a emty column entry
+    Filters out all rows with a emty column entry in a dataframe
 
         Parameters
         ----------
@@ -127,9 +161,11 @@ def delet_empty_col(df):
     df_filtered = df_temp.dropna()
     return df_filtered
 
+################################################################################
+
 def call_script(call,reprot_stdout=False):
     """
-    starts a subprosses to call a script and checks for errors.
+    Starts a subprosses to call a script and checks for errors.
 
 
         Parameters
@@ -144,14 +180,18 @@ def call_script(call,reprot_stdout=False):
     """
     process = subprocess.Popen(call, stdout=subprocess.PIPE,
                                      stderr=subprocess.PIPE, shell=True)
+    #process.wait()
     out, err = process.communicate()
-    #print(out.decode('utf-8'))
+    #print(err.decode('utf-8'))
     error = err.decode('utf-8')
 
     assert not error, "script is complaining:\n%s\n%s" %(call, error)
     if reprot_stdout == True:
-        # out = out.decode('utf-8')
+        #out = out.decode('utf-8')
         return out
+
+
+################################################################################
 
 def calculate_overlap(s1,e1,s2,e2,len_flag=False):
     """
@@ -163,11 +203,6 @@ def calculate_overlap(s1,e1,s2,e2,len_flag=False):
         e1: end of one sequence of the first replicat
         s2: start of one sequence of the current replicat
         e2: end of one sequence of the current replicat
-
-
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -209,6 +244,7 @@ def calculate_overlap(s1,e1,s2,e2,len_flag=False):
         return compinde_overlap
 
 
+################################################################################
 
 def get_chrom_list_no_numbers(df_interactions, chrom):
     """
@@ -218,7 +254,7 @@ def get_chrom_list_no_numbers(df_interactions, chrom):
         Parameters
         ----------
         df_interactions : df including the filtered RRIs
-        chrom :  string indicating from wich seq the chromosome is
+        chrom : string indicating from wich seq the chromosome is
 
 
         Returns
@@ -236,14 +272,16 @@ def get_chrom_list_no_numbers(df_interactions, chrom):
     return sort_list_chrom
 
 
-def get_list_chrom(df_interactions):
+################################################################################
+
+def get_list_chrom(df):
     """
     Generates a unique list of chromosmes or conticts for both interaction
     partners
 
         Parameters
         ----------
-        df_interactions : df including the filtered RRIs
+        df : df including the filtered RRIs
 
 
         Returns
@@ -253,15 +291,14 @@ def get_list_chrom(df_interactions):
             and present in the input data frame
 
         """
-    chrom1_list = get_chrom_list_no_numbers(df_interactions, 'chrom_seq_1st_side')
-    chrom2_list = get_chrom_list_no_numbers(df_interactions, 'chrom_seq_2end_side')
+    chrom1_list = get_chrom_list_no_numbers(df, 'chrom_seq_1st_side')
+    chrom2_list = get_chrom_list_no_numbers(df, 'chrom_seq_2end_side')
     list_chrom_no_int = list(set().union(chrom1_list,chrom2_list))
     sort_list_chrom = sorted(list_chrom_no_int)
     return sort_list_chrom
 
 
-
-
+################################################################################
 ### functions context
 
 def check_convert_chr_id(chr_id):
@@ -303,6 +340,8 @@ def check_convert_chr_id(chr_id):
     return chr_id
 
 
+################################################################################
+
 def add_context(df_bed, context, start, end):
     """
     edding the changing the start and end postion of the sequences
@@ -315,9 +354,6 @@ def add_context(df_bed, context, start, end):
         start: column name of start positons
         end: column name of end positons
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -332,6 +368,8 @@ def add_context(df_bed, context, start, end):
     #print(df_bed[start])
     return df_bed
 
+
+################################################################################
 
 def bed_extract_sequences_from_2bit(in_bed, out_fa, in_2bit,
                                     lc_repeats=False,
@@ -349,9 +387,6 @@ def bed_extract_sequences_from_2bit(in_bed, out_fa, in_2bit,
         lc_repeats:
             If True, do not convert repeat regions to uppercase and output.
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -381,6 +416,8 @@ def bed_extract_sequences_from_2bit(in_bed, out_fa, in_2bit,
         #fasta_output_dic(seqs_dic, out_fa, split=True)
     return seqs_dic
 
+
+################################################################################
 
 def check_context(df, seq_tag, chrom_dict):
     """
@@ -432,7 +469,7 @@ def check_context(df, seq_tag, chrom_dict):
         end = 'end_2end'
         chrom = 'chrom_2end'
 
-    print(df)
+    #print(df)
     no_seq_out_boder += len(df[df[start] < 0])
     no_seq_out_boder += len(df[df[end] > df[chrom].apply(lambda x: chrom_dict[x])])
 
@@ -443,6 +480,9 @@ def check_context(df, seq_tag, chrom_dict):
     print('Warning: added context to %s is out of bourder for %i instances'%(seq_tag,no_seq_out_boder))
     return df
 
+
+################################################################################
+
 def filter_false_chr(df, col_name):
     """
     If a cell of a column has False as a entry the row will be filterd out!
@@ -450,7 +490,7 @@ def filter_false_chr(df, col_name):
         Parameters
         ----------
         df: DataFrame
-        col_name: chromosome colum name
+        col_name: chromosome column name
 
 
         Returns
@@ -471,6 +511,8 @@ def filter_false_chr(df, col_name):
     no_del_entys = len(df) - len(df_filterd)
     return df_filterd, no_del_entys
 
+
+################################################################################
 
 def get_context(seq_tag, df, out_dir, in_2bit_file, context, chrom_len_file):
     """
@@ -537,7 +579,9 @@ def get_context(seq_tag, df, out_dir, in_2bit_file, context, chrom_len_file):
     return df
 
 
+################################################################################
 #Functions negative data
+
 def shuffle_sequence(seq, times, kind_of_shuffel):
     """
     shuffle on given sequence x times
@@ -548,9 +592,6 @@ def shuffle_sequence(seq, times, kind_of_shuffel):
         times: amount of shuffling
         kind_of_shuffel: 1 -> Mononucleotide; 2 -> Dinucleotide
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -571,6 +612,8 @@ def shuffle_sequence(seq, times, kind_of_shuffel):
     return seq_list
 
 
+################################################################################
+
 def bp_suffeling(hybrid_seq, IntaRNA_prediction,times):
     """
     basepair shufelling of the given IntaRNA prediction
@@ -580,9 +623,6 @@ def bp_suffeling(hybrid_seq, IntaRNA_prediction,times):
         hybrid_seq: tartet sequence
         IntaRNA_prediction: query sequence
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -606,6 +646,27 @@ def bp_suffeling(hybrid_seq, IntaRNA_prediction,times):
 
     return shuffled_target_list, shuffled_query_list
 
+################################################################################
+
+def load_occupyed_data(input_occupyed):
+    """
+    load occupyed data
+
+        Parameters
+        ----------
+        input_occupyed: input file path
+
+        Returns
+        -------
+        occupyed_InteLab: Interlab object of occupyed regions
+        """
+    overlap_handle = open(input_occupyed,'rb')
+    occupyed_InteLab = pickle.load(overlap_handle)
+    # print(overlap_avg_val)
+    overlap_handle.close()
+    return occupyed_InteLab
+
+################################################################################
 
 def encode_hybrid_by_BPs(dot_bracked, seq):
     """
@@ -656,6 +717,8 @@ def encode_hybrid_by_BPs(dot_bracked, seq):
     return tup_list
 
 
+################################################################################
+
 def make_seq_from_list(suffled_list):
     """
     make_seq_from_list
@@ -691,6 +754,8 @@ def make_seq_from_list(suffled_list):
     return seq1, seq2
 
 
+################################################################################
+
 def mearge_overlaps(inter_obj, info):
     """
     mearg postions in a interlab library
@@ -724,6 +789,8 @@ def mearge_overlaps(inter_obj, info):
         #print('test interval')
     return inter_obj_new
 
+
+################################################################################
 
 def join_pos(pos_list):
     """
@@ -760,6 +827,8 @@ def join_pos(pos_list):
     return joint_pos_list
 
 
+################################################################################
+
 def read_table_into_dic(file):
     """
     Read in Table separated by \t and puts first line as key second as value
@@ -789,7 +858,7 @@ def read_table_into_dic(file):
     return chrom_ends_dic
 
 
-
+################################################################################
 
 def read_fasta_into_dic(fasta_file,
                         seqs_dic=False,
@@ -806,9 +875,6 @@ def read_fasta_into_dic(fasta_file,
         ----------
         fasta_file: file location of the to be read fasta file
 
-        Raises
-        ------
-        nothing
 
         Returns
         -------
@@ -872,6 +938,8 @@ def read_fasta_into_dic(fasta_file,
     return seqs_dic
 
 
+################################################################################
+
 def read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath):
     pos_df = pd.read_csv(in_positive_data_filepath, sep=',')
     neg_df = pd.read_csv(in_negative_data_filepath, sep=',')
@@ -898,27 +966,11 @@ def read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath):
     return X, y
 
 
-
+################################################################################
 #Functions for model training
+
 def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path):
-    #pos_df = pd.read_csv(in_positive_data_filepath, sep=',')
-    #neg_df = pd.read_csv(in_negative_data_filepath, sep=',')
-    #Inject labels
-    #pos_df['label'] = 1
-    #neg_df['label'] = 0
-    #Dataset initial characterisation
-    #reporting=0
-    #if(reporting):
-        #pos_report=pandas_profiling.ProfileReport(pos_df,title="Positive data Report")
-        #neg_report=pandas_profiling.ProfileReport(neg_df,title="Negative data Report")
-        #pos_report.to_file(output_path + "/positive_report.html")
-        #neg_report.to_file(output_path + "/negative_report.html")
-    #print(pos_df.dtypes)
-    #print(neg_df.dtypes)
-    #print(pd.get_dummies(pos_df))
-    #print(pd.get_dummies(neg_df))
-    #Concat datasets
-    #ia_df = pd.concat([pos_df,neg_df])
+
     X, y = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)
 
     #y = ia_df.label
@@ -957,6 +1009,9 @@ def train_model(in_positive_data_filepath,in_negative_data_filepath,output_path)
     pickle.dump(xgb,xgb_handle)
     xgb_handle.close()
     return ""
+
+
+################################################################################
 
 def base_model(in_positive_data_filepath,in_negative_data_filepath,output_path,name):
 
@@ -1005,15 +1060,28 @@ def base_model(in_positive_data_filepath,in_negative_data_filepath,output_path,n
     return ""
 
 
-def classify(in_data_filepath,in_model_filepath,output_path):
-    X = pd.read_csv(in_data_filepath, sep=',')
-    model_handle = open(in_model_filepath,'rb')
-    model = pickle.load(model_handle)
-    model_handle.close()
-    y_pred=model.predict(X)
-    print('model predictions')
-    print(y_pred)
-    return y_pred
+################################################################################
+
+def classify(df_eval,in_model_filepath, output_path):
+    #X = pd.read_csv(in_data_filepath, sep=',')
+    #model_handle = open(in_model_filepath,'rb')
+    #model = pickle.load(model_handle)
+    #model_handle.close()
+    #params = loadfile(in_model_filepath)['params']
+    #print(params)
+    #model = loadfile(in_model_filepath)['estimator']
+    model = loadfile(in_model_filepath)
+    y_pred=model.predict(df_eval)
+    #print('model predictions')
+    xtra = pd.DataFrame({'prediction': y_pred})
+    df_result = pd.concat([df_eval, xtra], axis=1)
+    # df_eval['prediction'] = y_pred
+    #print(y_pred)
+    df_result.to_csv(output_path)
+    return df_result
+
+
+################################################################################
 
 def classify2(X,in_model_filepath,score_flag):
     model_handle = open(in_model_filepath,'rb')
@@ -1027,6 +1095,9 @@ def classify2(X,in_model_filepath,score_flag):
     #print('model predictions')
     #print(y_pred)
     return model, y_pred, y_score
+
+
+################################################################################
 
 def param_optimize(in_positive_data_filepath,in_negative_data_filepath,output_path):
     X, y = read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath)
@@ -1083,6 +1154,9 @@ def param_optimize(in_positive_data_filepath,in_negative_data_filepath,output_pa
 
     return ""
 
+
+################################################################################
+
 def evaluate(model, test_features, test_labels):
     predictions = model.predict(test_features)
     errors = abs(predictions - test_labels)
@@ -1093,3 +1167,92 @@ def evaluate(model, test_features, test_labels):
     print('Accuracy = {:0.2f}%.'.format(accuracy))
 
     return accuracy
+
+
+################################################################################
+
+def filter_features(X,featurefile):
+    ft = np.load(featurefile)['arr_0']
+    #print(X.info())
+    header = X.columns
+    header_list = header.tolist()
+    features_filterd=list(compress(header_list, ft))
+    #print(features_filterd)
+    X_filterd = X[features_filterd]
+    #print('dfInfo after:')
+    #print(X_filterd.info())
+
+    return X_filterd
+
+
+
+################################################################################
+
+def call_vectorize(g):
+    return eg.vectorize(g,nbits=12)
+
+def convert(X, y, outname, graphfeatures, mode):
+    call_script(f'export PYTHONHASHSEED=31337')
+    # makes list of subseqDP and hybridDP tupels
+    hybrid_seq_list = [a for a in zip(X['subseqDP'],X['hybridDP'])]
+    X = X.drop(columns="subseqDP")
+    X = X.drop(columns="hybridDP")
+    #print(len(X.columns.tolist()))
+    if graphfeatures:
+        # convert df into a csr matrix
+        X_from_df = csr_matrix(X.to_numpy().astype(np.float64))
+        graphs = tools.xmap(mkgr, hybrid_seq_list ,14)
+        #print('computed mkgr!!')
+        X2 = csr_matrix(vstack(tools.xmap(call_vectorize,[[g] for g in graphs],10)))
+        #print('computed call_verctorize!!')
+        # print(X2)
+        #print(X2.shape())
+        #print(X2.__len__())
+        X_csr= csr_matrix(hstack((X_from_df,X2)))
+        X_np= X_csr.todense()
+        head_X2 = [str(int) for int in np.arange(0, X2.get_shape()[1], 1).tolist()]
+        #print(head_X2)
+        header = X.columns.tolist() + head_X2
+    else:
+        X_np = X.to_numpy()
+
+    # Convert dfs
+    y_np = np.array(y.tolist())
+
+    #X_np = csr_matrix(X_np.astype(np.float64))
+    list = [ X_np,y_np, header + Range(X.shape[1] - len(X.columns.tolist()))]
+    # saves object as 'np.savez_compressed'
+    # breakpoint()
+    tools.ndumpfile(list , outname)
+    #print(f'total amount of features:\n {len(X.columns.tolist())}')
+    #print()
+    if mode == 'eval':
+        X = pd.DataFrame(X_np, columns=header)
+        return X,y
+
+
+
+def mkgraph(sequence, structure):
+    graph = nx.Graph()
+    lifo = defaultdict(list)
+    cut = structure.index("&")
+
+    structure = structure.replace("&","")
+    sequence = sequence.replace("&","")
+    for i,(s,n) in enumerate(zip(structure, sequence)):
+        graph.add_node(i, label=n)
+        if i > 0 and  i != cut:
+            graph.add_edge(i, i-1, label='-')
+
+        # ADD PAIRED BASES
+        if s in ['(','[','<']:
+            lifo[partner[s]].append(i)
+        if s in [')',']','>']:
+            j = lifo[s].pop()
+            graph.add_edge(i, j, label='=')
+    return graph
+    #return eg.vectorize([graph], discrete = False) # keep here in case i want nested edges ...
+
+
+def mkgr(x):
+    return mkgraph(*x)

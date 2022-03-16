@@ -10,13 +10,21 @@ with open('LICENSE') as f:
     license = f.read()
 
 setup(
-    name='RRIevaluator',
-    version='1.0.0',
-    description='RRIevaluator is a tool for classification of RNA RNA interactions.',
+    name='cherri',
+    version='0.1',
+    description='Cherri is a tool for classification of RNA-RNA interactions.',
     long_description=readme,
     author='Teresa Mueller',
     author_email='muellert@informatik.uni-freiburg.de',
-    url='https://github.com/teresa-m/RNA_RNA_binding_evaluation',
+    url='https://github.com/teresa-m/Cherri',
     license=license,
-    packages=find_packages(exclude=('tests', 'docs'))
+    scripts=['bin/cherri', 'bin/find_occupied_regions.py',
+             'bin/find_trusted_RRI.py', 'bin/generate_pos_neg_with_context.py',
+             'bin/get_features.py'],
+    packages=find_packages(exclude=('tests', 'docs')),
+    package_data={'': ['IntaRNA_param/*','model/*']},
+    include_package_data=True,
+    #packages=['rrieval'],
+    # package_data={'rrieval': ['lib.py','IntaRNA_param/IntaRNA_param.txt']},
+    zip_safe=False
 )

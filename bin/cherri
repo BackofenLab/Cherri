@@ -1,0 +1,714 @@
+#!/usr/bin/env python
+import pandas as pd
+import argparse
+import os
+import re
+import time
+import sys
+import rrieval.lib as rl
+from scipy.sparse import csr_matrix, vstack, hstack, load_npz, save_npz
+from ubergauss.tools import loadfile, dumpfile
+import subprocess
+
+
+
+__version__ = "0.1"
+
+"""
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~ OPEN FOR BUSINESS ~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Check out available modes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+cherri -h
+
+
+~~~~~~~~~~~~~
+Run doctests
+~~~~~~~~~~~~~
+
+cd rrieval
+python3 -m doctest lib.py
+
+
+"""
+
+
+################################################################################
+
+def setup_argument_parser():
+    """Setup argparse parser."""
+    # Tool description text.
+    help_description = """
+
+    Classification of predicted RNA-RNA Interactions (RRI)
+
+    """
+
+    # Define argument parser.
+    p = argparse.ArgumentParser(#add_help=False,
+                                prog="cherri",
+                                description=help_description)
+
+    # Tool version.
+    p.add_argument("-v", "--version", action="version",
+                   version="cherri v" + __version__)
+
+    # Add subparsers.
+    subparsers = p.add_subparsers(help='Program modes')
+
+    """
+    Evlauate predicted RRIs: evaluations mode.
+    """
+    p_ex = subparsers.add_parser('eval',
+                                  help='classify predicted RRI')
+    p_ex.set_defaults(which='eval')
+    # Add required arguments group.
+    p_exm = p_ex.add_argument_group("required arguments")
+    # Required arguments for evaluate.
+    p_exm.add_argument("-i1", "--RRIs_table",
+                       dest="RRIs_table",
+                       required = True,
+                       help= "table containg all rris that should be evalutated in the corrct fromat")
+    p_exm.add_argument("-g", "--genome_file",
+                       dest="genome_file",
+                       action="store",
+                       required=True,
+                       help= "Genomic sequences .2bit file")
+    p_exm.add_argument("-o", "--out_path",
+                       required=True,
+                       help= "path to folder all output folder of each step of the data preparation")
+    p_exm.add_argument("-l", "--chrom_len_file",
+                       action="store",
+                       dest="chrom_len_file",
+                       required=True,
+                       help= "tabular file containing chrom name \t chrom lenght for each chromosome")
+
+
+    # Optional arguments for evaluate.
+    p_ex.add_argument("-i2", "--occupyed_regions",
+                      default="non",
+                      help= "path to occupyed regions file or specify: human, mouse or non")
+    p_ex.add_argument("-c", "--context",
+                      nargs='?',
+                      type=int,
+                      dest="context",
+                      default=50,
+                      help= "how much context should be added at left an right of the sequence")
+    p_ex.add_argument("-n", "--experiment_name",
+                      action="store",
+                      dest="experiment_name",
+                      default='eval_rri',
+                      help= "name of the datasoruce of RRIs")
+    p_ex.add_argument("-p", "--param_file",
+                       dest="param_file",
+                       default="not_set",
+                       help= "IntaRNA parameter file")
+    p_ex.add_argument("-m", "--model_file",
+                       dest="model_file",
+                       default="not_set",
+                       help= "set if a new model created with train module")
+    p_ex.add_argument("-mp", "--model_params",
+                       dest="model_params",
+                       default="not_set",
+                       help= "set path to feature file of new model if model_file is changed")
+    p_ex.add_argument("-st", "--use_structure",
+                       dest="use_structure",
+                       default="on",
+                       help= "set off if you want to disable structure")
+    p_ex.add_argument("-on", "--out_name",
+                      default="non",
+                      help= "name for output dir instead of the current data")
+
+
+    """
+    Build a model form new data: trainings mode
+    """
+    p_mrg = subparsers.add_parser('train',
+                                  help='Build a model form new data: training')
+    p_mrg.set_defaults(which='train')
+    # Add required arguments group.
+    p_mrgm = p_mrg.add_argument_group("required arguments")
+    # Required arguments for merge.
+    p_mrgm.add_argument("-i1", "--RRI_path",
+                        required=True,
+                        help= "path to folder storing the ChiRA interaction summary files",
+                        default="/vol/scratch/data/RRIs/Paris/")
+    #p_mrgm.add_argument("-i2", "--rbp_path",
+                        #help= "path to RBP side data file (bed format)",
+                        #default="/vol/scratch/data/human_RBP_coverage/GSE38355_ProtOccProf_4SU_consensus_TC_hg38.bed")
+    p_mrgm.add_argument("-o", "--out_path",
+                        required=True,
+                        help= "path to folder all output folder of each step of the data preparation")
+    p_mrgm.add_argument("-r", "--list_of_replicats",
+                        action="store",
+                        required=True,
+                        nargs='+',
+                        dest="list_of_replicats",
+                        help= "list ChiRA interaction summary files names of all replicats")
+    p_mrgm.add_argument("-l", "--chrom_len_file",
+                        action="store",
+                        dest="chrom_len_file",
+                        required=True,
+                        help= "tabular file containing chrom name \t chrom lenght for each chromosome")
+    p_mrgm.add_argument("-g", "--genome_file",
+                        action="store",
+                        dest="genome_file",
+                        required=True,
+                        help= "path to 2bit genome file")
+
+    # Optional arguments for merge.
+    p_mrg.add_argument("-c", "--context",
+                       nargs='?',
+                       type=int,
+                       dest="context",
+                       default=50,
+                       help= "how much context should be added at left an right of the sequence")
+    p_mrg.add_argument("-n", "--experiment_name",
+                       action="store",
+                       dest="experiment_name",
+                       default='model_rri',
+                       help= "name of the datasoruce of RRIs")
+    p_mrg.add_argument("-p", "--param_file",
+                       dest="param_file",
+                       help= "IntaRNA parameter file",
+                       default="not_set")
+    p_mrg.add_argument("-st", "--use_structure",
+                       dest="use_structure",
+                       default="on",
+                       help= "set off if you want to disable structure")
+    p_mrgm.add_argument("-i2", "--RBP_path",
+                        help= "path to RBP binding location file in bed format",
+                        default="non")
+    p_mrgm.add_argument("-t", "--run_time",
+                        help= "time used for the optimization",
+                        default=43200)
+    p_mrgm.add_argument("-me", "--memoryPerThread",
+                        help= "memory in MB which each thred can use (total ram/threds)",
+                        default=4300)
+    p_mrgm.add_argument("-j", "--n_jobs",
+                        help= "number of jobs for the optimization",
+                        default=4300)
+
+    return p
+
+
+################################################################################
+
+
+def read_RRI_table(file):
+    """
+    Read in Table with rri interaction having the data in the format:
+    chrom1,start1,stop1,stand1,chrom2,start2,stop2,strand2
+        Parameters
+        ----------
+        file: file location of the table file
+
+        Returns
+        -------
+        RRI_dict:
+            interaction_id -> [chrom1,start1,stop1,stand1,chrom2,start2,stop2,strand2]
+
+    """
+    RRI_dict = {}
+
+    # Open FASTA either as .gz or as text file.
+    if re.search(".+\.gz$", file):
+        f = gzip.open(file, 'rt')
+    else:
+        f = open(file, "r")
+
+    for idx, line in enumerate(f):
+        if idx == 0:
+            continue
+        positon_list = line. rstrip("\n").split(",")
+        RRI_dict[idx] = positon_list
+    f.close()
+
+    return RRI_dict
+
+def call_occupyed_regions_eval(eval_rri_file, output_path,external_file='non'):
+    # set only give out positive instances!!
+    no_neg = True
+    #occupyed_InteLab = defaultdict(InterLap)
+    file = eval_rri_file.split('/')[-1]
+    i1 = eval_rri_file.replace(file, "")
+    # brauche glaube nicht!!!!!
+    occ_file = output_path +  '/occupied_regions.obj'
+    ###################
+    call_occ_regions = ('find_occupied_regions.py -i1 ' +
+                        i1 + ' -i2 non -r ' + file + ' -o ' + output_path +
+                        ' -s non'+ ' -e ' + external_file)
+    #print(call_occ_regions)
+    rl.call_script(call_occ_regions)
+    timestr = time.strftime("%Y%m%d")
+    out_path =  output_path + '/' + timestr + '_occ_out/'
+    input_occupyed = out_path + '/occupied_regions.obj'
+    return input_occupyed
+
+
+
+def main_eval(args):
+    """
+
+    Useful output:
+
+    """
+
+    print("Running for you in EVALUATION mode ... ")
+
+
+    """
+    Output files:
+    ├── date_Cherri_evaluation_mode
+    |   ├── evaluate_RRIs.table
+    |   ├── positive_instance
+    |       ├── test_eval_context_{context}pos.csv
+    |       ├── date_occ_out
+    |           ├── occupied_regions.obj
+    |           ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.cvs
+    |   ├── feature_files
+    |       ├── feature_filtered_test_eval_context_150_pos.csv
+    |       ├── training_data_test_eval_context_150.npz
+    |   ├── evaluation
+    |       ├── evaluation_results
+
+    """
+
+    args = parser.parse_args()
+    RRIs_table = args.RRIs_table
+    occupyed_regions = args.occupyed_regions
+
+    genome_file = args.genome_file
+    out_path = args.out_path
+    context = args.context
+    experiment_name = args.experiment_name
+    chrom_len_file = args.chrom_len_file
+    param_file = args.param_file
+    use_structure = args.use_structure
+    model_file = args.model_file
+    model_params = args.model_params
+    out_name = args.out_name
+
+    overlap_th = 0.3
+
+
+    if param_file == 'not_set':
+        lib_path = os.path.dirname(rl.__file__)
+        param_file = lib_path + "/IntaRNA_param/IntaRNA_param.txt"
+
+    if model_file == 'not_set':
+        lib_path = os.path.dirname(rl.__file__)
+        #model_file = lib_path + "/model/test_train_context_50.model"
+        #model_params = lib_path + '/model/test_train_context_50.npz'
+        model_file = lib_path + '/model/full_Full_context_150.model'
+        model_params = lib_path + '/model/full_Full_context_150.npz'
+    else:
+        if not os.path.exists(model_file):
+            print('Error: please set the path to your model or keep not_set')
+        if model_params == 'not_set':
+            print('Error: please set the path to your feature file of your model')
+        if not os.path.exists(model_params):
+            print('Error: please set the path to your feature file of your model')
+
+
+
+    # define output folder
+    timestr = time.strftime("%Y%m%d")
+
+    if out_name == 'non':
+        out_path = '/' + out_path + '/' + timestr + '_Cherri_evaluating_RRIs/'
+    else:
+        out_path = '/' + out_path + '/' + out_name + '/'
+
+
+
+
+    if not os.path.exists(out_path):
+        os.mkdir(out_path)
+        print('***added new folder***')
+
+
+    ### get input data ##########################################
+    # 34
+    header = ['#reads','chrom_1st','start_1st','end_1st', 'strand_1st',
+              'chrom_2end','start_2end','end_2end', 'strand_2end',
+              'ineraction_side_1st', 'ineraction_side_2end',
+              'IntaRNA_prediction', 'energy',
+              'seq_1st_ineraction_side', 'seq_2end_ineraction_side',
+              'start_interaction',
+              'chrom_seq_1st_side', 'start_seq_1st_side',
+              'stop_seq_1st_side','strand_seq_1st_side',
+              'chrom_seq_2end_side', 'start_seq_2end_side',
+              'stop_seq_2end_side','strand_seq_2end_side',
+              'TPM_seq_1st_side', 'TPM_seq_2end_side', 'TPM_summary',
+              'score_seq_1st_side', 'score_seq_2end_side','score_product',
+              'biotype_region_1st', 'biotype_region_2end', 'ID_1st','ID_2end']
+    end_data = ['nan', 'nan', 'nan', 'nan', 'nan','nan','nan','nan','nan','nan',
+                'nan','nan', 'nan','nan','nan','nan', 'nan', 'nan','nan', 'nan',
+                'nan','nan', 'nan', 'nan','nan']
+
+
+    RRI_dict = read_RRI_table(RRIs_table)
+
+
+    df_content_list = []
+    print(len(RRI_dict))
+    for key in RRI_dict:
+        pos_data = RRI_dict[key]
+        #print(pos_data)
+        # 1 + 8 + 25
+        data =  ['nan'] + RRI_dict[key] + end_data
+        #print(data)
+        df_content_list.append(data)
+    # print(df_content_list[-2])
+    df_rris = pd.DataFrame(df_content_list,columns=header)
+    eval_rri_file = out_path + 'evaluete_RRIs.table'
+    df_rris.to_csv(eval_rri_file, index=False, sep=',')
+
+
+
+
+
+    ### Call find_occupied_regions.py ##########################################
+    if occupyed_regions == 'human':
+        occupyed_regions_file = '/vol/scratch/data_storage/data/RRIs/20210907_occ_out_rbp_c5/occupied_regions.obj'
+        occupyed_regions = call_occupyed_regions_eval(eval_rri_file, out_path, occupyed_regions_file)
+    elif occupyed_regions == 'mouse':
+        occupyed_regions_file = '/vol/scratch/data_storage/data/RRIs/20210923_occ_out/occupied_regions.obj'
+        occupyed_regions = call_occupyed_regions_eval(eval_rri_file, out_path, occupyed_regions_file)
+    elif occupyed_regions == 'non':
+        occupyed_regions = call_occupyed_regions_eval(eval_rri_file, out_path)
+    else:
+        print('using your own occupyed regions objects')
+        occupyed_regions = call_occupyed_regions_eval(eval_rri_file, output_path, occupyed_regions)
+
+
+    #### Call pos data call #########################################
+    pos_neg_out_path = out_path + 'positive_instance/'
+    #os.mkdir(pos_neg_out_path)
+    if not os.path.exists(pos_neg_out_path):
+        os.mkdir(pos_neg_out_path)
+
+    pos_neg_param = (' -i1 ' + eval_rri_file + ' -i2 ' +
+                    occupyed_regions + ' -d ' + pos_neg_out_path + ' -g ' +
+                    genome_file + ' -n ' + experiment_name + ' -c ' +
+                    str(context) + ' --no_pos_occ -s 1 -l ' + chrom_len_file +
+                    ' -p ' + param_file + ' -m eval' )
+
+    call_pos_neg = ('generate_pos_neg_with_context.py' +
+                            pos_neg_param)
+    print('1. Prepater RRI instances')
+    #print(call_pos_neg)
+    rl.call_script(call_pos_neg)
+
+
+    ### Call get_features.py ###################################################
+    feature_out_path = out_path + 'feature_files/'
+    if not os.path.exists(feature_out_path):
+        os.mkdir(feature_out_path)
+
+
+    midel_name =  experiment_name + '_context_' + str(context)
+    file_pos = pos_neg_out_path + midel_name + 'pos.csv'
+    feature_pos = (feature_out_path +  'feature_filtered_' + midel_name +
+                  '_pos.csv')
+
+
+    pos_feature_param = ' -i ' + file_pos + ' -f all -o ' + feature_pos
+    call_pos_feature = 'get_features.py' + pos_feature_param
+    print('2. Compute features')
+    #print(call_pos_feature)
+    rl.call_script(call_pos_feature)
+
+    ### Add structure ###################################################
+    feat_output = f'{feature_out_path}training_data_{midel_name}'
+
+    df_data = pd.read_csv(feature_pos, sep=',')
+    df_data['label'] = '?'
+    y = df_data.label
+    X = df_data.drop(columns="label")
+
+
+    if use_structure == 'ON' or use_structure == 'on':
+        print('2a. Compute structure feature')
+        X,y = rl.convert(X, y , feat_output, True, 'eval')
+    elif use_structure == 'OFF' or use_structure == 'off':
+        X,y = rl.convert(X, y, feat_output, False, 'eval')
+        print('2a. not preparing structure feature')
+
+    ### Predict ###########################################################
+    eval_path =  f'{out_path}/evaluation/'
+    if not os.path.exists(eval_path):
+        os.mkdir(eval_path)
+    print('2b. Classify RRI instances')
+    X_filterd = rl.filter_features(X,model_params)
+    #print(X_filterd.info())
+    #print(X_filterd.columns.tolist())
+    df_eval = rl.classify(X_filterd, model_file, f'{eval_path}evaluation_results')
+    #print(df_eval)
+    print('##########################################')
+    print(f'Result file: {eval_path}evaluation_results')
+    print('##########################################')
+
+
+################################################################################
+
+def main_train(args):
+
+    """
+
+    Generat a model
+
+    """
+
+    print("Running for you in TRAININGS mode ... ")
+
+
+    """
+    Output files:
+    ├── date_Cherri_model_build
+    |   ├── date_occ_out
+    |       ├── occupied_regions.obj
+    |       ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.cvs
+    |   ├── read_pos_neg_data
+    |       ├── test_train_context_50_pos_occ_neg.csv
+    |       ├── test_train_context_50_pos_occ_pos.csv
+    |   ├── feature_files
+    |       ├── feature_filtered_test_eval_context_150_pos.csv
+    |       ├── feature_filtered_test_eval_context_150_neg.csv
+    |       ├── training_data_test_eval_context_150.npz
+    |   ├── model
+    |       ├── features
+    |           ├── test_train_context_50.npz
+    |       ├── optimized
+    |           ├── test_train_context_50.model
+    |           ├── test_train_context_50.cvs
+    """
+
+    args = parser.parse_args()
+    input_path_RRIs = args.RRI_path
+    replicats = args.list_of_replicats
+    genome_file = args.genome_file
+    chrom_len_file = args.chrom_len_file
+    out_path = args.out_path
+    # not necessary to set params
+    experiment_name = args.experiment_name
+    context = args.context
+    param_file = args.param_file
+    use_structure = args.use_structure
+    file_rbp_pos = args.RBP_path
+    run_time = args.run_time
+    memoryPerThread = args.memoryPerThread
+    n_jobs = args.n_jobs
+
+
+    set_path = 'off'
+    mixed = 'off'
+
+
+
+    if param_file == 'not_set':
+        lib_path = os.path.dirname(rl.__file__)
+        param_file = lib_path + "/IntaRNA_param/IntaRNA_param.txt"
+
+    overlap_th = 0.3
+
+    # define output folder
+    timestr = time.strftime("%Y%m%d")
+    out_path = '/' + out_path + '/' + timestr + '_Cherri_build_model/'
+    if set_path == 'off' and mixed == 'off':
+        if not os.path.exists(out_path):
+            os.mkdir(out_path)
+            print('***created top level output folder***')
+        else:
+            print('***using todays build output folder***')
+    elif mixed == 'on':
+        print('***You are in mixed model mode***')
+        out_path = '/' + input_path_RRIs + '/' + experiment_name + '/'
+        if not os.path.exists(out_path):
+            os.mkdir(out_path)
+    elif set_path == 'on':
+        out_path = '/vol/scratch/data_storage/20220222_Cherri_build_model/'
+
+
+    ### Call find_occupied_regions.py ##########################################
+    occupied_regions_param = (' -i1 ' + input_path_RRIs + ' -i2 ' +
+                             file_rbp_pos + ' -r ' + ' '.join(replicats) +
+                             ' -o ' + out_path + ' -t ' + str(overlap_th) +
+                             ' -s 0.5 ')
+
+    call_occupied_regions = ('find_occupied_regions.py' +
+                            occupied_regions_param)
+    if mixed == 'off':
+        print('1. find occupyed regions')
+        #print(call_occupied_regions)
+        rl.call_script(call_occupied_regions)
+
+        # output:
+        occupyed_outfile =  out_path + '/' + timestr + '_occ_out/'
+
+
+
+        #### Call find_occupied_regions.py #########################################
+        pos_neg_out_path = out_path + 'pos_neg_data/'
+        if not os.path.exists(pos_neg_out_path):
+            os.mkdir(pos_neg_out_path)
+        trusted_rri_file = (occupyed_outfile + 'rri_occupied_regions_overlapTH_' +
+                                str(overlap_th) + '_scoreTH_1.cvs')
+        occupyed_regions_file =  occupyed_outfile + 'occupied_regions.obj'
+
+        pos_neg_param = (' -i1 ' + trusted_rri_file + ' -i2 ' +
+                        occupyed_regions_file + ' -d ' + pos_neg_out_path + ' -g ' +
+                        genome_file + ' -n ' + experiment_name + ' -c ' +
+                        str(context) + ' --pos_occ -b 40  -l ' + chrom_len_file +
+                        ' -p ' + param_file + ' -m train')
+
+        call_pos_neg = ('generate_pos_neg_with_context.py' +
+                            pos_neg_param)
+        print('2. Compute positive and negative instaces')
+        # print(call_pos_neg)
+        out_pos_neg = rl.call_script(call_pos_neg,True)
+        # print(out_pos_neg)
+
+
+        ### Call get_features.py ###################################################
+        feature_out_path = out_path + 'feature_files/'
+        if not os.path.exists(feature_out_path):
+            os.mkdir(feature_out_path)
+        midel_name =  experiment_name + '_context_' + str(context)
+        file_neg = pos_neg_out_path + midel_name + '_pos_occ_neg.csv'
+        file_pos = pos_neg_out_path + midel_name + '_pos_occ_pos.csv'
+        feature_pos = (feature_out_path +  'feature_filtered_' + midel_name +
+                    '_pos_occ_pos.csv')
+        feature_neg = (feature_out_path +  'feature_filtered_' + midel_name +
+                  '_pos_occ_neg.csv')
+
+        pos_feature_param = ' -i ' + file_pos + ' -f all -o ' + feature_pos
+        call_pos_feature = 'get_features.py' + pos_feature_param
+        print('3a. Compute positive feature')
+        # print(call_pos_feature)
+        rl.call_script(call_pos_feature)
+
+        neg_feature_param = ' -i ' + file_neg + ' -f all -o ' + feature_neg
+        call_neg_feature = 'get_features.py' + neg_feature_param
+        print('3b. Compute negative feature')
+        #print(call_neg_feature)
+        rl.call_script(call_neg_feature)
+        X, y = rl.read_pos_neg_data(feature_pos, feature_neg)
+
+    elif mixed == 'on':
+        feature_out_path = out_path + 'feature_files/'
+        if not os.path.exists(feature_out_path):
+            os.mkdir(feature_out_path)
+        midel_name =  experiment_name + '_context_' + str(context)
+        X_list = []
+        y_list = []
+        for data in replicats:
+            feature_path = f'{input_path_RRIs}/{data}/feature_files/'
+            feature_neg = f'{feature_path}/feature_filtered_{data}_context_{str(context)}_pos_occ_neg.csv'
+            feature_pos = f'{feature_path}/feature_filtered_{data}_context_{str(context)}_pos_occ_pos.csv'
+            X_sub, y_sub = rl.read_pos_neg_data(feature_pos, feature_neg)
+            X_list.append(X_sub)
+            y_list.append(y_sub)
+        X = pd.concat(X_list)
+        y = pd.concat(y_list)
+        # print(X.info())
+
+
+    ### Add structure ###################################################
+    feat_output = f'{feature_out_path}/training_data_{midel_name}'
+    #print(feat_output)
+
+    # print(X.info())
+
+    if use_structure == 'ON' or use_structure == 'on':
+        print('3c. Compute structure feature')
+        rl.convert(X, y , feat_output, True, 'train')
+    elif use_structure == 'OFF' or use_structure == 'off':
+        print('3c. Features without strecture features')
+        rl.convert(X, y, feat_output, False, 'train')
+
+
+
+    ## feature ###############################################################
+    print('4. Compute model:')
+    out_path_model = f'{out_path}/model/'
+    if not os.path.exists(out_path_model):
+        os.mkdir(out_path_model)
+
+    feat_path =  f'{out_path_model}/features/'
+    if not os.path.exists(feat_path):
+        os.mkdir(feat_path)
+    # Was macht subsample?????
+    loaddata_feat = f'--infile {feat_output} --subsample 20000 '
+    out_feat = f'{feat_path}{midel_name}'
+    call_feat = f'python -m biofilm.biofilm-features {loaddata_feat} --method forest --out {out_feat}'
+    print(call_feat)
+    print('4a. Select features')
+    rl.call_script(call_feat)
+
+
+
+    ## optimize ###############################################################
+
+    opt_path =  f'{out_path_model}/optimized/'
+    if not os.path.exists(opt_path):
+        os.mkdir(opt_path)
+
+    #--subsample 1000000
+
+    loaddata = f' --infile {feat_output}  --featurefile {out_feat}'
+
+    #out  = f'{opt_path}{dataset}'
+    opt_call = f'python -W ignore -m biofilm.biofilm-optimize6 {loaddata} --memoryMBthread {memoryPerThread} --folds 0 --out {opt_path}{midel_name} --preprocess True --n_jobs {n_jobs} --time {run_time}'
+    print(opt_call)
+    print('4b. Optimize model')
+    out = rl.call_script(opt_call, True)
+    model_path = f'{opt_path}{midel_name}.model'
+    full_model_path = f'{opt_path}full_{midel_name}'
+
+    call_refit = f'$(which python) -m biofilm.biofilm-cv --infile {feat_output} --folds 0 --featurefile {out_feat} --model {model_path} --out {full_model_path}'
+    print(call_refit)
+    rl.call_script(call_refit)
+
+    # print(out)
+    model_file = f'{full_model_path}.model'
+
+    # extract score from out!
+    score = loadfile(model_path)['score']
+    score = loadfile(f'{full_model_path}.model')['score']
+
+    print('##########################################')
+    print(f'Final model can be found here: {model_file}')
+    print(f'with trainings score:{score}')
+    print('##########################################')
+
+
+
+################################################################################
+
+if __name__ == '__main__':
+    # Setup argparse.
+    parser = setup_argument_parser()
+    # Print help if no parameter is set.
+    if len(sys.argv) < 2:
+        parser.print_help()
+        sys.exit()
+    # Read in command line arguments.
+    args = parser.parse_args()
+
+
+    # Run selected mode.
+    if args.which == 'eval':
+        main_eval(args)
+    elif args.which == 'train':
+        main_train(args)
+
+
+
+################################################################################
