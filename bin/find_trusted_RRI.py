@@ -798,6 +798,9 @@ def main():
                         help= "name of the datasoruce of positve trusted RRIs")
     parser.add_argument("-s", "--score_th", default=1,  type=float,
                         help= "threshold score giving the liklyhood that RRI is mapping to the given interaction side")
+    parser.add_argument("-fh", "--filter_hybrind",
+                        default="off",
+                        help= "filter the data for hyprids alrady detected by chira")
 
 
 
@@ -809,6 +812,7 @@ def main():
     output_path = args.output_path
     experiment_name = args.experiment_name
     score_th = args.score_th
+    filter_hybrind = args.filter_hybrind
 
 
     #plot_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/RNA_RNA_binding_evaluation/plots/'
@@ -829,9 +833,9 @@ def main():
     #print(trusted_rri_list[0][0][5])
     #print(trusted_rri_list[0][1][5])
 
-    use_enegy = False
+    # use_enegy = False
 
-    if use_enegy:
+    if filter_hybrind == 'on':
         instances_just_nan_list, instances_also_nan_list, instances_no_nan_list = get_numbers_nan(no_replicats, trusted_rri_list)
 
         #avg_overlap_list, avg_overlap_len_list = get_list_overlaps(instances_no_nan_list)

@@ -74,6 +74,7 @@ conda install -c bioconda numpy
 conda install -c bioconda pandas
 conda install -c smautner eden-kernel
 conda install -c smautner biofilm=0.0.81
+conda install -c conda-forge python-wget
 ```
 Or directly:
 
