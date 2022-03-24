@@ -192,8 +192,9 @@ def call_script(call,reprot_stdout=False,asset_err=True):
         if error != "":
             print(f'ERROR: {error}\nFor call: {call}')
     if reprot_stdout == True:
-        #out = out.decode('utf-8')
-        return out.decode('utf-8')
+        return out
+        #for line in out.readlines():
+            #print(line)
 
 
 ################################################################################
@@ -1361,22 +1362,26 @@ def download_genome(out_path, genome):
     if not os.path.exists(genome_dir):
         os.mkdir(genome_dir)
     if genome == 'human':
-        genome_url = 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/bigZips/hg38.2bit'
-        chom_len_url = 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/bigZips/hg38.chrom.sizes'
-        download_file(genome_url, genome_dir)
-        download_file(chom_len_url, genome_dir)
         genome_file = f'{genome_dir}hg38.2bit'
         chrom_len_file = f'{genome_dir}hg38.chrom.sizes'
+        if not os.path.isfile(genome_file):
+            genome_url = 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/bigZips/hg38.2bit'
+            download_file(genome_url, genome_dir)
+        if not os.path.isfile(chrom_len_file):
+            chom_len_url = 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/bigZips/hg38.chrom.sizes'
+            download_file(chom_len_url, genome_dir)
     elif genome == 'mouse':
-        genome_url = 'https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.2bit'
-        chom_len_url = 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/bigZips/mm10.chrom.sizes'
-        download_file(genome_url, genome_dir)
-        download_file(chom_len_url, genome_dir)
         genome_file = f'{genome_dir}mm10.2bit'
         chrom_len_file = f'{genome_dir}mm10.chrom.sizes'
+        if not os.path.isfile(genome_file):
+            genome_url = 'https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.2bit'
+            download_file(genome_url, genome_dir)
+        if not os.path.isfile(chrom_len_file):
+            chom_len_url = 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/bigZips/mm10.chrom.sizes'
+            download_file(chom_len_url, genome_dir)
     else:
         if not os.path.isfile(genome):
             print(f'Error: please provide 2bit genome file path')
         else:
             genome_file = genome
-    return (genome_file)
+    return (genome_file, chrom_len_file)

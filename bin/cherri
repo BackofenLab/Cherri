@@ -360,7 +360,7 @@ def main_eval(args):
         RRI_dict = read_RRI_table(RRIs_table)
 
         df_content_list = []
-        print(len(RRI_dict))
+        #print(len(RRI_dict))
         for key in RRI_dict:
             pos_data = RRI_dict[key]
             #print(pos_data)
@@ -391,7 +391,7 @@ def main_eval(args):
             occupyed_regions = call_occupyed_regions_eval(eval_rri_file, output_path, occupyed_regions)
 
         ##download genomes ###############################################
-        genome_file = rl.download_genome(out_path, genome)
+        genome_file, chrom_len_file = rl.download_genome(out_path, genome)
 
 
         #### Call pos data call #########################################
@@ -529,7 +529,7 @@ def main_train(args):
 
 
     set_path = 'off'
-    mixed = 'on'
+    mixed = 'off'
 
 
 
@@ -559,7 +559,8 @@ def main_train(args):
 
 
     ##download genomes ###############################################
-    genome_file = rl.download_genome(out_path, genome)
+    genome_file, chrom_len_file = rl.download_genome(out_path, genome)
+
 
     ### Call find_occupied_regions.py ##########################################
     occupied_regions_param = (' -i1 ' + input_path_RRIs + ' -i2 ' +
@@ -597,7 +598,7 @@ def main_train(args):
                             pos_neg_param)
         print('2. Compute positive and negative instaces')
         # print(call_pos_neg)
-        out_pos_neg = rl.call_script(call_pos_neg,reprot_stdout=True)
+        rl.call_script(call_pos_neg)
         # print(out_pos_neg)
 
 
@@ -700,7 +701,9 @@ def main_train(args):
         print('4a. Optimize model')
         print(opt_call)
         out = rl.call_script(opt_call, reprot_stdout=True, asset_err=False)
-        print(out)
+        print(out.decode())
+
+
 
         print('4a. Refit model')
         call_refit = f'$(which python) -m biofilm.biofilm-cv --infile {feat_output} --folds 0 --model {model_path} --out {full_model_path}'
@@ -712,6 +715,7 @@ def main_train(args):
         print('4b. Optimize model')
         print(opt_call)
         out = rl.call_script(opt_call, reprot_stdout=True,asset_err=False)
+        print(out.decode())
 
         print('4b. refit model')
         call_refit = f'$(which python) -m biofilm.biofilm-cv --infile {feat_output} --folds 0 --featurefile {out_feat} --model {model_path} --out {full_model_path}'
