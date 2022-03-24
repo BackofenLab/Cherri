@@ -165,7 +165,7 @@ def delet_empty_col(df):
 
 ################################################################################
 
-def call_script(call,reprot_stdout=False):
+def call_script(call,reprot_stdout=False,asset_err=True):
     """
     Starts a subprosses to call a script and checks for errors.
 
@@ -186,11 +186,14 @@ def call_script(call,reprot_stdout=False):
     out, err = process.communicate()
     #print(err.decode('utf-8'))
     error = err.decode('utf-8')
-
-    assert not error, "script is complaining:\n%s\n%s" %(call, error)
+    if asset_err:
+        assert not error, "script is complaining:\n%s\n%s" %(call, error)
+    else:
+        if error != "":
+            print(f'ERROR: {error}\nFor call: {call}')
     if reprot_stdout == True:
         #out = out.decode('utf-8')
-        return out
+        return out.decode('utf-8')
 
 
 ################################################################################

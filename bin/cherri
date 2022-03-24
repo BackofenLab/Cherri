@@ -597,7 +597,7 @@ def main_train(args):
                             pos_neg_param)
         print('2. Compute positive and negative instaces')
         # print(call_pos_neg)
-        out_pos_neg = rl.call_script(call_pos_neg,True)
+        out_pos_neg = rl.call_script(call_pos_neg,reprot_stdout=True)
         # print(out_pos_neg)
 
 
@@ -699,7 +699,7 @@ def main_train(args):
 
         print('4a. Optimize model')
         print(opt_call)
-        out = rl.call_script(opt_call, True)
+        out = rl.call_script(opt_call, reprot_stdout=True, asset_err=False)
         print(out)
 
         print('4a. Refit model')
@@ -711,7 +711,7 @@ def main_train(args):
         opt_call = f'python -W ignore -m biofilm.biofilm-optimize6 {loaddata} --memoryMBthread {memoryPerThread} --folds 0 --out {opt_path}{midel_name} --preprocess True --n_jobs {n_jobs} --time {run_time}'
         print('4b. Optimize model')
         print(opt_call)
-        out = rl.call_script(opt_call, True)
+        out = rl.call_script(opt_call, reprot_stdout=True,asset_err=False)
 
         print('4b. refit model')
         call_refit = f'$(which python) -m biofilm.biofilm-cv --infile {feat_output} --folds 0 --featurefile {out_feat} --model {model_path} --out {full_model_path}'
