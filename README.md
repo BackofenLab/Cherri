@@ -93,6 +93,11 @@ python -m pip install . --ignore-installed --no-deps -vv
 ```
 
 Now fix the python hash seed
+
+```
+conda env config vars set PYTHONHASHSEED=31337
+```
+or just for your current session!
 ```
 export PYTHONHASHSEED=31337
 ```
@@ -133,6 +138,9 @@ With a specific setting only 'positive' instances are computed. If no occupied r
 - m | model_file: set if a model created by train module should be used
 - mp | model_params: set path to feature file of new model if model_file is changed
 - st | use_structure: set 'off' if you want to disable structure, default 'on'
+- on | out_name: name for output dir instead of the current data
+- hf | hand_feat: if you want to start from hand curated feature files with pos and net data
+- j | number of jobs used for graph feature computation
 
 
 #### Output 
@@ -172,8 +180,13 @@ Please select the Chira RRI output files as input for cherri train.
 - c | context: how much context should be added at left an right of the sequence
 - n | experiment_name: name of the data source of RRIs
 - p | param_file: IntaRNA parameter file
-- st | use_structure: set off if you want to disable structure 
-- i2 | path to RBP binding location file in bed format
+- st | use_structure: set off if you want to disable structure (when on the feature optimization will be perfomed directly and the data will be stored in feature_files and no model/fearute forlder will be set up)
+- i2 | RBP_path: path to RBP binding location file in bed format
+- t | run_time: time used for the optimization in sec default 12h
+- me | memoryPerThread: memory in MB which each thred can use (total ram/threds)
+- j | n_jobs: number of jobs for the optimization
+- mi | mixed: use mixed model my given a list of precomputed data (advanced option)
+
 
 
 #### Output 
