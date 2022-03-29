@@ -334,9 +334,9 @@ def main_eval(args):
     timestr = time.strftime("%Y%m%d")
 
     if out_name == 'non':
-        out_path = '/' + out_path + '/' + timestr + '_Cherri_evaluating_RRIs/'
+        out_path =  out_path + '/' + timestr + '_Cherri_evaluating_RRIs/'
     else:
-        out_path = '/' + out_path + '/' + out_name + '/'
+        out_path =  out_path + '/' + out_name + '/'
 
     midel_name =  experiment_name + '_context_' + str(context)
 
@@ -549,7 +549,7 @@ def main_train(args):
 
     # define output folder
     timestr = time.strftime("%Y%m%d")
-    out_path = '/' + out_path + '/' + timestr + '_Cherri_build_model/'
+    out_path =  out_path + '/' + timestr + '_Cherri_build_model/'
     #if set_path == 'off' and mixed == 'off':
     #    if not os.path.exists(out_path):
     #        os.mkdir(out_path)
@@ -558,8 +558,9 @@ def main_train(args):
     #        print('***using todays build output folder***')
     if mixed == 'on':
         print('***You are in mixed model mode***')
-        out_path = '/' + input_path_RRIs + '/' + experiment_name + '/'
+        out_path =  input_path_RRIs + '/' + experiment_name + '/'
         if not os.path.exists(out_path):
+            print('Error: output folder for mixed model should exist')
             os.mkdir(out_path)
     else:
         if not os.path.exists(out_path):
