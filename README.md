@@ -79,7 +79,7 @@ conda install -c conda-forge python-wget
 Or directly:
 
 ```
-conda create -n cherri -c conda-forge -c bioconda -c smautner scikit-learn networkx ucsc-twobittofa interlap pandas IntaRNA eden-kernel biofilm=0.0.81
+conda create -n cherri -c conda-forge -c bioconda -c smautner scikit-learn networkx ucsc-twobittofa interlap pandas IntaRNA python-wget eden-kernel biofilm=0.0.81
 
 ```
 
@@ -90,6 +90,11 @@ Finally, to install the tool itself, we simply clone the repository and execute 
 git clone https://github.com/teresa-m/Cherri.git
 cd Cherri
 python -m pip install . --ignore-installed --no-deps -vv 
+```
+
+Now fix the python hash seed
+```
+export PYTHONHASHSEED=31337
 ```
 
 Now we can run Cherri from any given folder (just remember to re-activate the environment once you open a new shell):
