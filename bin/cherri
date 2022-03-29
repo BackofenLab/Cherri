@@ -123,6 +123,12 @@ def setup_argument_parser():
     p_ex.add_argument("-on", "--out_name",
                       default="non",
                       help= "name for output dir instead of the current data")
+    p_ex.add_argument("-hf", "--hand_feat",
+                      default="off",
+                      help= "if you want to start from hand curated feature files with pos and net data")
+    p_ex.add_argument("-j", "--n_jobs",
+                        help= "number of jobs used for graph feature computation",
+                        default=1)
 
 
     """
@@ -193,6 +199,11 @@ def setup_argument_parser():
     p_mrgm.add_argument("-j", "--n_jobs",
                         help= "number of jobs for the optimization",
                         default=-1)
+    p_mrgm.add_argument("-mi", "--mixed",
+                        help= "use mixed model my given a list of precomputed data",
+                        default='off')
+
+
 
     return p
 
@@ -293,9 +304,10 @@ def main_eval(args):
     model_file = args.model_file
     model_params = args.model_params
     out_name = args.out_name
+    hand_feat = args.hand_feat
+    n_jobs = args.n_jobs
 
     overlap_th = 0.3
-    hand_feat = 'on'
 
 
     if param_file == 'not_set':
@@ -453,9 +465,9 @@ def main_eval(args):
 
     if use_structure == 'ON' or use_structure == 'on':
         print('2a. Compute structure feature')
-        X,y = rl.convert(X, y , feat_output, True, 'eval',model_params)
+        X,y = rl.convert(X, y , feat_output, True, 'eval',model_params,n_jobs)
     elif use_structure == 'OFF' or use_structure == 'off':
-        X,y = rl.convert(X, y, feat_output, False, 'eval')
+        X,y = rl.convert(X, y, feat_output, False, 'eval','non', n_jobs)
         print('2a. not preparing structure feature')
 
     ### Predict ###########################################################
@@ -526,11 +538,7 @@ def main_train(args):
     run_time = args.run_time
     memoryPerThread = args.memoryPerThread
     n_jobs = args.n_jobs
-
-
-    set_path = 'off'
-    mixed = 'off'
-
+    mixed = args.mixed
 
 
     if param_file == 'not_set':
@@ -542,24 +550,25 @@ def main_train(args):
     # define output folder
     timestr = time.strftime("%Y%m%d")
     out_path = '/' + out_path + '/' + timestr + '_Cherri_build_model/'
-    if set_path == 'off' and mixed == 'off':
+    #if set_path == 'off' and mixed == 'off':
+    #    if not os.path.exists(out_path):
+    #        os.mkdir(out_path)
+    #        print('***created top level output folder***')
+    #    else:
+    #        print('***using todays build output folder***')
+    if mixed == 'on':
+        print('***You are in mixed model mode***')
+        out_path = '/' + input_path_RRIs + '/' + experiment_name + '/'
+        if not os.path.exists(out_path):
+            os.mkdir(out_path)
+    else:
         if not os.path.exists(out_path):
             os.mkdir(out_path)
             print('***created top level output folder***')
         else:
             print('***using todays build output folder***')
-    elif mixed == 'on':
-        print('***You are in mixed model mode***')
-        out_path = '/' + input_path_RRIs + '/' + experiment_name + '/'
-        if not os.path.exists(out_path):
-            os.mkdir(out_path)
-    elif set_path == 'on':
-        out_path = '/vol/scratch/data_storage/20220222_Cherri_build_model/'
-
-
-
-    ##download genomes ###############################################
-    genome_file, chrom_len_file = rl.download_genome(out_path, genome)
+        ##download genomes ###############################################
+        genome_file, chrom_len_file = rl.download_genome(out_path, genome)
 
 
     ### Call find_occupied_regions.py ##########################################
@@ -644,6 +653,9 @@ def main_train(args):
             y_list.append(y_sub)
         X = pd.concat(X_list)
         y = pd.concat(y_list)
+        # save y and y
+        #X.to_csv(f'{feature_out_path}X_PARIS_human', index=False, sep=',')
+        #y.to_csv(f'{feature_out_path}y_PARIS_human', index=False, sep=',')
         # print(X.info())
 
 
@@ -655,10 +667,10 @@ def main_train(args):
 
     if use_structure == 'ON' or use_structure == 'on':
         print('3c. Compute graph structure feature')
-        rl.convert(X, y , feat_output, True, 'train')
+        rl.convert(X, y , feat_output, True, 'train', 'non', n_jobs)
     elif use_structure == 'OFF' or use_structure == 'off':
         print('3c. Features without graph strecture features')
-        rl.convert(X, y, feat_output, False, 'train')
+        rl.convert(X, y, feat_output, False, 'train', 'non', n_jobs)
 
 
 

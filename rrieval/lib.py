@@ -1270,8 +1270,10 @@ def get_filted_features(featurefile,csr_mat_h):
 def call_vectorize(g):
     return eg.vectorize(g,nbits=18)
 
-def convert(X, y, outname, graphfeatures, mode, feat_file='non'):
-    call_script(f'export PYTHONHASHSEED=31337')
+def convert(X, y, outname, graphfeatures, mode, feat_file='non', no_jobs=1):
+
+    #call_script(f'export PYTHONHASHSEED=31337')
+    
     # makes list of subseqDP and hybridDP tupels
     hybrid_seq_list = [a for a in zip(X['subseqDP'],X['hybridDP'])]
     X = X.drop(columns="subseqDP")
@@ -1286,9 +1288,9 @@ def convert(X, y, outname, graphfeatures, mode, feat_file='non'):
     if graphfeatures:
         # convert df into a csr matrix
         X_from_df = csr_matrix(X.to_numpy().astype(np.float64))
-        graphs = tools.xmap(mkgr, hybrid_seq_list ,14)
+        graphs = tools.xmap(mkgr, hybrid_seq_list ,no_jobs)
 
-        graphs_csr = csr_matrix(vstack(tools.xmap(call_vectorize,[[g] for g in graphs],10)))
+        graphs_csr = csr_matrix(vstack(tools.xmap(call_vectorize,[[g] for g in graphs],no_jobs)))
         no_graphs = graphs_csr.get_shape()[1]
         #print('computed call_verctorize!!')
         X_csr= csr_matrix(hstack((X_from_df,graphs_csr)))
