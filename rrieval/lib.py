@@ -1287,8 +1287,9 @@ def convert(X, y, outname, graphfeatures, mode, feat_file='non', no_jobs=1):
 
     if graphfeatures:
         # convert df into a csr matrix
+        print(f'nuber of jobs: {no_jobs}')
         X_from_df = csr_matrix(X.to_numpy().astype(np.float64))
-        graphs = tools.xmap(mkgr, hybrid_seq_list ,no_jobs)
+        graphs = tools.xmap(mkgr, hybrid_seq_list, no_jobs)
 
         graphs_csr = csr_matrix(vstack(tools.xmap(call_vectorize,[[g] for g in graphs],no_jobs)))
         no_graphs = graphs_csr.get_shape()[1]

@@ -127,8 +127,9 @@ def setup_argument_parser():
                       default="off",
                       help= "if you want to start from hand curated feature files with pos and net data")
     p_ex.add_argument("-j", "--n_jobs",
-                        help= "number of jobs used for graph feature computation",
-                        default=1)
+                      type=int,
+                      help= "number of jobs used for graph feature computation",
+                      default=1)
 
 
     """
@@ -197,6 +198,7 @@ def setup_argument_parser():
                         help= "memory in MB which each thred can use (total ram/threds)",
                         default=4300)
     p_mrgm.add_argument("-j", "--n_jobs",
+                        type=int,
                         help= "number of jobs for the optimization",
                         default=-1)
     p_mrgm.add_argument("-mi", "--mixed",
