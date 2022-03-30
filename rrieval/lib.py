@@ -1273,7 +1273,7 @@ def call_vectorize(g):
 def convert(X, y, outname, graphfeatures, mode, feat_file='non', no_jobs=1):
 
     #call_script(f'export PYTHONHASHSEED=31337')
-    
+
     # makes list of subseqDP and hybridDP tupels
     hybrid_seq_list = [a for a in zip(X['subseqDP'],X['hybridDP'])]
     X = X.drop(columns="subseqDP")
@@ -1379,7 +1379,7 @@ def download_genome(out_path, genome):
             genome_url = 'https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.2bit'
             download_file(genome_url, genome_dir)
         if not os.path.isfile(chrom_len_file):
-            chom_len_url = 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/bigZips/mm10.chrom.sizes'
+            chom_len_url = 'https://hgdownload.soe.ucsc.edu/goldenpath/mm10/bigZips/mm10.chrom.sizes'
             download_file(chom_len_url, genome_dir)
     else:
         if not os.path.isfile(genome):
