@@ -204,6 +204,9 @@ def setup_argument_parser():
     p_mrgm.add_argument("-mi", "--mixed",
                         help= "use mixed model my given a list of precomputed data",
                         default='off')
+    p_mrgm.add_argument("-fh", "--filter_hybrind",
+                        default="off",
+                        help= "filter the data for hyprids alrady detected by chira")
 
 
 
@@ -467,7 +470,7 @@ def main_eval(args):
 
     if use_structure == 'ON' or use_structure == 'on':
         print('2a. Compute structure feature')
-        X,y = rl.convert(X, y , feat_output, True, 'eval',model_params,n_jobs)
+        X_filterd,y = rl.convert(X, y , feat_output, True, 'eval',model_params,n_jobs)
     elif use_structure == 'OFF' or use_structure == 'off':
         X,y = rl.convert(X, y, feat_output, False, 'eval','non', n_jobs)
         print('2a. not preparing structure feature')
@@ -477,10 +480,11 @@ def main_eval(args):
     if not os.path.exists(eval_path):
         os.mkdir(eval_path)
     print('2b. Classify RRI instances')
-    X_filterd = rl.filter_features(X,model_params,use_structure)
+
     #print(X_filterd.info())
     #print(X_filterd.columns.tolist())
     if hand_feat == 'off':
+        X_filterd = rl.filter_features(X,model_params,use_structure)
         df_eval = rl.classify(X_filterd, model_file, f'{eval_path}evaluation_results')
     elif hand_feat == 'on':
         df_eval = rl.classify(X_filterd, model_file, f'{eval_path}evaluation_results', True, y)
@@ -541,6 +545,7 @@ def main_train(args):
     memoryPerThread = args.memoryPerThread
     n_jobs = args.n_jobs
     mixed = args.mixed
+    filter_hybrind = args.filter_hybrind
 
 
     if param_file == 'not_set':
@@ -579,7 +584,8 @@ def main_train(args):
                              file_rbp_pos + ' -r ' + ' '.join(replicats) +
                              ' -o ' + out_path + ' -t ' + str(overlap_th) +
                              ' -s 0.5 ')
-
+    if filter_hybrind == 'on':
+        occupied_regions_param = f'{occupied_regions_param} -fh on'
     call_occupied_regions = ('find_occupied_regions.py' +
                             occupied_regions_param)
     if mixed == 'off':

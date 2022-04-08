@@ -1236,6 +1236,7 @@ def get_filted_features(featurefile,csr_mat_h):
 
     """
     ft = np.load(featurefile)['d']
+
     #ft_new = np.append('index', ft)
     #ft_new = np.insert(ft, 0, 'index')
     header = ['E', 'E_hybrid', 'ED1', 'ED2',
@@ -1287,7 +1288,7 @@ def convert(X, y, outname, graphfeatures, mode, feat_file='non', no_jobs=1):
 
     if graphfeatures:
         # convert df into a csr matrix
-        print(f'nuber of jobs: {no_jobs}')
+        print(f'number of jobs: {no_jobs}')
         X_from_df = csr_matrix(X.to_numpy().astype(np.float64))
         graphs = tools.xmap(mkgr, hybrid_seq_list, no_jobs)
 
@@ -1304,6 +1305,7 @@ def convert(X, y, outname, graphfeatures, mode, feat_file='non', no_jobs=1):
         if mode == 'train':
             feat,_ = featsel.forest(X_csr,y_np,X_csr,y_np,None)
         elif mode == 'eval':
+            #feat = np.load(feat_file)['arr_0']
             feat = get_filted_features(feat_file,header_full)
         X_csr = X_csr[:,feat]
         header = [d for d, s in zip(header_full, feat) if s]

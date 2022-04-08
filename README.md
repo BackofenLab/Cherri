@@ -186,6 +186,7 @@ Please select the Chira RRI output files as input for cherri train.
 - me | memoryPerThread: memory in MB which each thred can use (total ram/threds)
 - j | n_jobs: number of jobs for the optimization
 - mi | mixed: use mixed model my given a list of precomputed data (advanced option)
+- fh | filter the data for hyprids alrady detected by chira (set to 'on' to filter default:'off')
 
 
 

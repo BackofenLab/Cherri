@@ -149,6 +149,10 @@ def main():
     parser.add_argument("-e", "--external_object",
                         help= "external rri object in the Interlap object format",
                         default="non")
+    parser.add_argument("-fh", "--filter_hybrind",
+                        default="off",
+                        help= "filter the data for hyprids alrady detected by chira")
+
 
 
 
@@ -160,6 +164,7 @@ def main():
     overlap_th = args.overlap_th
     score_th = args.score_th
     external_object = args.external_object
+    filter_hybrind = args.filter_hybrind
 
     timestr = time.strftime("%Y%m%d")
     out_path =  out_path + '/' + timestr + '_occ_out/'
@@ -189,6 +194,8 @@ def main():
     rri_call_param = ('-i ' + input_path_RRIs + ' -r ' + ' '.join(replicats) +
                      ' -o ' + str(overlap_th) +' -n rri_occupied_regions -d ' +
                      out_path + ' -s ' +  str(score_th))
+    if filter_hybrind == 'on':
+        rri_call_param = f'{rri_call_param} -fh on'
     rri_call  = 'find_trusted_RRI.py '  + rri_call_param
 
     rri_file = (out_path + 'rri_occupied_regions_overlap_' +

@@ -761,7 +761,7 @@ def get_list_overlaps(instances_no_nan_list):
         """
     avg_overlap_list = []
     avg_overlap_len_list = []
-    print('test')
+    #print('test')
     for temp_list in instances_no_nan_list:
         sort_pos = [(i[0],i[1])for i in temp_list]
         print(sort_pos)
@@ -835,6 +835,9 @@ def main():
 
     # use_enegy = False
 
+    percentage_trustable_rri_all = (no_relayble_rri/len_smalles_replicat)*100
+    print('######\n for %i replicates the following number of reliable interactions are found: %i (%.2f %%)'%(no_replicats, no_relayble_rri, percentage_trustable_rri_all))
+
     if filter_hybrind == 'on':
         instances_just_nan_list, instances_also_nan_list, instances_no_nan_list = get_numbers_nan(no_replicats, trusted_rri_list)
 
@@ -848,18 +851,11 @@ def main():
             df_final_output = pd.concat([df_final_output, df_output_nan_temp])
             out_for_IntaRNA_calls_df.to_csv(output_path + 'NAN_' + output_name, index=False)
 
-
-            percentage_trustable_rri_all = no_relayble_rri/len_smalles_replicat
-
-
-            print('######\n for %i replicates the following number of reliable interactions are found: %i (%f)'%(no_replicats, no_relayble_rri, percentage_trustable_rri_all))
-            print('the distribution of the interactions are:')
-            print('Number of RRI all not having a hybrid: %i'%len(instances_just_nan_list))
-            print('Number of RRI some having a hybrid: %i'%len(instances_also_nan_list))
-            print('Number of RRI all having hybrids: %i'%len(instances_no_nan_list))
-                #print(no_relayble_rri)
-                #print(len_smalles_replicat)
-            print('######')
+        print('Output is filter for RRIs that have atleast one hybrid:')
+        print('Number of RRI all not having a hybrid: %i'%len(instances_just_nan_list))
+        print('Number of RRI some having a hybrid: %i'%len(instances_also_nan_list))
+        print('Number of RRI all having hybrids: %i'%len(instances_no_nan_list))
+        print('######')
     else:
         instances_list = get_rep_highest_overlap(no_replicats, trusted_rri_list)
         final_output_list = []
@@ -872,6 +868,7 @@ def main():
             final_output_list.append(instance)
 
         df_final_output = concat_series_objects(final_output_list)
+        print('######')
 
         #print(df_output.info())
 
