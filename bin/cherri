@@ -473,6 +473,7 @@ def main_eval(args):
         X_filterd,y = rl.convert(X, y , feat_output, True, 'eval',model_params,n_jobs)
     elif use_structure == 'OFF' or use_structure == 'off':
         X,y = rl.convert(X, y, feat_output, False, 'eval','non', n_jobs)
+        X_filterd = rl.filter_features(X,model_params,use_structure)
         print('2a. not preparing structure feature')
 
     ### Predict ###########################################################
@@ -483,8 +484,8 @@ def main_eval(args):
 
     #print(X_filterd.info())
     #print(X_filterd.columns.tolist())
+
     if hand_feat == 'off':
-        X_filterd = rl.filter_features(X,model_params,use_structure)
         df_eval = rl.classify(X_filterd, model_file, f'{eval_path}evaluation_results')
     elif hand_feat == 'on':
         df_eval = rl.classify(X_filterd, model_file, f'{eval_path}evaluation_results', True, y)
