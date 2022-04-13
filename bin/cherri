@@ -227,7 +227,8 @@ def read_RRI_table(file):
         Returns
         -------
         RRI_dict:
-            interaction_id -> [chrom1,start1,stop1,stand1,chrom2,start2,stop2,strand2]
+            interaction_id:
+            [chrom1,start1,stop1,stand1,chrom2,start2,stop2,strand2]
 
     """
     RRI_dict = {}
@@ -256,14 +257,13 @@ def call_occupyed_regions_eval(eval_rri_file, output_path,external_file='non'):
     # brauche glaube nicht!!!!!
     # occ_file = output_path +  '/occupied_regions.obj'
     ###################
-    call_occ_regions = ('find_occupied_regions.py -i1 ' +
-                        i1 + ' -i2 non -r ' + file + ' -o ' + output_path +
-                        ' -s non'+ ' -e ' + external_file)
+    call_occ_regions = (f'find_occupied_regions.py -i1 {i1} -i2 non -r {file} '
+                        f'-o {output_path} -s non -e {external_file}')
     #print(call_occ_regions)
     rl.call_script(call_occ_regions)
     timestr = time.strftime("%Y%m%d")
-    out_path =  output_path + '/' + timestr + '_occ_out/'
-    input_occupyed = out_path + '/occupied_regions.obj'
+    out_path =  f'{output_path}/{timestr}_occ_out/'
+    input_occupyed = f'{out_path}/occupied_regions.obj'
     return input_occupyed
 
 
@@ -339,18 +339,18 @@ def main_eval(args):
     timestr = time.strftime("%Y%m%d")
 
     if out_name == 'non':
-        out_path =  out_path + '/' + timestr + '_Cherri_evaluating_RRIs/'
+        out_path =  f'{out_path}/{timestr}_Cherri_evaluating_RRIs/'
     else:
-        out_path =  out_path + '/' + out_name + '/'
+        out_path =  f'{out_path}/{out_name}/'
 
-    midel_name =  experiment_name + '_context_' + str(context)
+    midel_name =  f'{experiment_name}_context_{str(context)}'
 
     if not os.path.exists(out_path):
         os.mkdir(out_path)
         print('***added new folder***')
 
 
-    ### get input data ##########################################
+    ### get input data #########################################################
     # 34
     header = ['#reads','chrom_1st','start_1st','end_1st', 'strand_1st',
               'chrom_2end','start_2end','end_2end', 'strand_2end',
@@ -394,37 +394,45 @@ def main_eval(args):
 
 
 
-        ### Call find_occupied_regions.py ##########################################
+        ### Call find_occupied_regions.py ######################################
         if occupyed_regions == 'human':
-            occupyed_regions_file = '/vol/scratch/data_storage/data/RRIs/20210907_occ_out_rbp_c5/occupied_regions.obj'
-            occupyed_regions = call_occupyed_regions_eval(eval_rri_file, out_path, occupyed_regions_file)
+            occupyed_regions_file = (f'/vol/scratch/data_storage/data/RRIs/'
+                                     f'20210907_occ_out_rbp_c5/'
+                                     f'occupied_regions.obj')
+            occupyed_regions = call_occupyed_regions_eval(eval_rri_file,
+                                                          out_path,
+                                                          occupyed_regions_file)
         elif occupyed_regions == 'mouse':
-            occupyed_regions_file = '/vol/scratch/data_storage/data/RRIs/20210923_occ_out/occupied_regions.obj'
-            occupyed_regions = call_occupyed_regions_eval(eval_rri_file, out_path, occupyed_regions_file)
+            occupyed_regions_file = (f'/vol/scratch/data_storage/data/RRIs/'
+                                     f'20210923_occ_out/occupied_regions.obj')
+            occupyed_regions = call_occupyed_regions_eval(eval_rri_file,
+                                                          out_path,
+                                                          occupyed_regions_file)
         elif occupyed_regions == 'non':
-            occupyed_regions = call_occupyed_regions_eval(eval_rri_file, out_path)
+            occupyed_regions = call_occupyed_regions_eval(eval_rri_file,
+                                                          out_path)
         else:
             print('using your own occupyed regions objects')
-            occupyed_regions = call_occupyed_regions_eval(eval_rri_file, output_path, occupyed_regions)
+            occupyed_regions = call_occupyed_regions_eval(eval_rri_file,
+                                                          output_path,
+                                                          occupyed_regions)
 
-        ##download genomes ###############################################
+        ##download genomes #####################################################
         genome_file, chrom_len_file = rl.download_genome(out_path, genome)
 
 
-        #### Call pos data call #########################################
+        #### Call pos data call ################################################
         pos_neg_out_path = out_path + 'positive_instance/'
         #os.mkdir(pos_neg_out_path)
         if not os.path.exists(pos_neg_out_path):
             os.mkdir(pos_neg_out_path)
 
-        pos_neg_param = (' -i1 ' + eval_rri_file + ' -i2 ' +
-                        occupyed_regions + ' -d ' + pos_neg_out_path + ' -g ' +
-                        genome_file + ' -n ' + experiment_name + ' -c ' +
-                        str(context) + ' --no_pos_occ -s 1 -l ' + chrom_len_file +
-                        ' -p ' + param_file + ' -m eval' )
+        pos_neg_param = (f' -i1 {eval_rri_file} -i2  {occupyed_regions} '
+                         f' -d {pos_neg_out_path} -g {genome_file} '
+                         f'-n {experiment_name} -c {str(context)} --no_pos_occ '
+                         f'-s 1 -l {chrom_len_file} -p {param_file} -m eval')
 
-        call_pos_neg = ('generate_pos_neg_with_context.py' +
-                                pos_neg_param)
+        call_pos_neg = f'generate_pos_neg_with_context.py {pos_neg_param}'
         print('1. Prepater RRI instances')
         #print(call_pos_neg)
         rl.call_script(call_pos_neg)
@@ -432,18 +440,17 @@ def main_eval(args):
 
 
 
-        ### Call get_features.py ###################################################
-        feature_out_path = out_path + 'feature_files/'
+        ### Call get_features.py ###############################################
+        feature_out_path = f'{out_path}feature_files/'
         if not os.path.exists(feature_out_path):
             os.mkdir(feature_out_path)
 
 
-        file_pos = pos_neg_out_path + midel_name + 'pos.csv'
-        feature_pos = (feature_out_path +  'feature_filtered_' + midel_name +
-                      '_pos.csv')
+        file_pos = f'{pos_neg_out_path}{midel_name}pos.csv'
+        feature_pos = f'{feature_out_path}feature_filtered_{midel_name}_pos.csv'
 
-        pos_feature_param = ' -i ' + file_pos + ' -f all -o ' + feature_pos
-        call_pos_feature = 'get_features.py' + pos_feature_param
+        pos_feature_param = f'-i {file_pos} -f all -o {feature_pos}'
+        call_pos_feature = f'get_features.py {pos_feature_param}'
         print('2. Compute features')
         #print(call_pos_feature)
         rl.call_script(call_pos_feature)
@@ -454,7 +461,7 @@ def main_eval(args):
         X = df_data.drop(columns="label")
 
     elif hand_feat == 'on':
-        feature_out_path = out_path + 'feature_files/'
+        feature_out_path = f'{out_path}feature_files/'
         if not os.path.exists(feature_out_path):
             os.mkdir(feature_out_path)
 
@@ -464,19 +471,20 @@ def main_eval(args):
         # X['true_label'] = y
         #äprint(X.info())
 
-    ### Add structure ###################################################
+    ### Add structure ##########################################################
     feat_output = f'{feature_out_path}training_data_{midel_name}'
 
 
     if use_structure == 'ON' or use_structure == 'on':
         print('2a. Compute structure feature')
-        X_filterd,y = rl.convert(X, y , feat_output, True, 'eval',model_params,n_jobs)
+        X_filterd,y = rl.convert(X, y , feat_output,
+                                 True, 'eval',model_params,n_jobs)
     elif use_structure == 'OFF' or use_structure == 'off':
         X,y = rl.convert(X, y, feat_output, False, 'eval','non', n_jobs)
         X_filterd = rl.filter_features(X,model_params,use_structure)
         print('2a. not preparing structure feature')
 
-    ### Predict ###########################################################
+    ### Predict ################################################################
     eval_path =  f'{out_path}/evaluation/'
     if not os.path.exists(eval_path):
         os.mkdir(eval_path)
@@ -484,11 +492,12 @@ def main_eval(args):
 
     #print(X_filterd.info())
     #print(X_filterd.columns.tolist())
+    eval_file = f'{eval_path}evaluation_results'
 
     if hand_feat == 'off':
-        df_eval = rl.classify(X_filterd, model_file, f'{eval_path}evaluation_results')
+        df_eval = rl.classify(X_filterd, model_file, eval_file)
     elif hand_feat == 'on':
-        df_eval = rl.classify(X_filterd, model_file, f'{eval_path}evaluation_results', True, y)
+        df_eval = rl.classify(X_filterd, model_file, eval_file, True, y)
 
     #print(df_eval)
     print('##########################################')
@@ -532,7 +541,7 @@ def main_train(args):
 
     args = parser.parse_args()
     input_path_RRIs = args.RRI_path
-    replicats = args.list_of_replicats
+    replicats = ' '.join(args.list_of_replicats)
     genome = args.genome
     chrom_len_file = args.chrom_len_file
     out_path = args.out_path
@@ -548,6 +557,10 @@ def main_train(args):
     mixed = args.mixed
     filter_hybrind = args.filter_hybrind
 
+    #methods = f'extra_trees passive_aggressive random_forest sgd gradient_boosting mlp'
+    methods = f'all'
+
+
 
     if param_file == 'not_set':
         lib_path = os.path.dirname(rl.__file__)
@@ -557,7 +570,7 @@ def main_train(args):
 
     # define output folder
     timestr = time.strftime("%Y%m%d")
-    out_path =  out_path + '/' + timestr + '_Cherri_build_model/'
+    out_path =  f'{out_path}/{timestr}_Cherri_build_model/'
     #if set_path == 'off' and mixed == 'off':
     #    if not os.path.exists(out_path):
     #        os.mkdir(out_path)
@@ -566,7 +579,7 @@ def main_train(args):
     #        print('***using todays build output folder***')
     if mixed == 'on':
         print('***You are in mixed model mode***')
-        out_path =  input_path_RRIs + '/' + experiment_name + '/'
+        out_path =  f'{input_path_RRIs}/{experiment_name}/'
         if not os.path.exists(out_path):
             print('Error: output folder for mixed model should exist')
             os.mkdir(out_path)
@@ -576,19 +589,17 @@ def main_train(args):
             print('***created top level output folder***')
         else:
             print('***using todays build output folder***')
-        ##download genomes ###############################################
+        ##download genomes #####################################################
         genome_file, chrom_len_file = rl.download_genome(out_path, genome)
 
 
     ### Call find_occupied_regions.py ##########################################
-    occupied_regions_param = (' -i1 ' + input_path_RRIs + ' -i2 ' +
-                             file_rbp_pos + ' -r ' + ' '.join(replicats) +
-                             ' -o ' + out_path + ' -t ' + str(overlap_th) +
-                             ' -s 0.5 ')
+    occupied_regions_param = (f' -i1 {input_path_RRIs}  -i2 {file_rbp_pos} '
+                              f'-r {replicats} -o {out_path} '
+                              f'-t {str(overlap_th)} -s 0.5 ')
     if filter_hybrind == 'on':
         occupied_regions_param = f'{occupied_regions_param} -fh on'
-    call_occupied_regions = ('find_occupied_regions.py' +
-                            occupied_regions_param)
+    call_occupied_regions = f'find_occupied_regions.py {occupied_regions_param}'
     if mixed == 'off':
         print('1. find occupyed regions')
         #print(call_occupied_regions)
@@ -599,50 +610,48 @@ def main_train(args):
 
 
 
-        #### Call find_occupied_regions.py #########################################
+        #### Call find_occupied_regions.py #####################################
         pos_neg_out_path = out_path + 'pos_neg_data/'
         if not os.path.exists(pos_neg_out_path):
             os.mkdir(pos_neg_out_path)
-        trusted_rri_file = (occupyed_outfile + 'rri_occupied_regions_overlapTH_' +
-                                str(overlap_th) + '_scoreTH_1.cvs')
-        occupyed_regions_file =  occupyed_outfile + 'occupied_regions.obj'
+        trusted_rri_file = (f'{occupyed_outfile}rri_occupied_regions_overlapTH_'
+                            f'{str(overlap_th)}_scoreTH_1.cvs')
+        occupyed_regions_file =  f'{occupyed_outfile}occupied_regions.obj'
 
-        pos_neg_param = (' -i1 ' + trusted_rri_file + ' -i2 ' +
-                        occupyed_regions_file + ' -d ' + pos_neg_out_path + ' -g ' +
-                        genome_file + ' -n ' + experiment_name + ' -c ' +
-                        str(context) + ' --pos_occ -b 40  -l ' + chrom_len_file +
-                        ' -p ' + param_file + ' -m train')
+        pos_neg_param = (f' -i1 {trusted_rri_file} -i2 {occupyed_regions_file} '
+                         f'-d {pos_neg_out_path} -g {genome_file} '
+                         f'-n {experiment_name} -c {str(context)} --pos_occ '
+                         f'-b 40 -l {chrom_len_file} -p {param_file} -m train')
 
-        call_pos_neg = ('generate_pos_neg_with_context.py' +
-                            pos_neg_param)
+        call_pos_neg = f'generate_pos_neg_with_context.py {pos_neg_param}'
         print('2. Compute positive and negative instaces')
         # print(call_pos_neg)
         rl.call_script(call_pos_neg)
         # print(out_pos_neg)
 
 
-        ### Call get_features.py ###################################################
+        ### Call get_features.py ###############################################
         feature_out_path = out_path + 'feature_files/'
         if not os.path.exists(feature_out_path):
             os.mkdir(feature_out_path)
         midel_name =  experiment_name + '_context_' + str(context)
         file_neg = pos_neg_out_path + midel_name + '_pos_occ_neg.csv'
         file_pos = pos_neg_out_path + midel_name + '_pos_occ_pos.csv'
-        feature_pos = (feature_out_path +  'feature_filtered_' + midel_name +
-                    '_pos_occ_pos.csv')
-        feature_neg = (feature_out_path +  'feature_filtered_' + midel_name +
-                  '_pos_occ_neg.csv')
+        feature_pos = (f'{feature_out_path}feature_filtered_{midel_name}'
+                       f'_pos_occ_pos.csv')
+        feature_neg = (f'{feature_out_path}feature_filtered_{midel_name}'
+                       f'_pos_occ_neg.csv')
 
-        pos_feature_param = ' -i ' + file_pos + ' -f all -o ' + feature_pos
-        call_pos_feature = 'get_features.py' + pos_feature_param
+        pos_feature_param = f'-i {file_pos} -f all -o {feature_pos}'
+        call_pos_feature = f'get_features.py {pos_feature_param}'
         print('3a. Compute positive feature')
         # print(call_pos_feature)
         rl.call_script(call_pos_feature)
 
-        neg_feature_param = ' -i ' + file_neg + ' -f all -o ' + feature_neg
-        call_neg_feature = 'get_features.py' + neg_feature_param
+        neg_feature_param = f'-i  {file_neg} -f all -o  {feature_neg}'
+        call_neg_feature = f'get_features.py {neg_feature_param}'
         print('3b. Compute negative feature')
-        #print(call_neg_feature)
+        print(call_neg_feature)
         rl.call_script(call_neg_feature)
         X, y = rl.read_pos_neg_data(feature_pos, feature_neg)
 
@@ -651,13 +660,15 @@ def main_train(args):
         feature_out_path = out_path + 'feature_files/'
         if not os.path.exists(feature_out_path):
             os.mkdir(feature_out_path)
-        midel_name =  experiment_name + '_context_' + str(context)
+        midel_name =  f'{experiment_name}_context_{str(context)}'
         X_list = []
         y_list = []
         for data in replicats:
             feature_path = f'{input_path_RRIs}/{data}/feature_files/'
-            feature_neg = f'{feature_path}/feature_filtered_{data}_context_{str(context)}_pos_occ_neg.csv'
-            feature_pos = f'{feature_path}/feature_filtered_{data}_context_{str(context)}_pos_occ_pos.csv'
+            feature_neg = (f'{feature_path}/feature_filtered_{data}_context_'
+                           f'{str(context)}_pos_occ_neg.csv')
+            feature_pos = (f'{feature_path}/feature_filtered_{data}_context_'
+                           f'{str(context)}_pos_occ_pos.csv')
             X_sub, y_sub = rl.read_pos_neg_data(feature_pos, feature_neg)
             X_list.append(X_sub)
             y_list.append(y_sub)
@@ -669,7 +680,7 @@ def main_train(args):
         # print(X.info())
 
 
-    ### Add structure ###################################################
+    ### Add structure ##########################################################
     feat_output = f'{feature_out_path}/training_data_{midel_name}'
     #print(feat_output)
 
@@ -684,7 +695,7 @@ def main_train(args):
 
 
 
-    ## feature ###############################################################
+    ## feature #################################################################
     print('4. Compute model:')
 
     out_path_model = f'{out_path}/model/'
@@ -698,14 +709,15 @@ def main_train(args):
         # Was macht subsample?????
         loaddata_feat = f'--infile {feat_output} --subsample 20000 '
         out_feat = f'{feat_path}{midel_name}'
-        call_feat = f'python -m biofilm.biofilm-features {loaddata_feat} --method forest --out {out_feat}'
+        call_feat = (f'python -m biofilm.biofilm-features {loaddata_feat} '
+                     f'--method forest --out {out_feat}')
         print('4a. Select features')
         print(call_feat)
         rl.call_script(call_feat)
 
 
 
-    ## optimize ###############################################################
+    ## optimize ################################################################
 
 
     opt_path =  f'{out_path_model}/optimized/'
@@ -718,7 +730,10 @@ def main_train(args):
 
     if use_structure == 'ON' or use_structure == 'on':
         loaddata = f' --infile {feat_output} '
-        opt_call = f'python -W ignore -m biofilm.biofilm-optimize6 {loaddata} --memoryMBthread {memoryPerThread} --folds 0 --out {opt_path}{midel_name} --preprocess True --n_jobs {n_jobs} --time {run_time}'
+        opt_call = (f'python -W ignore -m biofilm.biofilm-optimize6 {loaddata} '
+                    f'--memoryMBthread {memoryPerThread} --folds 0 '
+                    f'--out {opt_path}{midel_name} --preprocess True '
+                    f'--n_jobs {n_jobs} --time {run_time} --methods {methods}') #
 
         print('4a. Optimize model')
         print(opt_call)
@@ -728,19 +743,27 @@ def main_train(args):
 
 
         print('4a. Refit model')
-        call_refit = f'$(which python) -m biofilm.biofilm-cv --infile {feat_output} --folds 0 --model {model_path} --out {full_model_path}'
+        call_refit = (f'$(which python) -m biofilm.biofilm-cv --infile '
+                      f'{feat_output} --folds 0 --model {model_path} '
+                      f'--out {full_model_path}')
         print(call_refit)
         rl.call_script(call_refit)
     elif use_structure == 'OFF' or use_structure == 'off':
         loaddata = f' --infile {feat_output}  --featurefile {out_feat}'
-        opt_call = f'python -W ignore -m biofilm.biofilm-optimize6 {loaddata} --memoryMBthread {memoryPerThread} --folds 0 --out {opt_path}{midel_name} --preprocess True --n_jobs {n_jobs} --time {run_time}'
+        opt_call = (f'python -W ignore -m biofilm.biofilm-optimize6 {loaddata} '
+                    f'--memoryMBthread {memoryPerThread} --folds 0 '
+                    f'--out {opt_path}{midel_name} --preprocess True '
+                    f'--n_jobs {n_jobs} --time {run_time} --methods {methods}') #
         print('4b. Optimize model')
         print(opt_call)
         out = rl.call_script(opt_call, reprot_stdout=True,asset_err=False)
         print(out.decode())
 
         print('4b. refit model')
-        call_refit = f'$(which python) -m biofilm.biofilm-cv --infile {feat_output} --folds 0 --featurefile {out_feat} --model {model_path} --out {full_model_path}'
+        call_refit = (f'$(which python) -m biofilm.biofilm-cv '
+                      f'--infile {feat_output} --folds 0 '
+                      f'--featurefile {out_feat} '
+                      f'--model {model_path} --out {full_model_path}')
         print(call_refit)
         rl.call_script(call_refit)
 
