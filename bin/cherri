@@ -557,8 +557,8 @@ def main_train(args):
     mixed = args.mixed
     filter_hybrind = args.filter_hybrind
 
-    #methods = f'extra_trees passive_aggressive random_forest sgd gradient_boosting mlp'
-    methods = f'all'
+    methods = f'extra_trees passive_aggressive random_forest sgd gradient_boosting mlp'
+    #methods = f'all'
 
 
 

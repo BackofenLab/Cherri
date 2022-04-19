@@ -73,13 +73,13 @@ conda install -c bioconda IntaRNA
 conda install -c bioconda numpy
 conda install -c bioconda pandas
 conda install -c smautner eden-kernel
-conda install -c smautner biofilm=0.0.87
+conda install -c smautner biofilm=0.0.88
 conda install -c conda-forge python-wget
 ```
 Or directly:
 
 ```
-conda create -n cherri -c conda-forge -c bioconda -c smautner scikit-learn networkx ucsc-twobittofa interlap pandas IntaRNA python-wget eden-kernel biofilm=0.0.81 python-wget
+conda create -n cherri -c conda-forge -c bioconda -c smautner scikit-learn networkx ucsc-twobittofa interlap pandas IntaRNA python-wget eden-kernel biofilm=0.0.88 python-wget
 
 ```
 
