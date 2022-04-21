@@ -492,7 +492,7 @@ def main_eval(args):
 
     #print(X_filterd.info())
     #print(X_filterd.columns.tolist())
-    eval_file = f'{eval_path}evaluation_results'
+    eval_file = f'{eval_path}evaluation_results_{experiment_name}.cvs'
 
     if hand_feat == 'off':
         df_eval = rl.classify(X_filterd, model_file, eval_file)
@@ -501,7 +501,7 @@ def main_eval(args):
 
     #print(df_eval)
     print('##########################################')
-    print(f'Result file: {eval_path}evaluation_results')
+    print(f'Result file: {eval_file}')
     print('##########################################')
 
 
@@ -602,7 +602,7 @@ def main_train(args):
     call_occupied_regions = f'find_occupied_regions.py {occupied_regions_param}'
     if mixed == 'off':
         print('1. find occupyed regions')
-        #print(call_occupied_regions)
+        print(call_occupied_regions)
         rl.call_script(call_occupied_regions)
 
         # output:

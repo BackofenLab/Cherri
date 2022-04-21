@@ -216,7 +216,7 @@ Thought the program seveal output files are generated in the following structure
 
 
 
-### Get to know cherr with a test run Cherri
+### Get to know Cherri with a test run 
 Using test data stored in this reposetory under 'test_data' you can see how Cherri is running. First please install Cherri via conda. 
 
 #### Test Cherri train model mode

@@ -132,7 +132,7 @@ def main():
                         default="/vol/scratch/data/RRIs/Paris/")
     parser.add_argument("-i2", "--rbp_path",
                         help= "path to RBP side data file (bed format)",
-                        default="/vol/scratch/data/human_RBP_coverage/GSE38355_ProtOccProf_4SU_consensus_TC_hg38.bed")
+                        default="non")
     parser.add_argument("-r", "--list_of_replicats", action="store",
                         nargs='+',
                         dest="list_of_replicats", required=True,
@@ -206,12 +206,16 @@ def main():
         in_file = input_path_RRIs + replicats[0]
         print(in_file)
         # df_replicat = rl.read_chira_data(in_file)
-        df_replicat = rl.read_chira_data(in_file, header='yes', separater=",")
+        df_replicat = rl.read_chira_data(in_file, header='no', separater="\t")
+        #print(df_replicat.info())
         if score_th == 'non':
             df_rris = df_replicat
         else:
-            df_filtered_replicat = rl.filter_score(df_replicat, score_th)
-            df_rris = rl.delet_empty_col(df_filtered_replicat)
+            df_filtered_replicat = rl.filter_score(df_replicat, float(score_th))
+            #df_rris = rl.delet_empty_col(df_filtered_replicat)
+            df_rris = df_filtered_replicat
+
+            #print(df_rris.info())
     else:
         rl.call_script(rri_call)
         #print(rri_call)

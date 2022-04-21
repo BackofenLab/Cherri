@@ -80,9 +80,8 @@ def read_chira_data(in_file, header='no', separater="\t"):
 
     # inclued header
     if header == 'no':
-        df_temp = pd.read_table(in_file, header=None, sep=separater,
-                                low_memory=False)
-        header = ['#reads','chrom_1st','start_1st','end_1st', 'strand_1st',
+
+        header_line = ['#reads','chrom_1st','start_1st','end_1st', 'strand_1st',
                 'chrom_2end','start_2end','end_2end', 'strand_2end',
                 'ineraction_side_1st', 'ineraction_side_2end',
                 'IntaRNA_prediction', 'energy',
@@ -95,8 +94,17 @@ def read_chira_data(in_file, header='no', separater="\t"):
                 'TPM_seq_1st_side', 'TPM_seq_2end_side', 'TPM_summary',
                 'score_seq_1st_side', 'score_seq_2end_side','score_product',
                 'biotype_region_1st', 'biotype_region_2end', 'ID_1st','ID_2end']
-    # len(header)
-        df_interactions = pd.DataFrame(df_temp.values, columns=header)
+        df_interactions = pd.read_table(in_file, header=None, sep=separater,
+                                low_memory=False, names=header_line)
+        #df_interactions = pd.read_table(in_file, header=0, sep=separater)
+        #df_temp.columns = header_line
+        #df_interactions = df_temp
+        #print(df_temp.to_numpy)
+        #print(len(header_line))
+        #print(df_temp)
+        #print(df_interactions.info())
+
+        # df_interactions = pd.DataFrame(df_temp.to_numpy, columns=header_line)
     elif header == 'yes':
         df_interactions = pd.read_table(in_file, sep=separater,
                                         low_memory=False)
