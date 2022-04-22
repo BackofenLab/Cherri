@@ -541,7 +541,10 @@ def main_train(args):
 
     args = parser.parse_args()
     input_path_RRIs = args.RRI_path
-    replicats = ' '.join(args.list_of_replicats)
+    if type(args.list_of_replicats) == list:
+        replicats = ' '.join(args.list_of_replicats)
+    else:
+        replicats = list_of_replicats
     genome = args.genome
     chrom_len_file = args.chrom_len_file
     out_path = args.out_path
