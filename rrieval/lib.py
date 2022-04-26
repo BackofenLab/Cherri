@@ -1102,7 +1102,7 @@ def classify(df_eval,in_model_filepath, output_path,true_lable=False, y='off'):
     model = loadfile(in_model_filepath)
     y_pred=model.predict(df_eval)
     #print('model predictions')
-    xtra = pd.DataFrame({'prediction': y_pred})
+    xtra = pd.DataFrame({'predicted_label': y_pred})
     df_result = pd.concat([df_eval, xtra], axis=1)
     # df_eval['prediction'] = y_pred
     #print(y_pred)

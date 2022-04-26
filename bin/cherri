@@ -286,7 +286,7 @@ def main_eval(args):
     |       ├── test_eval_context_{context}pos.csv
     |       ├── date_occ_out
     |           ├── occupied_regions.obj
-    |           ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.cvs
+    |           ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.csv
     |   ├── feature_files
     |       ├── feature_filtered_test_eval_context_150_pos.csv
     |       ├── training_data_test_eval_context_150.npz
@@ -492,7 +492,7 @@ def main_eval(args):
 
     #print(X_filterd.info())
     #print(X_filterd.columns.tolist())
-    eval_file = f'{eval_path}evaluation_results_{experiment_name}.cvs'
+    eval_file = f'{eval_path}evaluation_results_{experiment_name}.csv'
 
     if hand_feat == 'off':
         df_eval = rl.classify(X_filterd, model_file, eval_file)
@@ -523,7 +523,7 @@ def main_train(args):
     ├── date_Cherri_model_build
     |   ├── date_occ_out
     |       ├── occupied_regions.obj
-    |       ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.cvs
+    |       ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.csv
     |   ├── read_pos_neg_data
     |       ├── test_train_context_50_pos_occ_neg.csv
     |       ├── test_train_context_50_pos_occ_pos.csv
@@ -536,7 +536,7 @@ def main_train(args):
     |           ├── test_train_context_50.npz
     |       ├── optimized
     |           ├── test_train_context_50.model
-    |           ├── test_train_context_50.cvs
+    |           ├── test_train_context_50.csv
     """
 
     args = parser.parse_args()
@@ -621,7 +621,7 @@ def main_train(args):
         if not os.path.exists(pos_neg_out_path):
             os.mkdir(pos_neg_out_path)
         trusted_rri_file = (f'{occupyed_outfile}rri_occupied_regions_overlapTH_'
-                            f'{str(overlap_th)}_scoreTH_1.cvs')
+                            f'{str(overlap_th)}_scoreTH_1.csv')
         occupyed_regions_file =  f'{occupyed_outfile}occupied_regions.obj'
 
         pos_neg_param = (f' -i1 {trusted_rri_file} -i2 {occupyed_regions_file} '

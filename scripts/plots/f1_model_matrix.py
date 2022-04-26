@@ -27,8 +27,8 @@ def calculate_measures(data, read=True):
     #print(df_model['true_label'])
     f1 = f1_score(df_model['true_label'].tolist(), df_model['predicted_label'].tolist(), average='macro')
     #print(f1)
-    precision, recall, thresholds, auc_prc = compute_prc(df_model['true_label'].tolist(), df_model['instance_score'].tolist())
-    return [f1, precision, recall, thresholds, auc_prc]
+    #precision, recall, thresholds, auc_prc = compute_prc(df_model['true_label'].tolist(), df_model['instance_score'].tolist())
+    return f1
 
 def calculate_diag(name, input_path):
     df_val0 = pd.read_csv((input_path + name +'_'  + name + '_fold0.csv'))
@@ -37,9 +37,9 @@ def calculate_diag(name, input_path):
     df_val3 = pd.read_csv((input_path + name +'_'  + name + '_fold3.csv'))
     df_val4 = pd.read_csv((input_path + name +'_' + name + '_fold4.csv'))
     df_cv = pd.concat([df_val0, df_val1, df_val2, df_val3, df_val4], ignore_index=True)
-    measures_list = calculate_measures(df_cv, read=False)
+    f1 = calculate_measures(df_cv, read=False)
 
-    return measures_list
+    return f1
 
 def main():
     parser = argparse.ArgumentParser(description='Trains models for RRIeval')
@@ -50,9 +50,9 @@ def main():
     input_path = args.input_path
 
 
-    #feature_file_names = ['PARIS_human','PARIS_mouse', 'Full', 'Full_human']
+    feature_file_names = ['PARIS_human','PARIS_mouse', 'PARIS_human_RBP','Full']
 
-    feature_file_names = ['PARIS_human','PARIS_human_RBPs','PARIS_mouse','SPLASH_human','Full_human_RRIs']
+    #feature_file_names = ['PARIS_human','PARIS_human_RBP','PARIS_mouse','SPLASH_human','Full_human_RRIs']
 
 
 
@@ -66,16 +66,17 @@ def main():
         for name2 in feature_file_names:
             if name != name2:
                 key = name + '$' + name2
-                file_name = input_path  + name + '_' + name2 + '.csv'
-                val = calculate_measures(file_name)
-                measures_dict[key] = val
+                # file example: evaluation_results_PARIS_mouse_PARIS_human_RBP.cvs
+                file_name = f'{input_path}evaluation_results_{name}_{name2}.cvs'
+                f1_cross_model = calculate_measures(file_name)
+                measures_dict[key] = f1_cross_model
                 #print(key, val[0])
-                temp_dict[name2]= measures_dict[key][0]
+                temp_dict[name2]= measures_dict[key]
         key_diag = name + '$' + name
-        val_diag = calculate_diag(name, input_path)
-        measures_dict[key_diag] = val_diag
-        temp_dict[name]= measures_dict[key_diag][0]
-        print(key_diag, val_diag[0])
+        f1 = calculate_diag(name, input_path)
+        measures_dict[key_diag] = f1
+        temp_dict[name]= measures_dict[key_diag]
+        print(key_diag, f1)
         f1_dict[name]=[temp_dict[i] for i in sorted(temp_dict.keys())]
 
     # generate table form f1 dict
