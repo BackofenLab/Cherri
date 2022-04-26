@@ -25,7 +25,7 @@ def calculate_measures(data, read=True):
     df_model.columns = df_model.columns.str.strip()
     #print(df_model.columns)
     #print(df_model['true_label'])
-    f1 = f1_score(df_model['true_label'].tolist(), df_model['predicted_label'].tolist(), average='macro')
+    f1 = f1_score(df_model['true_label'].tolist(), df_model['predicted_label'].tolist())
     #print(f1)
     #precision, recall, thresholds, auc_prc = compute_prc(df_model['true_label'].tolist(), df_model['instance_score'].tolist())
     return f1
@@ -67,7 +67,7 @@ def main():
             if name != name2:
                 key = name + '$' + name2
                 # file example: evaluation_results_PARIS_mouse_PARIS_human_RBP.cvs
-                file_name = f'{input_path}evaluation_results_{name}_{name2}.cvs'
+                file_name = f'{input_path}evaluation_results_{name}_{name2}.csv'
                 f1_cross_model = calculate_measures(file_name)
                 measures_dict[key] = f1_cross_model
                 #print(key, val[0])
