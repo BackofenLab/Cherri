@@ -40,12 +40,15 @@ def build_interlap_occ_sides(df_interactions, flag):
         names_second = ['chrom_2end','strand_2end','start_2end','end_2end']
 
     if flag == 'two':
+        print(df_interactions['chrom_1st'])
         list_chrom_no_int = rl.get_list_chrom(df_interactions)
         df_interactions[names_first[0]] = df_interactions[names_first[0]].apply(lambda x: rl.check_convert_chr_id(x))
         df_interactions[names_second[0]] = df_interactions[names_second[0]].apply(lambda x: rl.check_convert_chr_id(x))
+        print(df_interactions['chrom_1st'])
         for index, row in df_interactions.iterrows():
             row_content = row
             if not row[names_first[0]]:
+                print(f'Chrom 1: {row[names_first[0]]}')
                 print('can not use chromosome')
             else:
                 both_keys1 = str(row[names_first[0]]) + ';' + row[names_first[1]]
@@ -53,6 +56,7 @@ def build_interlap_occ_sides(df_interactions, flag):
                 inter_rep[both_keys1].add((int(row[names_first[2]]), int(row[names_first[3]]), [row]))
 
             if not row[names_second[0]]:
+                print(f'Chrom 2: {row[names_second[0]]}')
                 print('can not use chromosome')
             else:
                 both_keys2 = str(row[names_second[0]]) + ';' + row[names_second[1]]
@@ -152,7 +156,9 @@ def main():
     parser.add_argument("-fh", "--filter_hybrind",
                         default="off",
                         help= "filter the data for hyprids alrady detected by chira")
-
+    parser.add_argument("-mo", "--mode",
+                        default="train",
+                        help= "Function call within which cherri mode [train/eval]")
 
 
 
@@ -165,9 +171,10 @@ def main():
     score_th = args.score_th
     external_object = args.external_object
     filter_hybrind = args.filter_hybrind
+    mode = args.mode
 
     timestr = time.strftime("%Y%m%d")
-    out_path =  out_path + '/' + timestr + '_occ_out/'
+    out_path =  out_path  + timestr + '_occ_out/'
     if not os.path.exists(out_path):
         os.mkdir(out_path)
         print('***added new folder***')
@@ -199,15 +206,18 @@ def main():
     rri_call  = 'find_trusted_RRI.py '  + rri_call_param
 
     rri_file = (out_path + 'rri_occupied_regions_overlap_' +
-                str(overlap_th) + '.cvs')
+                str(overlap_th) + '.csv')
 
     if len(replicats) == 1:
-        print('only one experiment!')
+        print('Info: only one experiment is used to build occupyed regions')
         in_file = input_path_RRIs + replicats[0]
         print(in_file)
         # df_replicat = rl.read_chira_data(in_file)
-        df_replicat = rl.read_chira_data(in_file, header='no', separater="\t")
-        #print(df_replicat.info())
+        if mode == 'train':
+            df_replicat = rl.read_chira_data(in_file, header='no', separater="\t")
+        elif mode == 'eval':
+            df_replicat = rl.read_chira_data(in_file, header='yes', separater=",")
+        print(df_replicat)
         if score_th == 'non':
             df_rris = df_replicat
         else:
@@ -222,7 +232,7 @@ def main():
         df_rris = rl.read_chira_data(rri_file, header='yes', separater=",")
         #out_path =  out_path_temp
     #df_rris = rl.read_chira_data(file_test, header='yes', separater=",")
-    #print(df_rris.info())
+    print(df_rris)
     inter_rep_two = build_interlap_occ_sides(df_rris, 'two')
     inter_rri = rl.mearge_overlaps(inter_rep_two, 'rri')
 
@@ -253,14 +263,14 @@ def main():
                 inter_rri[key].add(list(inter_external[key]))
 
     # save files
-    or_path = out_path + "/occupied_regions.obj"
+    or_path = out_path + "occupied_regions.obj"
     or_handle = open(or_path,"wb")
     pickle.dump(inter_rri,or_handle)
     or_handle.close()
     print('object contining InteLab object with start and end postions:\n%s'%or_path)
 
     # filter rri file and save:
-    output_name = 'rri_occupied_regions' + '_overlapTH_' + str(overlap_th) + '_scoreTH_1.cvs'
+    output_name = 'rri_occupied_regions' + '_overlapTH_' + str(overlap_th) + '_scoreTH_1.csv'
     # df_rris_filterd = df_rris[(df_rris.score_seq_1st_side >= 1) & (df_rris.score_seq_2end_side >= 1)]
     df_rris_filterd = rl.filter_score(df_rris, 1)
 

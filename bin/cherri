@@ -326,7 +326,6 @@ def main_eval(args):
         print('Error: please set the path to your feature file of your model')
 
 
-
     # define output folder
     timestr = time.strftime("%Y%m%d")
 
@@ -362,8 +361,6 @@ def main_eval(args):
                 'nan','nan', 'nan', 'nan','nan']
 
 
-
-
     if hand_feat == 'off':
     # read data
         RRI_dict = read_RRI_table(RRIs_table)
@@ -381,9 +378,6 @@ def main_eval(args):
         df_rris = pd.DataFrame(df_content_list,columns=header)
         eval_rri_file = out_path + 'evaluete_RRIs.table'
         df_rris.to_csv(eval_rri_file, index=False, sep=',')
-
-
-
 
 
         ### Call find_occupied_regions.py ######################################
@@ -416,7 +410,6 @@ def main_eval(args):
         print('1. Prepater RRI instances')
         print(call_pos_neg)
         rl.call_script(call_pos_neg)
-
 
         ### Call get_features.py ###############################################
         feature_out_path = f'{out_path}feature_files/'
