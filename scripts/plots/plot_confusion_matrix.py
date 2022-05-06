@@ -37,7 +37,7 @@ def main():
     # model type:
     model_type = args.model_type
     out_dir = args.output_path + '/' + model_type + '_'
-    model_path = '/vol/scratch/output/Base_model/'
+    model_path = '/vol/scratch/data_storage/output/Base_model/'
     model_name_E = 'E'
     model_name_allEs = 'allEs'
     model_name_full = 'full'
@@ -74,8 +74,8 @@ def main():
 
     ###PRC!#################################
 
-    df_main_model = rl.read_chira_data('/vol/scratch/output/validation_mouse/MOUSEOUTNOG.csv', 'yes', ",")
-    df_main_model_SeqStruc = rl.read_chira_data('/vol/scratch/output/validation_mouse/MOUSEOUT.csv', 'yes', ",")
+    df_main_model = rl.read_chira_data('/vol/scratch/data_storage/Model_with_graph_feat/evaluation/evaluation/evaluation_results_PARIS_human_PARIS_mouse.cvs', 'yes', ",")
+    df_main_model_SeqStruc = rl.read_chira_data('/vol/scratch/data_storage/Model_with_graph_feat/evaluation/evaluation/evaluation_results_PARIS_human_PARIS_human_RBP.cvs', 'yes', ",")
     #print(df_main_model.info())
     #print(df_main_model.columns)
     #print(df_main_model.instance_score)
@@ -83,14 +83,14 @@ def main():
     #print(y.tolist())
 
 
-    f1_score_main = f1_score(df_main_model['true_label'].tolist(), df_main_model['predicted_label'].tolist(), average='macro')
-    f1_score_main_SeqStruc = f1_score(df_main_model['true_label'].tolist(), df_main_model_SeqStruc['predicted_label'].tolist(), average='macro')
-    f1_score_dv = f1_score(y.tolist(), y_pred_dummy, average='macro')
-    f1_score_svc = f1_score(y.tolist(), y_pred_svc, average='macro')
-    f1_score_lr = f1_score(y.tolist(), y_pred_clf, average='macro')
+    f1_score_main = f1_score(df_main_model['true_label'].tolist(), df_main_model['predicted_label'].tolist())
+    f1_score_main_SeqStruc = f1_score(df_main_model_SeqStruc['true_label'].tolist(), df_main_model_SeqStruc['predicted_label'].tolist())
+    f1_score_dv = f1_score(y.tolist(), y_pred_dummy)
+    f1_score_svc = f1_score(y.tolist(), y_pred_svc)
+    f1_score_lr = f1_score(y.tolist(), y_pred_clf)
 
-    precision_main, recall_main, thresholds_main, auc_prc_main = compute_prc(df_main_model['true_label'].tolist(), df_main_model['instance_score'].tolist())
-    precision_main_SeqStruc, recall_main_SeqStruc, thresholds_main_SeqStruc, auc_prc_main_SeqStruc = compute_prc(df_main_model['true_label'].tolist(), df_main_model_SeqStruc['instance_score'].tolist())
+    #precision_main, recall_main, thresholds_main, auc_prc_main = compute_prc(df_main_model['true_label'].tolist(), df_main_model['instance_score'].tolist())
+    #precision_main_SeqStruc, recall_main_SeqStruc, thresholds_main_SeqStruc, auc_prc_main_SeqStruc = compute_prc(df_main_model_SeqStruc['true_label'].tolist(), df_main_model_SeqStruc['instance_score'].tolist())
     precision_svc, recall_svc, thresholds_svc, auc_prc_svc = compute_prc(y.tolist(), score_svc)
     precision_lr, recall_lr, thresholds_lr, auc_prc_lr = compute_prc(y.tolist(), score_clf)
     precision_E, recall_E, thresholds_E, auc_prc_E = compute_prc(y.tolist(), X['E'].tolist() )
@@ -99,14 +99,14 @@ def main():
     base = len(df_main_model[df_main_model.true_label == 1])/(len(df_main_model['true_label']))
 
     # generat the legend information
-    label_main = 'Cherri model AUC/F1: %.2f/%.2f' % (auc_prc_main, f1_score_main)
-    label_main_seq = 'Cherri SeqStruc model AUC/F1: %.2f/%.2f' % (auc_prc_main_SeqStruc, f1_score_main_SeqStruc)
+    #label_main = 'Cherri model AUC/F1: %.2f/%.2f' % (auc_prc_main, f1_score_main)
+    #label_main_seq = 'Cherri SeqStruc model AUC/F1: %.2f/%.2f' % (auc_prc_main_SeqStruc, f1_score_main_SeqStruc)
     label_scv = 'Base SVC model AUC/F1: %.2f/%.2f' % (auc_prc_svc, f1_score_svc)
     label_lr = 'Base LR model AUC/F1: %.2f/%.2f' % (auc_prc_lr,f1_score_lr)
     label_E = 'MFE AUC: %.2f' % (auc_prc_E)
 
-    plt.plot(recall_main, precision_main, color='#009E73', label=label_main) # green
-    plt.plot(recall_main_SeqStruc, precision_main_SeqStruc, color='#0072B2', label=label_main_seq) #blue
+    #plt.plot(recall_main, precision_main, color='#009E73', label=label_main) # green
+    #plt.plot(recall_main_SeqStruc, precision_main_SeqStruc, color='#0072B2', label=label_main_seq) #blue
     plt.plot(recall_svc, precision_svc, color='#F0E442', label=label_scv) #yellow
     plt.plot(recall_lr, precision_lr, color='#D55E00', label=label_lr) #red
     plt.plot(recall_E, precision_E, color='#E69F00', label=label_E) #orange
