@@ -198,7 +198,7 @@ def call_script(call,reprot_stdout=False,asset_err=True):
         assert not error, "script is complaining:\n%s\n%s" %(call, error)
     else:
         if error != "":
-            print(f'ERROR: {error}\nFor call: {call}')
+            print(f'ERROR or WARNING:\n {error}\nFor call: {call}')
     if reprot_stdout == True:
         return out
         #for line in out.readlines():
@@ -1370,7 +1370,7 @@ def download_file(url, outdir):
     filename = wget.download(url, out=outdir)
 
 
-def download_genome(out_path, genome):
+def download_genome(out_path, genome, chrom_len_file):
     genome_dir = f'{out_path}/genome/'
     if not os.path.exists(genome_dir):
         os.mkdir(genome_dir)
@@ -1397,4 +1397,8 @@ def download_genome(out_path, genome):
             print(f'Error: please provide 2bit genome file path')
         else:
             genome_file = genome
+        if not os.path.isfile(chrom_len_file):
+            print(f'Error: please provide a chromosome length file path')
+        else:
+            chrom_len_file = chrom_len_file
     return (genome_file, chrom_len_file)

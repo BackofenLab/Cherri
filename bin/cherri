@@ -73,7 +73,7 @@ def setup_argument_parser():
     p_exm.add_argument("-i1", "--RRIs_table",
                        dest="RRIs_table",
                        required = True,
-                       help= "table containg all rris that should be evalutated in the corrct fromat")
+                       help= "Table containg all rris that should be evalutated in the corrct fromat")
     p_exm.add_argument("-g", "--genome",
                        dest="genome",
                        action="store",
@@ -81,54 +81,52 @@ def setup_argument_parser():
                        help= "Genomic sequences .2bit file or specify human or mouse to automaticly download the organisms reference genome")
     p_exm.add_argument("-o", "--out_path",
                        required=True,
-                       help= "path to folder all output folder of each step of the data preparation")
+                       help= "Path to folder all output folder of each step of the data preparation")
     p_exm.add_argument("-l", "--chrom_len_file",
                        action="store",
                        dest="chrom_len_file",
                        required=True,
                        help= "Tabular file containing chrom name \t chrom lenght for each chromosome. If genome is human or mouse please speciy the same hier.")
+    p_exm.add_argument("-m", "--model_file",
+                       dest="model_file",
+                       help= "Set path to model which will be used for prediction")
+    p_exm.add_argument("-mp", "--model_params",
+                       dest="model_params",
+                       help= "Set path to feature file of new model if model_file is changed")
 
 
     # Optional arguments for evaluate.
     p_ex.add_argument("-i2", "--occupyed_regions",
                       default="non",
-                      help= "path to occupyed regions file or specify: human, mouse or non")
+                      help= "Path to occupyed regions file or specify: human, mouse or non")
     p_ex.add_argument("-c", "--context",
                       nargs='?',
                       type=int,
                       dest="context",
                       default=50,
-                      help= "how much context should be added at left an right of the sequence")
+                      help= "How much context should be added at left an right of the sequence")
     p_ex.add_argument("-n", "--experiment_name",
                       action="store",
                       dest="experiment_name",
                       default='eval_rri',
-                      help= "name of the datasoruce of RRIs")
+                      help= "Name of the datasoruce of RRIs")
     p_ex.add_argument("-p", "--param_file",
                        dest="param_file",
                        default="not_set",
                        help= "IntaRNA parameter file")
-    p_ex.add_argument("-m", "--model_file",
-                       dest="model_file",
-                       default="not_set",
-                       help= "set if a new model created with train module")
-    p_ex.add_argument("-mp", "--model_params",
-                       dest="model_params",
-                       default="not_set",
-                       help= "set path to feature file of new model if model_file is changed")
     p_ex.add_argument("-st", "--use_structure",
                        dest="use_structure",
                        default="on",
-                       help= "set off if you want to disable structure")
+                       help= "Set off if you want to disable structure")
     p_ex.add_argument("-on", "--out_name",
                       default="non",
-                      help= "name for output dir instead of the current data")
+                      help= "Name for output dir instead of the current data")
     p_ex.add_argument("-hf", "--hand_feat",
                       default="off",
-                      help= "if you want to start from hand curated feature files with pos and net data")
+                      help= "If you want to start from hand curated feature files with pos and net data")
     p_ex.add_argument("-j", "--n_jobs",
                       type=int,
-                      help= "number of jobs used for graph feature computation",
+                      help= "Number of jobs used for graph feature computation",
                       default=1)
 
 
@@ -143,20 +141,20 @@ def setup_argument_parser():
     # Required arguments for merge.
     p_mrgm.add_argument("-i1", "--RRI_path",
                         required=True,
-                        help= "path to folder storing the ChiRA interaction summary files",
+                        help= "Path to folder storing the ChiRA interaction summary files",
                         default="/vol/scratch/data/RRIs/Paris/")
     #p_mrgm.add_argument("-i2", "--rbp_path",
                         #help= "path to RBP side data file (bed format)",
                         #default="/vol/scratch/data/human_RBP_coverage/GSE38355_ProtOccProf_4SU_consensus_TC_hg38.bed")
     p_mrgm.add_argument("-o", "--out_path",
                         required=True,
-                        help= "path to folder all output folder of each step of the data preparation")
+                        help= "Path to folder all output folder of each step of the data preparation")
     p_mrgm.add_argument("-r", "--list_of_replicats",
                         action="store",
                         required=True,
                         nargs='+',
                         dest="list_of_replicats",
-                        help= "list ChiRA interaction summary files names of all replicats")
+                        help= "List all replicat files namens of ChiRA interaction summary files")
     p_mrgm.add_argument("-l", "--chrom_len_file",
                         action="store",
                         dest="chrom_len_file",
@@ -174,12 +172,12 @@ def setup_argument_parser():
                        type=int,
                        dest="context",
                        default=50,
-                       help= "how much context should be added at left an right of the sequence")
+                       help= "How much context should be added at left an right of the sequence")
     p_mrg.add_argument("-n", "--experiment_name",
                        action="store",
                        dest="experiment_name",
                        default='model_rri',
-                       help= "name of the datasoruce of RRIs")
+                       help= "Name of the datasoruce of RRIs")
     p_mrg.add_argument("-p", "--param_file",
                        dest="param_file",
                        help= "IntaRNA parameter file",
@@ -187,26 +185,26 @@ def setup_argument_parser():
     p_mrg.add_argument("-st", "--use_structure",
                        dest="use_structure",
                        default="on",
-                       help= "set off if you want to disable structure")
-    p_mrgm.add_argument("-i2", "--RBP_path",
-                        help= "path to RBP binding location file in bed format",
+                       help= "Set off if you want to disable structure")
+    p_mrg.add_argument("-i2", "--RBP_path",
+                        help= "Path to RBP binding location file in bed format",
                         default="non")
-    p_mrgm.add_argument("-t", "--run_time",
-                        help= "time used for the optimization in sec default 12h",
+    p_mrg.add_argument("-t", "--run_time",
+                        help= "Time used for the optimization in sec default 12h",
                         default=43200)
-    p_mrgm.add_argument("-me", "--memoryPerThread",
-                        help= "memory in MB which each thred can use (total ram/threds)",
+    p_mrg.add_argument("-me", "--memoryPerThread",
+                        help= "Memory in MB which each thred can use (total ram/threds)",
                         default=4300)
-    p_mrgm.add_argument("-j", "--n_jobs",
+    p_mrg.add_argument("-j", "--n_jobs",
                         type=int,
-                        help= "number of jobs for the optimization",
+                        help= "Number of jobs for the optimization",
                         default=-1)
-    p_mrgm.add_argument("-mi", "--mixed",
-                        help= "use mixed model my given a list of precomputed data",
+    p_mrg.add_argument("-mi", "--mixed",
+                        help= "Use mixed model my given a list of precomputed data",
                         default='off')
-    p_mrgm.add_argument("-fh", "--filter_hybrind",
+    p_mrg.add_argument("-fh", "--filter_hybrind",
                         default="off",
-                        help= "filter the data for hyprids alrady detected by chira")
+                        help= "Filter the data for hyprids alrady detected by chira")
 
 
 
@@ -258,8 +256,8 @@ def call_occupyed_regions_eval(eval_rri_file, output_path,external_file='non'):
     # occ_file = output_path +  '/occupied_regions.obj'
     ###################
     call_occ_regions = (f'find_occupied_regions.py -i1 {i1} -i2 non -r {file} '
-                        f'-o {output_path} -s non -e {external_file}')
-    #print(call_occ_regions)
+                        f'-o {output_path} -s non -e {external_file} -mo eval')
+    # print(call_occ_regions)
     rl.call_script(call_occ_regions)
     timestr = time.strftime("%Y%m%d")
     out_path =  f'{output_path}/{timestr}_occ_out/'
@@ -275,7 +273,7 @@ def main_eval(args):
 
     """
 
-    print("Running for you in EVALUATION mode ... ")
+    print("\nRunning for you in EVALUATION mode ... \n")
 
 
     """
@@ -319,19 +317,13 @@ def main_eval(args):
         lib_path = os.path.dirname(rl.__file__)
         param_file = lib_path + "/IntaRNA_param/IntaRNA_param.txt"
 
-    if model_file == 'not_set':
-        lib_path = os.path.dirname(rl.__file__)
-        #model_file = lib_path + "/model/test_train_context_50.model"
-        #model_params = lib_path + '/model/test_train_context_50.npz'
-        model_file = lib_path + '/model/full_Full_context_150.model'
-        model_params = lib_path + '/model/full_Full_context_150.npz'
-    else:
-        if not os.path.exists(model_file):
-            print('Error: please set the path to your model or keep not_set')
-        if model_params == 'not_set':
-            print('Error: please set the path to your feature file of your model')
-        if not os.path.exists(model_params):
-            print('Error: please set the path to your feature file of your model')
+
+    if not os.path.exists(model_file):
+        print('Error: please set the path to your model or keep not_set')
+    if model_params == 'not_set':
+        print('Error: please set the path to your feature file of your model')
+    if not os.path.exists(model_params):
+        print('Error: please set the path to your feature file of your model')
 
 
 
@@ -382,7 +374,7 @@ def main_eval(args):
             pos_data = RRI_dict[key]
             #print(pos_data)
             # 1 + 8 + 25
-            data =  ['nan'] + RRI_dict[key] + end_data
+            data =  ['1'] + RRI_dict[key] + end_data
             #print(data)
             df_content_list.append(data)
         # print(df_content_list[-2])
@@ -395,30 +387,18 @@ def main_eval(args):
 
 
         ### Call find_occupied_regions.py ######################################
-        if occupyed_regions == 'human':
-            occupyed_regions_file = (f'/vol/scratch/data_storage/data/RRIs/'
-                                     f'20210907_occ_out_rbp_c5/'
-                                     f'occupied_regions.obj')
-            occupyed_regions = call_occupyed_regions_eval(eval_rri_file,
-                                                          out_path,
-                                                          occupyed_regions_file)
-        elif occupyed_regions == 'mouse':
-            occupyed_regions_file = (f'/vol/scratch/data_storage/data/RRIs/'
-                                     f'20210923_occ_out/occupied_regions.obj')
-            occupyed_regions = call_occupyed_regions_eval(eval_rri_file,
-                                                          out_path,
-                                                          occupyed_regions_file)
-        elif occupyed_regions == 'non':
+        if occupyed_regions == 'non':
+            print('Info: only the evaluated RRIs are set to occupied regions')
             occupyed_regions = call_occupyed_regions_eval(eval_rri_file,
                                                           out_path)
         else:
-            print('using your own occupyed regions objects')
+            print('Info: adding your additional occupied regions objects')
             occupyed_regions = call_occupyed_regions_eval(eval_rri_file,
                                                           output_path,
                                                           occupyed_regions)
-
         ##download genomes #####################################################
-        genome_file, chrom_len_file = rl.download_genome(out_path, genome)
+        genome_file, chrom_len_file = rl.download_genome(out_path, genome,
+                                                         chrom_len_file)
 
 
         #### Call pos data call ################################################
@@ -434,10 +414,8 @@ def main_eval(args):
 
         call_pos_neg = f'generate_pos_neg_with_context.py {pos_neg_param}'
         print('1. Prepater RRI instances')
-        #print(call_pos_neg)
+        print(call_pos_neg)
         rl.call_script(call_pos_neg)
-
-
 
 
         ### Call get_features.py ###############################################
@@ -449,10 +427,14 @@ def main_eval(args):
         file_pos = f'{pos_neg_out_path}{midel_name}pos.csv'
         feature_pos = f'{feature_out_path}feature_filtered_{midel_name}_pos.csv'
 
+        if not os.path.isfile(file_pos):
+            print(f'Error: no postive IntarRNA interaction found')
+            sys.exit()
+
         pos_feature_param = f'-i {file_pos} -f all -o {feature_pos}'
         call_pos_feature = f'get_features.py {pos_feature_param}'
         print('2. Compute features')
-        #print(call_pos_feature)
+        print(call_pos_feature)
         rl.call_script(call_pos_feature)
 
         df_data = pd.read_csv(feature_pos, sep=',')
@@ -476,13 +458,13 @@ def main_eval(args):
 
 
     if use_structure == 'ON' or use_structure == 'on':
-        print('2a. Compute structure feature')
+        print('2a. Compute graph-kernel features')
         X_filterd,y = rl.convert(X, y , feat_output,
                                  True, 'eval',model_params,n_jobs)
     elif use_structure == 'OFF' or use_structure == 'off':
         X,y = rl.convert(X, y, feat_output, False, 'eval','non', n_jobs)
         X_filterd = rl.filter_features(X,model_params,use_structure)
-        print('2a. not preparing structure feature')
+        print('2a. not preparing graph-kernal features')
 
     ### Predict ################################################################
     eval_path =  f'{out_path}/evaluation/'
@@ -515,7 +497,7 @@ def main_train(args):
 
     """
 
-    print("Running for you in TRAININGS mode ... ")
+    print("\nRunning for you in TRAININGS mode ... \n")
 
 
     """
@@ -543,12 +525,11 @@ def main_train(args):
     input_path_RRIs = args.RRI_path
     #print(args.list_of_replicats)
     if type(args.list_of_replicats) == list and len(args.list_of_replicats) > 1:
-        #replicats = ' '.join(args.list_of_replicats)
-        replicats = args.list_of_replicats
-
-        #print('hallo #############################')
+        replicats = ' '.join(args.list_of_replicats)
+        #replicats = args.list_of_replicats
+        # print('hallo #############################')
     else:
-        replicats = args.list_of_replicats
+        replicats = args.list_of_replicats[0]
         #print('yes #############################')
     genome = args.genome
     chrom_len_file = args.chrom_len_file
@@ -598,7 +579,8 @@ def main_train(args):
         else:
             print('***using todays build output folder***')
         ##download genomes #####################################################
-        genome_file, chrom_len_file = rl.download_genome(out_path, genome)
+        genome_file, chrom_len_file = rl.download_genome(out_path, genome,
+                                                         chrom_len_file)
 
 
     ### Call find_occupied_regions.py ##########################################
@@ -611,11 +593,11 @@ def main_train(args):
     if mixed == 'off':
         print('1. find occupyed regions')
         print(call_occupied_regions)
-        rl.call_script(call_occupied_regions)
+        rl.call_script(call_occupied_regions,reprot_stdout=False,
+                       asset_err=False)
 
         # output:
         occupyed_outfile =  out_path + '/' + timestr + '_occ_out/'
-
 
 
         #### Call find_occupied_regions.py #####################################
@@ -650,6 +632,10 @@ def main_train(args):
         feature_neg = (f'{feature_out_path}feature_filtered_{midel_name}'
                        f'_pos_occ_neg.csv')
 
+        if not os.path.isfile(file_pos):
+            print(f'Error: no postive IntarRNA interaction found')
+            sys.exit()
+
         pos_feature_param = f'-i {file_pos} -f all -o {feature_pos}'
         call_pos_feature = f'get_features.py {pos_feature_param}'
         print('3a. Compute positive feature')
@@ -664,7 +650,7 @@ def main_train(args):
         X, y = rl.read_pos_neg_data(feature_pos, feature_neg)
 
     elif mixed == 'on':
-        print('mixed model on!!!')
+        print('Info: mixed model on!!!')
         feature_out_path = out_path + 'feature_files/'
         if not os.path.exists(feature_out_path):
             os.mkdir(feature_out_path)
@@ -695,7 +681,7 @@ def main_train(args):
     # print(X.info())
 
     if use_structure == 'ON' or use_structure == 'on':
-        print('3c. Compute graph structure feature')
+        print('3c. Compute graph-kernal features')
         rl.convert(X, y , feat_output, True, 'train', 'non', n_jobs)
     elif use_structure == 'OFF' or use_structure == 'off':
         print('3c. Features without graph strecture features')

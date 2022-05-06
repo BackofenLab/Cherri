@@ -817,7 +817,7 @@ def main():
 
     #plot_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/RNA_RNA_binding_evaluation/plots/'
 
-    output_name = experiment_name + '_overlap_' + str(overlap_th) + '.cvs'
+    output_name = experiment_name + '_overlap_' + str(overlap_th) + '.csv'
 
     #plot_path_full = plot_path + '_' + str(overlap_th) + '_'
 
