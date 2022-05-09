@@ -5,7 +5,7 @@ Cherri is a tool that distinguishes between biological relevant or real RRIs and
 Software we developed models base on the human and mouse RNA-RNA interactome. 
 Further more the option of training a novel model basted on RNA-RNA interactome data is given.
 
-[image](./plots/Cherri_workflow.pdf)
+![image](./plots/Cherri_workflow.pdf)
 
 
 ## Instalation
