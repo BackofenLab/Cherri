@@ -143,17 +143,14 @@ def setup_argument_parser():
                         required=True,
                         help= "Path to folder storing the ChiRA interaction summary files",
                         default="/vol/scratch/data/RRIs/Paris/")
-    #p_mrgm.add_argument("-i2", "--rbp_path",
-                        #help= "path to RBP side data file (bed format)",
-                        #default="/vol/scratch/data/human_RBP_coverage/GSE38355_ProtOccProf_4SU_consensus_TC_hg38.bed")
     p_mrgm.add_argument("-o", "--out_path",
                         required=True,
                         help= "Path to folder all output folder of each step of the data preparation")
-    p_mrgm.add_argument("-r", "--list_of_replicats",
+    p_mrgm.add_argument("-r", "--list_of_replicates",
                         action="store",
                         required=True,
                         nargs='+',
-                        dest="list_of_replicats",
+                        dest="list_of_replicates",
                         help= "List all replicat files namens of ChiRA interaction summary files")
     p_mrgm.add_argument("-l", "--chrom_len_file",
                         action="store",
@@ -185,7 +182,7 @@ def setup_argument_parser():
     p_mrg.add_argument("-st", "--use_structure",
                        dest="use_structure",
                        default="on",
-                       help= "Set off if you want to disable structure")
+                       help= "Set off if you want to disable graph-kernel features")
     p_mrg.add_argument("-i2", "--RBP_path",
                         help= "Path to RBP binding location file in bed format",
                         default="non")
@@ -193,7 +190,7 @@ def setup_argument_parser():
                         help= "Time used for the optimization in sec default 12h",
                         default=43200)
     p_mrg.add_argument("-me", "--memoryPerThread",
-                        help= "Memory in MB which each thred can use (total ram/threds)",
+                        help= "Memory in MB which each thread can use (total ram/threads)",
                         default=4300)
     p_mrg.add_argument("-j", "--n_jobs",
                         type=int,
@@ -202,7 +199,7 @@ def setup_argument_parser():
     p_mrg.add_argument("-mi", "--mixed",
                         help= "Use mixed model my given a list of precomputed data",
                         default='off')
-    p_mrg.add_argument("-fh", "--filter_hybrind",
+    p_mrg.add_argument("-fh", "--filter_hybrid",
                         default="off",
                         help= "Filter the data for hyprids alrady detected by chira")
 
@@ -289,7 +286,7 @@ def main_eval(args):
     |       ├── feature_filtered_test_eval_context_150_pos.csv
     |       ├── training_data_test_eval_context_150.npz
     |   ├── evaluation
-    |       ├── evaluation_results
+    |       ├── evaluation_results_test_data.csv
 
     """
 
@@ -516,13 +513,13 @@ def main_train(args):
 
     args = parser.parse_args()
     input_path_RRIs = args.RRI_path
-    #print(args.list_of_replicats)
-    if type(args.list_of_replicats) == list and len(args.list_of_replicats) > 1:
-        replicats = ' '.join(args.list_of_replicats)
-        #replicats = args.list_of_replicats
+    #print(args.list_of_replicates)
+    if type(args.list_of_replicates) == list and len(args.list_of_replicates) > 1:
+        replicats = ' '.join(args.list_of_replicates)
+        #replicats = args.list_of_replicates
         # print('hallo #############################')
     else:
-        replicats = args.list_of_replicats[0]
+        replicats = args.list_of_replicates[0]
         #print('yes #############################')
     genome = args.genome
     chrom_len_file = args.chrom_len_file
@@ -537,9 +534,10 @@ def main_train(args):
     memoryPerThread = args.memoryPerThread
     n_jobs = args.n_jobs
     mixed = args.mixed
-    filter_hybrind = args.filter_hybrind
+    filter_hybrid = args.filter_hybrid
 
-    methods = f'extra_trees passive_aggressive random_forest sgd gradient_boosting mlp'
+    methods = (f'extra_trees passive_aggressive random_forest sgd '
+               f'gradient_boosting mlp')
     #methods = f'all'
 
 
@@ -580,7 +578,7 @@ def main_train(args):
     occupied_regions_param = (f' -i1 {input_path_RRIs}  -i2 {file_rbp_pos} '
                               f'-r {replicats} -o {out_path} '
                               f'-t {str(overlap_th)} -s 0.5 ')
-    if filter_hybrind == 'on':
+    if filter_hybrid == 'on':
         occupied_regions_param = f'{occupied_regions_param} -fh on'
     call_occupied_regions = f'find_occupied_regions.py {occupied_regions_param}'
     if mixed == 'off':
@@ -720,7 +718,7 @@ def main_train(args):
         opt_call = (f'python -W ignore -m biofilm.biofilm-optimize6 {loaddata} '
                     f'--memoryMBthread {memoryPerThread} --folds 0 '
                     f'--out {opt_path}{midel_name} --preprocess True '
-                    f'--n_jobs {n_jobs} --time {run_time} --methods {methods}') #
+                    f'--n_jobs {n_jobs} --time {run_time} --methods {methods}')
 
         print('4a. Optimize model')
         print(opt_call)
@@ -740,7 +738,7 @@ def main_train(args):
         opt_call = (f'python -W ignore -m biofilm.biofilm-optimize6 {loaddata} '
                     f'--memoryMBthread {memoryPerThread} --folds 0 '
                     f'--out {opt_path}{midel_name} --preprocess True '
-                    f'--n_jobs {n_jobs} --time {run_time} --methods {methods}') #
+                    f'--n_jobs {n_jobs} --time {run_time} --methods {methods}')
         print('4b. Optimize model')
         print(opt_call)
         out = rl.call_script(opt_call, reprot_stdout=True,asset_err=False)
