@@ -33,8 +33,8 @@ def build_interlap_occ_sides(df_interactions, flag):
     inter_rep = defaultdict(InterLap)
 
     if flag_name == 'hybrid':
-        names_first = ['chrom_seq_1st_side', 'strand_seq_1st_side', 'start_seq_1st_side', 'stop_seq_1st_side']
-        names_second = ['chrom_seq_2end_side', 'strand_seq_2end_side', 'start_seq_2end_side', 'stop_seq_2end_side']
+        names_first = ['chrom_seq_1st_site', 'strand_seq_1st_site', 'start_seq_1st_site', 'stop_seq_1st_site']
+        names_second = ['chrom_seq_2end_site', 'strand_seq_2end_site', 'start_seq_2end_site', 'stop_seq_2end_site']
     elif flag_name == 'crl':
         names_first = ['chrom_1st','strand_1st','start_1st','end_1st' ]
         names_second = ['chrom_2end','strand_2end','start_2end','end_2end']

@@ -83,15 +83,15 @@ def read_chira_data(in_file, header='no', separater="\t"):
 
         header_line = ['#reads','chrom_1st','start_1st','end_1st', 'strand_1st',
                 'chrom_2end','start_2end','end_2end', 'strand_2end',
-                'ineraction_side_1st', 'ineraction_side_2end',
+                'ineraction_site_1st', 'ineraction_site_2end',
                 'IntaRNA_prediction', 'energy',
-                'seq_1st_ineraction_side', 'seq_2end_ineraction_side',
+                'seq_1st_ineraction_site', 'seq_2end_ineraction_site',
                 'start_interaction',
-                'chrom_seq_1st_side', 'start_seq_1st_side',
-                'stop_seq_1st_side','strand_seq_1st_side',
-                'chrom_seq_2end_side', 'start_seq_2end_side',
-                'stop_seq_2end_side','strand_seq_2end_side',
-                'TPM_seq_1st_side', 'TPM_seq_2end_side', 'TPM_summary',
+                'chrom_seq_1st_site', 'start_seq_1st_site',
+                'stop_seq_1st_site','strand_seq_1st_site',
+                'chrom_seq_2end_site', 'start_seq_2end_site',
+                'stop_seq_2end_site','strand_seq_2end_site',
+                'TPM_seq_1st_site', 'TPM_seq_2end_site', 'TPM_summary',
                 'score_seq_1st_side', 'score_seq_2end_side','score_product',
                 'biotype_region_1st', 'biotype_region_2end', 'ID_1st','ID_2end']
         df_interactions = pd.read_table(in_file, header=None, sep=separater,
@@ -306,7 +306,7 @@ def get_list_chrom(df):
 
         """
     chrom1_list = get_chrom_list_no_numbers(df, 'chrom_seq_1st_side')
-    chrom2_list = get_chrom_list_no_numbers(df, 'chrom_seq_2end_side')
+    chrom2_list = get_chrom_list_no_numbers(df, 'chrom_seq_2end_site')
     list_chrom_no_int = list(set().union(chrom1_list,chrom2_list))
     sort_list_chrom = sorted(list_chrom_no_int)
     return sort_list_chrom

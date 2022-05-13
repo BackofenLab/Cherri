@@ -36,7 +36,7 @@ def check_context_extention(df, context, output_path, context_not_full):
 
         """
     # check if context is fully added:
-    df['seq_len'] = df['ineraction_side_1st'].astype(str).map(len)
+    df['seq_len'] = df['ineraction_site_1st'].astype(str).map(len)
     df['seq_con_len'] = df['con_target'].astype(str).map(len)
     #df_test = df[(df['seq_len']+(2*context)) != (df['seq_con_len'].all())]
     df['con_target'] = df['con_target'].replace('', np.nan)
@@ -917,8 +917,8 @@ def main():
 
         ########### Interacting sequeces
         #print('### RRI Interacting sequeces ########')
-        #print('target inter seq: ',row['ineraction_side_1st'])
-        #print('target inter seq: ',row['ineraction_side_2end'])
+        #print('target inter seq: ',row['ineraction_site_1st'])
+        #print('target inter seq: ',row['ineraction_site_2end'])
 
 
         ########### find places which are occupyed

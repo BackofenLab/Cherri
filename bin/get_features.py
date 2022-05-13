@@ -376,9 +376,9 @@ def main():
         df_rri['side_target'] = df_rri['subseqDP'].apply(lambda x: x.split('&')[0])
         #print(df_rri['complex_target'])
         df_rri['side_query'] = df_rri['subseqDP'].apply(lambda x: x.split('&')[1])
-        df_rri['complex_target_side'] = df_rri['side_target'].apply(lambda x: comput_complexity(x))
+        df_rri['complex_target_site'] = df_rri['side_target'].apply(lambda x: comput_complexity(x))
         #print(df_rri['complex_target'])
-        df_rri['complex_query_side'] = df_rri['side_query'].apply(lambda x: comput_complexity(x))
+        df_rri['complex_query_site'] = df_rri['side_query'].apply(lambda x: comput_complexity(x))
         df_rri['max_seed_E'] = df_rri['seedE'].apply(lambda x: max(x.split(':')))
         df_rri['min_seed_E'] = df_rri['seedE'].apply(lambda x: min(x.split(':')))
 
@@ -395,7 +395,7 @@ def main():
                     'E_hybrid_normby_GC', 'mfe_normby_len', 'max_ED_normby_len',
                     'E_hybrid_normby_len', 'mfe_normby_GC_len',
                     'max_ED_normby_GC_len', 'E_hybrid_normby_GC_len',
-                    'complex_target_side', 'complex_query_side']
+                    'complex_target_site', 'complex_query_site']
         df_feature = df_rri[all_list].copy()
         print(df_feature.info())
         print('OUTput contians all featurs')

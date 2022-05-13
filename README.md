@@ -120,7 +120,7 @@ Based on a tabular file containing chromosomal position data of the RRIs, Cherri
 
 Cherris models are trained for human and mouse, which can be directly used for RRIs position evaluation. If there exists a RNA-RNA-interactome dataset for your preferred organism we recommend to train your own organism specific model using cherris train mode. This model can be than use in the eval mode for the classification of your predicted RRIs positions.
 
-The pretrained models can be downloaded from [zenodo](https://zenodo.org/)
+The pretrained models can be downloaded from [zenodo](https://zenodo.org/record/6533932#.Ynu--FxBwUE)  DOI 10.5281/zenodo.6533931.
 
 
 #### Input format of the RRIs to evaluate

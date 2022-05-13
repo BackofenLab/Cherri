@@ -62,9 +62,9 @@ def get_list_chrom(df_interactions):
 
         """
     chrom1_list = get_chrom_list_no_numbers(df_interactions,
-                                            'chrom_seq_1st_side')
+                                            'chrom_seq_1st_site')
     chrom2_list = get_chrom_list_no_numbers(df_interactions,
-                                            'chrom_seq_2end_side')
+                                            'chrom_seq_2end_site')
     list_chrom_no_int = list(set().union(chrom1_list,chrom2_list))
     sort_list_chrom = sorted(list_chrom_no_int)
     return sort_list_chrom
@@ -93,32 +93,32 @@ def build_interlap_for_replicat(df_interactions):
 
     for index, row in df_interactions.iterrows():
         row_content = row
-        chrom_1 = str(row['chrom_seq_1st_side'])
+        chrom_1 = str(row['chrom_seq_1st_site'])
         chrom_1_index = list_chrom_no_int.index(chrom_1)
-        chrom_2 = str(row['chrom_seq_2end_side'])
+        chrom_2 = str(row['chrom_seq_2end_site'])
         chrom_2_index = list_chrom_no_int.index(chrom_2)
 
         if chrom_2_index < chrom_1_index:
             first_key = str(chrom_2) + ':' + str(chrom_1)
-            second_key = (row['strand_seq_2end_side'] + ':' +
-                          row['strand_seq_1st_side'])
+            second_key = (row['strand_seq_2end_site'] + ':' +
+                          row['strand_seq_1st_site'])
             both_keys = first_key + ';' + second_key
-            inter_rep[both_keys].add((row['start_seq_2end_side'],
-                                      row['stop_seq_2end_side'], both_keys,
-                                      [row['start_seq_1st_side'],
-                                      row['stop_seq_1st_side']],
+            inter_rep[both_keys].add((row['start_seq_2end_site'],
+                                      row['stop_seq_2end_site'], both_keys,
+                                      [row['start_seq_1st_site'],
+                                      row['stop_seq_1st_site']],
                                       ['swap',row['IntaRNA_prediction'],
                                       row['energy']],
                                       [row]))
         elif chrom_1_index <= chrom_2_index:
             first_key = str(chrom_1) + ':' + str(chrom_2)
-            second_key = (row['strand_seq_1st_side'] + ':' +
-                          row['strand_seq_2end_side'])
+            second_key = (row['strand_seq_1st_site'] + ':' +
+                          row['strand_seq_2end_site'])
             both_keys = first_key + ';' + second_key
-            inter_rep[both_keys].add((row['start_seq_1st_side'],
-                                      row['stop_seq_1st_side'], both_keys,
-                                      [row['start_seq_2end_side'],
-                                      row['stop_seq_2end_side']],
+            inter_rep[both_keys].add((row['start_seq_1st_site'],
+                                      row['stop_seq_1st_site'], both_keys,
+                                      [row['start_seq_2end_site'],
+                                      row['stop_seq_2end_site']],
                                       ['no',row['IntaRNA_prediction'],
                                       row['energy']],
                                       row))
