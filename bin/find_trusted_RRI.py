@@ -782,22 +782,22 @@ def main():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument("-i", "--input_path", action="store", dest="input_path",
                         required=True,
-                        help= "path to folder storing all input data")
+                        help= "path to folder storing input data (replicats)")
     parser.add_argument("-r", "--list_of_replicats", action="store",
                         nargs='+',
                         dest="list_of_replicats", required=True,
-                        help= "list having filenames of all replicats")
+                        help= "filenames list of all replicats")
     parser.add_argument("-o", "--overlap_th", action="store",  type=float,
                         dest="overlap_th", required=True,
-                        help= "overlap threshold to find relyable RRIs")
+                        help= "overlap threshold to find trusted RRIs")
     parser.add_argument("-d", "--output_path", action="store", dest="output_path",
                         required=True,
-                        help= "path output reposetory")
+                        help= "path where output folder should be stored")
     parser.add_argument("-n", "--experiment_name", action="store",
                         dest="experiment_name", required=True,
                         help= "name of the datasoruce of positve trusted RRIs")
     parser.add_argument("-s", "--score_th", default=1,  type=float,
-                        help= "threshold score giving the liklyhood that RRI is mapping to the given interaction side")
+                        help= "threshold for EM score from ChiRA")
     parser.add_argument("-fh", "--filter_hybrind",
                         default="off",
                         help= "filter the data for hyprids alrady detected by chira")

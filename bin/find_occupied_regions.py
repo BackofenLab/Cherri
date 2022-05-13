@@ -135,15 +135,14 @@ def main():
                         help= "path to folder storing all RRI data (tabel)",
                         default="/vol/scratch/data/RRIs/Paris/")
     parser.add_argument("-i2", "--rbp_path",
-                        help= "path to RBP side data file (bed format)",
+                        help= "path to RBP side data file (BED format)",
                         default="non")
     parser.add_argument("-r", "--list_of_replicats", action="store",
                         nargs='+',
                         dest="list_of_replicats", required=True,
-                        help= "list having filenames of all replicats")
+                        help= "filenames list of all replicats")
     parser.add_argument("-o", "--out_path",
-                        help= "path to folder storing outputfiles",
-                        default="/vol/scratch/data/RRIs/")
+                        help= "path where output folder should be stored")
     parser.add_argument("-t", "--overlap_th",
                         help= "overlap threshold",
                         default="0.3")
@@ -151,14 +150,14 @@ def main():
                         help= "score threshold",
                         default="0.5")
     parser.add_argument("-e", "--external_object",
-                        help= "external rri object in the Interlap object format",
+                        help= "external rri  overlaping object (Interlap dict)",
                         default="non")
     parser.add_argument("-fh", "--filter_hybrind",
                         default="off",
-                        help= "filter the data for hyprids alrady detected by chira")
+                        help= "filter the data for hyprids alrady detected by ChiRA")
     parser.add_argument("-mo", "--mode",
                         default="train",
-                        help= "Function call within which cherri mode [train/eval]")
+                        help= "function call within which cherri mode [train/eval]")
 
 
 

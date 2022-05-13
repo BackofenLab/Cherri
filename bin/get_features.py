@@ -288,7 +288,7 @@ def main():
                                            , help= "path to input file")
     parser.add_argument("-f", "--feature_set_list", action="store", nargs='+',
                         dest="feature_set_list", required=True,
-                        help= "set of features the script will output ")
+                        help= "set of features the script will output")
     parser.add_argument("-o", "--output_file", action="store", dest="output_file", required=True
                                            , help= "output file path inclusive of the file name")
 

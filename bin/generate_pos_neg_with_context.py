@@ -760,10 +760,10 @@ def main():
                         help= "path to file storing all trusted RRIs")
     parser.add_argument("-i2", "--input_occupyed", action="store", dest="input_occupyed",
                         required=True,
-                        help= "path to file storing to bindings sides occupying regions")
+                        help= "path to occupying regions file")
     parser.add_argument("-d", "--output_path", action="store", dest="output_path",
                         required=True,
-                        help= "path output reposetory")
+                        help= "path where output folder should be stored")
     parser.add_argument("-n", "--experiment_name", action="store",
                         dest="experiment_name", required=True,
                         help= "name of the datasoruce of positve trusted RRIs")
@@ -771,7 +771,7 @@ def main():
                         required=True, help= "path to 2bit genome file")
     parser.add_argument("-c", "--context",  nargs='?', type=int,
                         dest="context",  default=5,
-                        help= "how much context should be added at left an right of the sequence")
+                        help= "how much context should be added up- and downstream")
     parser.add_argument('--pos_occ', default=False, action='store_true')
     parser.add_argument('--no_pos_occ', dest='pos_occ', action='store_false')
     parser.add_argument("-b", "--block_ends",  nargs='?', type=int,
