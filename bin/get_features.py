@@ -333,7 +333,7 @@ def main():
     # Number of base pairs within the interaction vs. the normalized maximal length of the top 1 RRI
     df_rri['bp_normby_inter_len'] = df_rri['no_bps']/df_rri['max_inter_len']
 
-    # GC-content within interaction side
+    # GC-content within interaction site
     #print(df_rri['subseqDP'].type)
 
     df_rri['GC_content'] = df_rri['subseqDP'].apply(lambda x: get_GC_content(x))
@@ -373,12 +373,12 @@ def main():
         df_rri['complex_target'] = df_rri['con_target'].apply(lambda x: comput_complexity(x))
         #print(df_rri['complex_target'])
         df_rri['complex_query'] = df_rri['con_query'].apply(lambda x: comput_complexity(x))
-        df_rri['side_target'] = df_rri['subseqDP'].apply(lambda x: x.split('&')[0])
+        df_rri['site_target'] = df_rri['subseqDP'].apply(lambda x: x.split('&')[0])
         #print(df_rri['complex_target'])
-        df_rri['side_query'] = df_rri['subseqDP'].apply(lambda x: x.split('&')[1])
-        df_rri['complex_target_site'] = df_rri['side_target'].apply(lambda x: comput_complexity(x))
+        df_rri['site_query'] = df_rri['subseqDP'].apply(lambda x: x.split('&')[1])
+        df_rri['complex_target_site'] = df_rri['site_target'].apply(lambda x: comput_complexity(x))
         #print(df_rri['complex_target'])
-        df_rri['complex_query_site'] = df_rri['side_query'].apply(lambda x: comput_complexity(x))
+        df_rri['complex_query_site'] = df_rri['site_query'].apply(lambda x: comput_complexity(x))
         df_rri['max_seed_E'] = df_rri['seedE'].apply(lambda x: max(x.split(':')))
         df_rri['min_seed_E'] = df_rri['seedE'].apply(lambda x: min(x.split(':')))
 

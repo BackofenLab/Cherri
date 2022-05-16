@@ -11,7 +11,7 @@ import pickle
 
 
 
-def build_interlap_occ_sides(df_interactions, flag):
+def build_interlap_occ_sites(df_interactions, flag):
     """
     Building the inerlap objects for a fast overlap comparision for one replicat
 
@@ -105,7 +105,7 @@ def get_prot_occ_regions(file_rbp_pos, exp_score_th, context):
         Returns
         -------
         inter_rbp
-            interLab object storing all cromosomal RBP sided {chrom:strand}->[s,e,rbp]
+            interLab object storing all cromosomal RBP sites {chrom:strand}->[s,e,rbp]
 
 
     """
@@ -124,7 +124,7 @@ def get_prot_occ_regions(file_rbp_pos, exp_score_th, context):
     df_context =  rl.add_context(df_bed, context, 'start', 'end')
     #print(df_context.info())
 
-    inter_rep_one = build_interlap_occ_sides(df_context, 'one')
+    inter_rep_one = build_interlap_occ_sites(df_context, 'one')
     inter_rbp = rl.mearge_overlaps(inter_rep_one, 'rbp')
     return inter_rbp
 
@@ -135,7 +135,7 @@ def main():
                         help= "path to folder storing all RRI data (tabel)",
                         default="/vol/scratch/data/RRIs/Paris/")
     parser.add_argument("-i2", "--rbp_path",
-                        help= "path to RBP side data file (BED format)",
+                        help= "path to RBP site data file (BED format)",
                         default="non")
     parser.add_argument("-r", "--list_of_replicats", action="store",
                         nargs='+',
@@ -183,8 +183,8 @@ def main():
     #score_th = 0.5
     # score_th = 'non'
     # RBP params
-    seq_tag = '_RBP_side_'
-    # context added to the T-> C side giving us the RBP interaction side
+    seq_tag = '_RBP_site_'
+    # context added to the T-> C site giving us the RBP interaction site
     context = 5
     exp_score_th = 10
     if file_rbp_pos == 'non':
@@ -231,8 +231,8 @@ def main():
         df_rris = rl.read_chira_data(rri_file, header='yes', separater=",")
         #out_path =  out_path_temp
     #df_rris = rl.read_chira_data(file_test, header='yes', separater=",")
-    print(df_rris)
-    inter_rep_two = build_interlap_occ_sides(df_rris, 'two')
+    # print(df_rris)
+    inter_rep_two = build_interlap_occ_sites(df_rris, 'two')
     inter_rri = rl.mearge_overlaps(inter_rep_two, 'rri')
 
 #check data:
@@ -270,7 +270,7 @@ def main():
 
     # filter rri file and save:
     output_name = 'rri_occupied_regions' + '_overlapTH_' + str(overlap_th) + '_scoreTH_1.csv'
-    # df_rris_filterd = df_rris[(df_rris.score_seq_1st_side >= 1) & (df_rris.score_seq_2end_side >= 1)]
+    # df_rris_filterd = df_rris[(df_rris.score_seq_1st_site >= 1) & (df_rris.score_seq_2end_site >= 1)]
     df_rris_filterd = rl.filter_score(df_rris, 1)
 
     df_rris_filterd = df_rris_filterd[df_rris_filterd['chrom_1st'] != False]

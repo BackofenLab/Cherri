@@ -27,7 +27,7 @@ def check_context_extention(df, context, output_path, context_not_full):
         Parameters
         ----------
         df: dataframe holding the extended context sequences
-        context: amount of nt added on both sides
+        context: amount of nt added on both sites
         output_path:
 
         Raises
@@ -63,7 +63,7 @@ def get_context_pos(df, context, start, end, name):
         Parameters
         ----------
         df: dataframe holding the extended context sequences
-        context: amount of nt added on both sides
+        context: amount of nt added on both sites
 
         Returen
         ------
@@ -110,14 +110,14 @@ def extention_df(df):
 
 def find_occu_overlaps(dict_key,s,e, occupyed_InteLab):
     """
-    finding all interaction sides for a given sequence by genomic indexes
+    finding all interaction sites for a given sequence by genomic indexes
 
         Parameters
         ----------
         dict_key: key chrom:strand of the given sequence neede for the occupyed_InteLab
         s: start postion of given sequence
         e: end postion of given sequence
-        occupyed_InteLab: Interlap object having all interacting side postions
+        occupyed_InteLab: Interlap object having all interacting site postions
 
         Raises
         ------
@@ -146,24 +146,24 @@ def find_occu_overlaps(dict_key,s,e, occupyed_InteLab):
     return occupied_regions_list
 
 
-def convert_positions(s_seq, e_seq, s_side, e_side, strand):
+def convert_positions(s_seq, e_seq, s_site, e_site, strand):
     """
-    return postions one based of side in relation to given sequence
+    return postions one based of site in relation to given sequence
 
         Parameters
         ----------
         s_seq: start postion of given sequence
         e_seq: end postion of given sequence
-        s_side: start postion of given occupied side
-        e_side: start postion of given occupied side
+        s_site: start postion of given occupied site
+        e_site: start postion of given occupied site
         strand: + or -
 
         Returns
         -------
-        new_e_side
-            one based end postion of occupied side
-        new_s_side
-            one based start postion of occupied side
+        new_e_site
+            one based end postion of occupied site
+        new_s_site
+            one based start postion of occupied site
      >>> convert_positions(20,30,22,24,'+')
      [3, 4]
      >>> convert_positions(20,30,12,34,'+')
@@ -172,38 +172,38 @@ def convert_positions(s_seq, e_seq, s_side, e_side, strand):
      >>> convert_positions(20,30,22,24,'+')
      [3, 4]
         """
-    # check than side are outside the sequence
-    if (s_side <= s_seq) or (e_side >= e_seq):
-        if (s_side <= s_seq) and (e_side >= e_seq):
+    # check than site are outside the sequence
+    if (s_site <= s_seq) or (e_site >= e_seq):
+        if (s_site <= s_seq) and (e_site >= e_seq):
             print('Warning: full context is overlaped')
             new_end = e_seq - s_seq
             return  [1, new_end]
         # changing start
-        elif s_side <= s_seq:
-            s_side = s_seq
-            if e_side == s_side:
+        elif s_site <= s_seq:
+            s_site = s_seq
+            if e_site == s_site:
                 print('Warning: start and end is same positon START!!!')
                 # should break!!
                 return(['nan','nan'])
-        elif e_side > e_seq:
-            e_side = e_seq
+        elif e_site > e_seq:
+            e_site = e_seq
     # compute postions
     if strand == '+':
         # new_end = e_seq - s_seq
-        if e_side == s_side:
+        if e_site == s_site:
             print('Warning: start and end is same positon!!!+END')
-            return[(e_side-s_seq),(e_side-s_seq)]
-        new_e_side = e_side - s_seq
-        new_s_side = (s_side+1) - s_seq
+            return[(e_site-s_seq),(e_site-s_seq)]
+        new_e_site = e_site - s_seq
+        new_s_site = (s_site+1) - s_seq
     elif strand == '-':
-        if e_side == s_side:
+        if e_site == s_site:
             print('Warning: start and end is same positon!!!-END')
             return[1,1]
-        new_e_side = e_seq - (s_side+1) +1
-        new_s_side = e_seq - e_side +1
+        new_e_site = e_seq - (s_site+1) +1
+        new_s_site = e_seq - e_site +1
     else:
         print('strand was not found correctly')
-    return [new_s_side, new_e_side]
+    return [new_s_site, new_e_site]
 
 
 def decode_Intarna_output(out):
@@ -742,7 +742,7 @@ def get_header():
 
 
         """
-    list_rows_add = ['score_seq_1st_side', 'score_seq_2end_side',
+    list_rows_add = ['score_seq_1st_site', 'score_seq_2end_site',
                      'biotype_region_1st', 'biotype_region_2end',
                      'ID_1st','ID_2end','con_target','con_query',
                      'target_con_s','target_con_e','query_con_s',
@@ -923,14 +923,14 @@ def main():
 
         ########### find places which are occupyed
         #print('### RRI strands ########')
-        #print('target side infos: ',strand_t)
-        #print('query side infos: ',strand_q)
+        #print('target site infos: ',strand_t)
+        #print('query site infos: ',strand_q)
 
 
         ########### find places which are occupyed
         #print('### RRI genome positions ########')
-        #print('target side infos: ',target_seed_s,target_seed_e)
-        #print('query side infos: ',query_seed_s,query_seed_e)
+        #print('target site infos: ',target_seed_s,target_seed_e)
+        #print('query site infos: ',query_seed_s,query_seed_e)
         #print('### sequence genome positions ########')
         #print('target sequence infos: ',target_pos_s,target_pos_e)
         #print('query sequence infos: ',query_pos_s,query_pos_e)

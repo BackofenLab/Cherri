@@ -351,7 +351,7 @@ def main_eval(args):
               'chrom_seq_2end_site', 'start_seq_2end_site',
               'stop_seq_2end_site','strand_seq_2end_site',
               'TPM_seq_1st_site', 'TPM_seq_2end_site', 'TPM_summary',
-              'score_seq_1st_side', 'score_seq_2end_side','score_product',
+              'score_seq_1st_site', 'score_seq_2end_site','score_product',
               'biotype_region_1st', 'biotype_region_2end', 'ID_1st','ID_2end']
     end_data = ['nan', 'nan', 'nan', 'nan', 'nan','nan','nan','nan','nan','nan',
                 'nan','nan', 'nan','nan','nan','nan', 'nan', 'nan','nan', 'nan',

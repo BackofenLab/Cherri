@@ -92,7 +92,7 @@ def read_chira_data(in_file, header='no', separater="\t"):
                 'chrom_seq_2end_site', 'start_seq_2end_site',
                 'stop_seq_2end_site','strand_seq_2end_site',
                 'TPM_seq_1st_site', 'TPM_seq_2end_site', 'TPM_summary',
-                'score_seq_1st_side', 'score_seq_2end_side','score_product',
+                'score_seq_1st_site', 'score_seq_2end_site','score_product',
                 'biotype_region_1st', 'biotype_region_2end', 'ID_1st','ID_2end']
         df_interactions = pd.read_table(in_file, header=None, sep=separater,
                                 low_memory=False, names=header_line)
@@ -129,17 +129,17 @@ def filter_score(df, score_th):
             dataframes filter for a score smaller equal threshold of both
             interacting partners
 
-    >>> data = {'score_seq_1st_side':[0.3, 1, 0.9, 0.4],
-    ...         'score_seq_2end_side':[0.7, 1, 0.2, 0.5]}
+    >>> data = {'score_seq_1st_site':[0.3, 1, 0.9, 0.4],
+    ...         'score_seq_2end_site':[0.7, 1, 0.2, 0.5]}
     >>> df = pd.DataFrame(data)
     >>> filter_score(df, 1)
-       score_seq_1st_side  score_seq_2end_side
+       score_seq_1st_site  score_seq_2end_site
     1                 1.0                  1.0
 
             """
-    # filter input for score_seq_1st_side and score_seq_2end_side == 1
-    df_filterd = df[(df.score_seq_1st_side >= score_th) &
-                    (df.score_seq_2end_side >= score_th)]
+    # filter input for score_seq_1st_site and score_seq_2end_site == 1
+    df_filterd = df[(df.score_seq_1st_site >= score_th) &
+                    (df.score_seq_2end_site >= score_th)]
     #df_interactions_single_mapped
     return df_filterd
 
@@ -305,7 +305,7 @@ def get_list_chrom(df):
             and present in the input data frame
 
         """
-    chrom1_list = get_chrom_list_no_numbers(df, 'chrom_seq_1st_side')
+    chrom1_list = get_chrom_list_no_numbers(df, 'chrom_seq_1st_site')
     chrom2_list = get_chrom_list_no_numbers(df, 'chrom_seq_2end_site')
     list_chrom_no_int = list(set().union(chrom1_list,chrom2_list))
     sort_list_chrom = sorted(list_chrom_no_int)
@@ -359,7 +359,7 @@ def check_convert_chr_id(chr_id):
 def add_context(df_bed, context, start, end):
     """
     edding the changing the start and end postion of the sequences
-    to add context to both sides of the sequences in the dataframe
+    to add context to both sites of the sequences in the dataframe
 
         Parameters
         ----------
@@ -538,7 +538,7 @@ def get_context(seq_tag, df, out_dir, in_2bit_file, context, chrom_len_file):
         df: dataframe contining position of the extraction
         out_dir: directory where to store bed and fa file
         in_2bit_file: genome 2bit file
-        context: amout of nt that should be added on both sides
+        context: amout of nt that should be added on both sites
 
 
         Returns
@@ -1255,7 +1255,7 @@ def get_filted_features(featurefile,csr_mat_h):
                 'E_hybrid_normby_GC', 'mfe_normby_len', 'max_ED_normby_len',
                 'E_hybrid_normby_len', 'mfe_normby_GC_len',
                 'max_ED_normby_GC_len', 'E_hybrid_normby_GC_len',
-                'complex_target_side', 'complex_query_side']
+                'complex_target_site', 'complex_query_site']
     dataset_size = len(csr_mat_h)
     feat = [False] * dataset_size
 
