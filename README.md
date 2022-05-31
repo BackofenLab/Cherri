@@ -282,13 +282,11 @@ Input parameters for CheRRI's **train** mode (`cherri train`):
 
 
 
-For the mixed mode parameter you need to add all pre-computed models, who's data you would like to combine in one single folder (set -mi 'on'). Rename the first level folder to the experiment name and specify the path to this folder as '-i1' parameter and the experiment names as replicates (-r). The CheRRI pipeline will than first concatenate all positive and negative data set file of the given experiments and stars the CheRRI call form the feature generation step. 
+#### Output in training mode
 
-
-#### Output 
 At the end of the run the location of the trained model is given.
 
-Throughout the program several output files are generated in the following structure:
+Throughout the program, several output files are generated inside the output folder (default: `date_Cherri_model_build`), with the following structure:
 
     ├── date_Cherri_model_build
     |   ├── date_occ_out
@@ -310,24 +308,24 @@ Throughout the program several output files are generated in the following struc
 
 
 
-
 ## CheRRI's core method scripts
-CheRRI is build as a modular tool calling individual scrips doing the tasks of the CheRRI's core method. If you would like to only perform one step of the CheRRI pipeline you can do this by calling the individual scrips. A short description of this scripts is given in the following.
+
+CheRRI is built as a modular tool calling individual scripts accomplishing the various tasks of CheRRI's core methods. If you would like to perform only one step of the CheRRI pipeline, you can do this by calling the individual scripts. A short description of this scripts is given in the following.
 
 
-### RRI detection: find_trusted_RRI.py
+### RRI detection with find_trusted_RRI.py
 Here we search for trusted RRIs, so RRIs which can be found in all replicates. In a first filter step only uniquely mapped RRIs are taken. Than RRI sequence partners in all replicates are found, using a overlap threshold. Output are the ChiRA input tables, now containing only the trusted RRIs. Out of all RRI pairs of the replicates only the one with the highest overlap to all others is added to the trusted_RRI data set. 
 
-#### Input Parameter
+#### Input parameters for find_trusted_RRI.py
 | ID | name | description |
 |---|---|-----|
-| `-i` | `--input_path` | Path to folder storing input data (meaning storing all replicates) |
-|`-r`| `--list_of_replicats` | List of filenames for all replicates |
+| `-i` | `--input_path` | Path to folder storing input data (containing all replicates) |
+|`-r`| `--list_of_replicats` | List of file names for all replicates |
 | `-o` | `--overlap_th` | Overlap threshold to find trusted RRIs |
 | `-d` | `--output_path` | Path where output folder should be stored |
-|`-n` | `--experiment_name` | Name of the data soruce of positive trusted RRIs |
+|`-n` | `--experiment_name` | Name of the data source of positive trusted RRIs |
 | `-s` | `--score_th` | Threshold for EM score from ChiRA |
-| `-fh` | `--filter_hybrind` | Filter the data for hyprids alrady detected by ChiRA
+| `-fh` | `--filter_hybrid` | Filter the data for hyprids alrady detected by ChiRA |
 
 #### Output 
 The filtered set of trusted RRI sites in tabular format. 
