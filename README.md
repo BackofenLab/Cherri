@@ -5,7 +5,8 @@ It helps to filter interaction sites generated either experimentally or by an RR
 
 
 
-## Progamm Idea:
+## CheRRI's workflow
+
 CheRRI can be run in two modes, the model generation or **train** mode, or the RRI evaluation or **eval** mode. Here is an illustration of CheRRI's workflow:
 
 <img src="./plots/Cherri_workflow_resuctured2.svg " alt="Cherri_workflow" width="550"/>
@@ -17,7 +18,7 @@ To train a novel model, an RNA-RNA interactome dataset specifying all RRI sites 
 
 
 
-## Instalation
+## Installation
 
 CheRRI was developed in Linux and tested on Ubuntu (18.04 LTS). Conda is required to install CheRRI.
 
@@ -173,11 +174,8 @@ If no additional occupied regions are specified (`--occupied_regions`), only the
 
 
 
-
-
-
-
 #### Example call CheRRI **eval** mode
+
 For the test call please download the [Cherri_models_data](https://doi.org/10.5281/zenodo.6533932). The PARIS_human model is needed to execute the call. Check it the correct location for the model and its feature set is given (-m, -mp)
 
 
