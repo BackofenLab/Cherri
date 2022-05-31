@@ -142,6 +142,7 @@ cherri -h
 You can use CheRRI in two modes. The **eval** mode predicts whether the site of your RRI prediction is biologically relevant. Pre-computed human and mouse models exist and can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.6533932). If you would like to build a model based on novel RRI interactome data you can use the **train** mode.
 
 ### Evaluation of RRIs
+
 Based on a tabular file containing chromosomal position data of the RRIs, CheRRI classifies if the interaction region is likely to be a biologically relevant one.
 
 For the **eval** mode, a model and the filtered feature set have to be specified.
@@ -149,15 +150,38 @@ CheRRI has pre-trained models for human and mouse, which can be downloaded from 
 If there exists an RNA-RNA-interactome dataset for your preferred organism, we recommend to train your own organism-specific model using CheRRI's **train** mode. After training, the model can be than used in the **eval** mode for the classification of your predicted RRI positions.
 
 
-#### Input format of the RRI evaluation table (RRIs_table)
-The to evaluate instances should be in a tabular format. You should specify a header line, with the chromosome, interaction start, interaction end and strand of the two interacting partners:
+#### RRI input format in evaluation mode
+
+The RRI instances to be evaluated need to be given in tabular format (parameter `--RRIs_table`). The table needs the following header line:
+
 ```
 chrom1,start1,stop1,strand1,chrom2,start2,stop2,strand2
 ```
-Within the default setting only 'positive' feature instances are computed. If no additional occupied regions are specified only the once of the given input interactions are used. However, we recommend to specify the occupied regions used for the trained model, to be consisted to its feature generation.
+
+Following the header line, each subsequent line represents an RRI, with chromosome ID (format: 1,2,3 ...), interaction start, interaction end, and strand ("+" or "-") of the two interacting partners. For example:
+
+```
+19,18307518,18307539,-,14,90454500,90454521,+
+X,109054541,109054590,+,9,89178539,89178562,-
+10,123136102,123136122,+,5,1245880,1245902,+
+```
+
+If no additional occupied regions are specified (`--occupied_regions`), only the ones of the given input interactions (`--RRIs_table`) are used. However, to be consistent with the feature generation of the trained model, we recommend that the user also specifies the occupied regions used to train the model. For example, for the PARIS_human model without graph features, the occupied regions data object is located at 
+`Model_without_graph_features/PARIS_human/occupied_regions/occupied_regions.obj` (inside the mentioned zip file from [Zenodo](https://doi.org/10.5281/zenodo.6533932)).
+
+
+
+
+
+
+
+
 
 #### Example call CheRRI **eval** mode
-For the test call please download the [Cherri_models_data](https://zenodo.org/record/6533932#.Ynu--FxBwUE). The PARIS_human model is needed to execute the call. Check it the correct location for the model and its feature set is given (-m, -mp)
+For the test call please download the [Cherri_models_data](https://doi.org/10.5281/zenodo.6533932). The PARIS_human model is needed to execute the call. Check it the correct location for the model and its feature set is given (-m, -mp)
+
+
+
 ```
 cherri eval -i1 /vol/scratch/Cherri/test_data/evaluate/test_evalueat_rris.cvs -g human -l human -o ./ -n test_eval -c 150 -st on -m ./Cherri_models_data/Model_with_graph_features/PARIS_human/model/full_PARIS_human_context_150.model -mp ./Cherri_models_data/Model_with_graph_features/PARIS_human/feature_files/training_data_PARIS_human_context_150.npz
 ```
@@ -177,7 +201,7 @@ cherri eval -i1 /vol/scratch/Cherri/test_data/evaluate/test_evalueat_rris.cvs -g
 ##### optional:
 | ID | name | description |
 |---|---|-----|
-| `-i2` | `--occupyed_regions` | Path to occupied regions python object file containing a dictionary |
+| `-i2` | `--occupied_regions` | Path to occupied regions python object file containing a dictionary |
 | `-c` | `--context` | How much context should be added at up and down stream of the sequence |
 | `-n` | `--experiment_name` | Name of the data source of the RRIs e.g. experiment and organism |
 | `-p` | `--param_file` | IntaRNA parameter file. Default: file in rrieval/IntaRNA_param |
