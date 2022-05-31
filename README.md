@@ -184,7 +184,10 @@ cherri eval -i1 test_data/evaluate/test_evaluate_rris.cvs -g human -l human -o .
 
 
 
-#### Input Parameter
+#### Input Parameters
+
+Input parameters for Cherri's **eval** mode (`cherri eval`):
+
 ##### required:
 | ID | name | description |
 |---|---|-----|
