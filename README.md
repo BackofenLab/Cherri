@@ -176,12 +176,10 @@ If no additional occupied regions are specified (`--occupied_regions`), only the
 
 #### Example call CheRRI **eval** mode
 
-For the test call please download the [Cherri_models_data](https://doi.org/10.5281/zenodo.6533932). The PARIS_human model is needed to execute the call. Check it the correct location for the model and its feature set is given (-m, -mp)
-
-
+For the test call please download the [Cherri_models_data](https://doi.org/10.5281/zenodo.6533932) zip folder. The PARIS_human model is needed to execute the call. Be sure to provide the correct location for the model and its feature set (`-m`, `-mp`). For example, assuming the data (zip folder extracted to folder `Cherri_models_data`) is stored inside the Cherri folder:
 
 ```
-cherri eval -i1 /vol/scratch/Cherri/test_data/evaluate/test_evalueat_rris.cvs -g human -l human -o ./ -n test_eval -c 150 -st on -m ./Cherri_models_data/Model_with_graph_features/PARIS_human/model/full_PARIS_human_context_150.model -mp ./Cherri_models_data/Model_with_graph_features/PARIS_human/feature_files/training_data_PARIS_human_context_150.npz
+cherri eval -i1 test_data/evaluate/test_evaluate_rris.cvs -g human -l human -o ./ -n test_eval -c 150 -st on -m Cherri_models_data/Model_with_graph_features/PARIS_human/model/full_PARIS_human_context_150.model -mp Cherri_models_data/Model_with_graph_features/PARIS_human/feature_files/training_data_PARIS_human_context_150.npz
 ```
 
 
