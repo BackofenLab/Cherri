@@ -188,7 +188,7 @@ cherri eval -i1 test_data/evaluate/test_evaluate_rris.cvs -g human -l human -o .
 
 Input parameters for CheRRI's **eval** mode (`cherri eval`):
 
-##### required:
+##### Required:
 | ID | name | description |
 |---|---|-----|
 | `-i1` |`--RRIs_table` | Table containing all RRIs that should be evaluated in the correct format|
@@ -197,7 +197,7 @@ Input parameters for CheRRI's **eval** mode (`cherri eval`):
 | `-l` | `--chrom_len_file` | Tabular file containing data in two-column format for each chromosome: 'chrom name' \t 'chrom length'. You can directly specify 'human' or 'mouse' |
 | `-m` | `--model_file` | Set path to the model which should be used for evaluation |
 | `-mp` | `--model_params` | Set path to the feature file of the given model |
-##### optional:
+##### Optional:
 | ID | name | description |
 |---|---|-----|
 | `-i2` | `--occupied_regions` | Path to occupied regions python object file containing a dictionary |
@@ -258,7 +258,7 @@ cherri train -i1 test_data/training/Paris/ -r miRNA_human_1.tabular miRNA_human_
 
 Input parameters for CheRRI's **train** mode (`cherri train`):
 
-##### required
+##### Required:
 | ID | name | description |
 |---|---|-----|
 | `-i1` | `--RRI_path`| Path to folder storing the ChiRA interaction summary files|
@@ -266,7 +266,7 @@ Input parameters for CheRRI's **train** mode (`cherri train`):
 | `-r` | `--list_of_replicates`| List the ChiRA interaction summary file for each replicate |
 | `-l` | `--chrom_len_file`| Tabular file containing data in two-column format for each chromosome: 'chrom name' \t 'chrom length'. You can directly specify 'human' or 'mouse' |
 | `-g` | `--genome`| Path to 2bit genome file, or use the built-in download function if you want the human or mouse genome |
-##### optional
+##### Optional:
 | ID | name | description |
 |---|---|-----|
 | `-c` | `--context`| How much context should be added at up- and downstream of the sequence |
@@ -327,25 +327,26 @@ Here we search for trusted RRIs, so RRIs which can be found in all replicates. I
 | `-s` | `--score_th` | Threshold for EM score from ChiRA |
 | `-fh` | `--filter_hybrid` | Filter the data for hyprids alrady detected by ChiRA |
 
-#### Output 
+#### Output of find_trusted_RRI.py
 The filtered set of trusted RRI sites in tabular format. 
 
-### Compute occupied regions: find_occupied_regions.py
-Given the RRI information tables form ChiRA and RNA-Protein binding positions a InterLab object is build. The occupied information can be used to mask parts of the genome and therefore enable to select negative interaction regions. This regions are not part of interaction in nature. 
+
+### Compute occupied regions with find_occupied_regions.py
+Given the RRI information tables from ChiRA and RNA-protein binding positions, an InterLab object is build. The occupied information can be used to mask parts of the genome and therefore enable to select negative interaction regions.
 
 
-#### Input Parameter
+#### Input parameters for find_occupied_regions.py
 | ID | name | description |
 |---|---|-----|
-|`-i1` | `--RRI_path` | Path to folder storing all RRI data (tabel) |
-| `-i2` | `--rbp_path` | Path to RBP side data file (BED format) |
-| `-r` | `--list_of_replicats` | Filenames list of all replicates |
+|`-i1` | `--RRI_path` | Path to folder storing all RRI data (table) |
+| `-i2` | `--rbp_path` | Path to RBP site data file (BED format) |
+| `-r` | `--list_of_replicates` | List of file names for all replicates |
 | `-o` | `--out_path` | Path where output folder should be stored |
 | `-t` | `--overlap_th` | Overlap threshold |
 | `-s` | `--score_th` | Score threshold | 
-| `-e` | `--external_object` |External RRI  overlapping object (InterLap dict)|
-| `-fh` | `--filter_hybrind` | Filter the data for hybrids already detected by ChiRA|
-| `-mo` | `--mode` | Function call within which CheRRI mode [train/eval]|
+| `-e` | `--external_object` | External RRI overlapping object (InterLap dict)|
+| `-fh` | `--filter_hybrind` | Filter the data for hybrids already detected by ChiRA |
+| `-mo` | `--mode` | Function call within which CheRRI mode (train/eval)|
 
 #### Output 
 A python pickled file object storing occupied regions in a InterLap directory. 
