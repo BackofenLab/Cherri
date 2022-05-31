@@ -205,18 +205,19 @@ Input parameters for CheRRI's **eval** mode (`cherri eval`):
 | `-n` | `--experiment_name` | Name of the data source of the RRIs, e.g. experiment and organism |
 | `-p` | `--param_file` | IntaRNA parameter file. Default: file in path_to_cherri_folder/Cherri/rrieval/IntaRNA_param |
 | `-st` | `--use_structure` | Set 'off' if you want to disable structure, default 'on' |
-| `-on` | `--out_name` | Name for the output directory, default 'time_stamp_Cherri_evaluating_RRIs' |
+| `-on` | `--out_name` | Name for the output directory, default 'date_Cherri_evaluating_RRIs' |
 | `-hf` | `--hand_feat` | If you want to start from hand-curated feature files. Use this for evaluating test set performance (set 'on'). Default: 'off' |
 | `-j` | `--n_jobs` | Number of jobs used for graph feature computation. Default: 1|
 
 
-#### Output 
-At the end of the run the location of the result table is given.
-The final result table will have all columns of the input table and an additional prediction column, where you find the predicted class of each RRI (0 or 1).
+#### Output in evaluation mode
 
-Throughout the program several output files are generated and stored in the following structure:
+At the end of the run the location of the results table is given.
+The final results table will have all columns of the input table and an additional prediction column, where you find the predicted class of each RRI (0 or 1).
 
-    ├── date_Cherri_evaluation_mode
+Throughout the program, several output files are generated and stored in the following structure:
+
+    ├── date_Cherri_evaluating_RRIs
     |   ├── evaluate_RRIs.table
     |   ├── positive_instance
     |       ├── test_eval_context_{context}pos.csv
@@ -230,46 +231,56 @@ Throughout the program several output files are generated and stored in the foll
     |       ├── evaluation_results_test_eval.csv
 
 
-### Mode train: built new CheRRI model
+### Build a new CheRRI model in training mode
+
 Within CheRRI's **train** mode you can train your own model. 
-This input data are the RRI interactions found by Direct Duplex Detection (DDD) methods. To extract this RRI interaction form DDD methods a tool named ChiRA is used to generate the 'ChiRA interaction summary' table. CheRRI expects as input the 'ChiRA interaction summary' file.
+The input data are the RRI interactions found by Direct Duplex Detection (DDD) methods. To extract RRI interactions from DDD methods, a tool named [ChiRA](https://github.com/pavanvidem/chira) is used to generate the 'ChiRA interaction summary' table. CheRRI expects as input the 'ChiRA interaction summary' file.
 
-If you want to prepare a 'ChiRA interaction summary' table file please follow the [tutorial](https://training.galaxyproject.org/training-material//topics/transcriptomics/tutorials/rna-interactome/tutorial.html).
+If you want to prepare a 'ChiRA interaction summary' table file, please follow this [tutorial](https://training.galaxyproject.org/training-material//topics/transcriptomics/tutorials/rna-interactome/tutorial.html). You should prepare one ChiRA interaction summary file per replicate.
 
-Starting from the RRI site information CheRRI will build a model based on features generated from the DDD method interactions site data. 
+Starting from the RRI site information, CheRRI will build a model based on features generated from the DDD method interactions site data. 
 
 #### Retrieve RNA-RNA interactome files
-Please select the ChiRA RRI output files as input for CheRRI **train** mode. Retive one file per replicate. You should specify the path to the folders containing all replicates. If you want to filter for interactions, where ChiRA already found a hybrid within its analysis you should enable the hybridization with the ChiRA workflow and set within CheRRI's  parameters filter_hybrid to 'on'. Some of the possible interaction maid be missed this way, but it will also filter out potential false positive interactions. 
 
-#### Example call CheRRI train model mode
+ChiRA RRI output files are needed as input for CheRRI **train** mode. `--RRI_path` (`-i1`) demands the path to the the ChiRA interaction summary files, and `--list_of_replicates` (`-r`) demands the ChiRA interaction summary file names of the replicates used by CheRRI inside the `-i1` folder.
+
+#### Example call for CheRRI's training mode
+
+This is an example call to evoke CheRRI's model training mode inside the CheRRI folder:
+
 ```
-cherri train -i1 ./Cherri/test_data/training/Paris/ -r miRNA_human_1.tabular miRNA_human_2.tabular miRNA_human_3.tabular -g human -l human -o ./ -n paris_human_test -c 50 -st on -t 600 -me 8000 -j 7
+cherri train -i1 test_data/training/Paris/ -r miRNA_human_1.tabular miRNA_human_2.tabular miRNA_human_3.tabular -g human -l human -o ./ -n paris_human_test -c 50 -st on -t 600 -me 8000 -j 7
 ```
 
 
 
-#### Input Parameter
+#### Input parameters in training mode 
+
+Input parameters for CheRRI's **train** mode (`cherri train`):
+
 ##### required
 | ID | name | description |
 |---|---|-----|
 | `-i1` | `--RRI_path`| Path to folder storing the ChiRA interaction summary files|
 | `-o` | `--out_path`| Path to output directory where the output folder will be stored. It will contain separate output folders for each step of the data, feature and model preparation |
 | `-r` | `--list_of_replicates`| List the ChiRA interaction summary file for each replicate |
-| `-l` | `--chrom_len_file`| Tabular file containing data in two columns format for each chromosome: 'chrom name' \t 'chrom length'. You can directly specify 'human' or 'mouse' |
-| `-g` | `--genome`| Path to 2bit genome file, or used the build in download if you want the human or mouse genome |
+| `-l` | `--chrom_len_file`| Tabular file containing data in two-column format for each chromosome: 'chrom name' \t 'chrom length'. You can directly specify 'human' or 'mouse' |
+| `-g` | `--genome`| Path to 2bit genome file, or use the built-in download function if you want the human or mouse genome |
 ##### optional
 | ID | name | description |
 |---|---|-----|
-| `-c` | `--context`| How much context should be added at up and down stream of the sequence |
-| `-n` | `--experiment_name`| Name of the data source of RRIs. Will be used for the file names|
-| `-p` | `--param_file`| IntaRNA parameter file. Default: file in rrieval/IntaRNA_param |
-| `-st` | `--use_structure`| Set 'off' if you want to disable graph-kernel features default: 'on' (when set to 'on' the feature optimization will be performed directly and the data will be stored in feature_files and no model/feature folder will be set up)|
-| `-i2` | `--RBP_path`| Path to the genomic RBP cross link positions location (in BED format) |
-| `-t` | `--run_time`| Time used for the optimization in seconds default: 12h|
-| `-me` | `--memoryPerThread`| Memory in MB which each thread can use (total ram/threads)|
+| `-c` | `--context`| How much context should be added at up- and downstream of the sequence |
+| `-n` | `--experiment_name`| Name of the data source of RRIs. Will be used for the file names |
+| `-p` | `--param_file`| IntaRNA parameter file. Default: file in path_to_cherri_folder/Cherri/rrieval/IntaRNA_param |
+| `-st` | `--use_structure`| Set 'off' if you want to disable graph-kernel features, default: 'on' (when set to 'on' the feature optimization will be performed directly and the data will be stored in feature_files and no model/feature folder will be created)|
+| `-i2` | `--RBP_path`| Path to the genomic RBP crosslink or binding site locations (in BED format) |
+| `-t` | `--run_time`| Time used for the optimization in seconds, default: 43200 (12h) |
+| `-me` | `--memoryPerThread`| Memory in MB each thread can use (total ram/threads)|
 | `-j` | `--n_jobs`| Number of jobs used for graph feature computation and model selection. Default: 1|
-| `-mi` | `--mixed`| Use mixed model to combine different dataset into a combined model. Default. 'off' (advanced option)| 
-| `-fh` |`--filter_hybrid`| Filter the data for hybrids already detected by ChiRA (set 'on' to filter default:'off') |
+| `-mi` | `--mixed`| Use mixed model to combine different datasets into a combined model. Default. 'off' | 
+| `-fh` |`--filter_hybrid`| Filter the data for hybrids already detected by ChiRA (set 'on' to filter, default:'off') |
+
+
 
 For the mixed mode parameter you need to add all pre-computed models, who's data you would like to combine in one single folder (set -mi 'on'). Rename the first level folder to the experiment name and specify the path to this folder as '-i1' parameter and the experiment names as replicates (-r). The CheRRI pipeline will than first concatenate all positive and negative data set file of the given experiments and stars the CheRRI call form the feature generation step. 
 
