@@ -146,8 +146,8 @@ You can use CheRRI in two modes. The **eval** mode predicts whether an RRI site 
 Based on a tabular file containing chromosomal position data of the RRIs, CheRRI classifies if the interaction region is likely to be a biologically relevant one.
 
 For the **eval** mode, a model and the filtered feature set have to be specified.
-CheRRI has pre-trained models for human and mouse, which can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.6533932) (see `content.txt` for details).
-If there exists an RNA-RNA-interactome dataset for your preferred organism, we recommend to train your own organism-specific model using CheRRI's **train** mode. After training, the model can be than used in the **eval** mode for the classification of your predicted RRI positions.
+CheRRI has pre-trained models for human and mouse, which can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.6533932) (see `content.txt` inside the zip folder for details).
+If there exists an RNA-RNA-interactome dataset for your preferred organism, we recommend to train your own organism-specific model using CheRRI's **train** mode. After training, the model can be than used in **eval** mode for the classification of your predicted RRI positions.
 
 
 #### RRI input format in evaluation mode
@@ -158,7 +158,7 @@ The RRI instances to be evaluated need to be given in tabular format (parameter 
 chrom1,start1,stop1,strand1,chrom2,start2,stop2,strand2
 ```
 
-Following the header line, each subsequent line represents an RRI, with chromosome ID (format: 1,2,3 ...), interaction start, interaction end, and strand ("+" or "-") of the two interacting partners. For example:
+Following the header line, each subsequent line represents an RRI, with chromosome ID (format: 1,2,3 ...), interaction start, interaction end, and strand ("+" or "-") of the two interacting partners. For example, you might want to evaluate the following three RRI sites:
 
 ```
 19,18307518,18307539,-,14,90454500,90454521,+
@@ -166,7 +166,7 @@ X,109054541,109054590,+,9,89178539,89178562,-
 10,123136102,123136122,+,5,1245880,1245902,+
 ```
 
-If no additional occupied regions are specified (`--occupied_regions`), only the ones of the given input interactions (`--RRIs_table`) are used. However, to be consistent with the feature generation of the trained model, we recommend that the user also specifies the occupied regions used to train the model. For example, for the PARIS_human model without graph features, the occupied regions data object is located at 
+If no additional occupied regions are specified (`--occupied_regions`), only the ones of the given input interactions (`--RRIs_table`) are used. However, to be consistent with the feature generation of the trained model, we recommend that the user also specifies the occupied regions used to train the model provided via `--model_file`. For example, for the PARIS_human model without graph features, the occupied regions data object is located at 
 `Model_without_graph_features/PARIS_human/occupied_regions/occupied_regions.obj` (inside the mentioned zip file from [Zenodo](https://doi.org/10.5281/zenodo.6533932)).
 
 
