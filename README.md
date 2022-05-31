@@ -348,37 +348,39 @@ Given the RRI information tables from ChiRA and RNA-protein binding positions, a
 | `-fh` | `--filter_hybrind` | Filter the data for hybrids already detected by ChiRA |
 | `-mo` | `--mode` | Function call within which CheRRI mode (train/eval)|
 
-#### Output 
-A python pickled file object storing occupied regions in a InterLap directory. 
+#### Output of find_occupied_regions.py
+
+A python pickle file object storing occupied regions in an InterLap dictionary. 
 
 
-### Interaction predictions: generate_pos_neg_with_context.py
-Given trusted RRI and the occupied regions a given context is appended. Than positive sequences are computed by calling IntaRNA specifying the the seed region with the trusted RRI regions. The negative interactions are computed by calling IntaRNA given regions, which should not be in the interaction 'occupied regions'. 
+### Interaction predictions with generate_pos_neg_with_context.py
+
+Given a set of trusted RRI sites and occupied regions, a given context is appended. Then positive interactions are computed by calling IntaRNA, specifying the trusted RRI sites as seed regions. The negative interactions are computed by calling IntaRNA on regions outside the RRI sites / occupied regions.
 
 
-#### Input Parameter
+#### Input parameters for generate_pos_neg_with_context.py
 
 | ID | name | description |
 |---|---|-----|
 | `-i1` | `--input_rris` |Path to file storing all trusted RRIs|
-|  `-i2` | `--input_occupyed` | Path to occupying regions file |
+|  `-i2` | `--input_occupied` | Path to occupied regions file |
 | `-d` | `--output_path` | Path where output folder should be stored |
-| `-n` | `--experiment_name` |Name of the data source of positive trusted RRIs|
+| `-n` | `--experiment_name` | Name of the data source of positive trusted RRIs|
 | `-g` | `--genome_file` | Path to 2bit genome file |
-| `-c` | `--context` |How much context should be added up- and downstream |
-|   | `--pos_occ`  | Default occupied regions are set |
-|   | `--no_pos_occ`  | Set if no occupied regions should be set |
-| `-b` | `--block_ends` |# nts blocked at the ends of the sequence|
-| `-s` | `--no_sub_opt` | # of interactions IntraRNA will give is possible |
-| `-l` | `--chrom_len_file` |Tabular file containing chrom name \t chrom length for each chromosome |
+| `-c` | `--context` | How much context should be added up- and downstream |
+|   | `--pos_occ`  | Occupied regions are set (default) |
+|   | `--no_pos_occ`  | Set if no occupied regions should be used |
+| `-b` | `--block_ends` | # nucleotides blocked at the ends of each extended RRI site |
+| `-s` | `--no_sub_opt` | # of interactions IntraRNA will give if possible |
+| `-l` | `--chrom_len_file` | Tabular file containing chrom name \t chrom length for each chromosome |
 | `-p` | `--param_file` | IntaRNA parameter file |
-| `-m` | `--mode` | Which CheRRI mode is running|
+| `-m` | `--mode` | Which CheRRI mode is running (train/eval) |
 
 
 
-#### IntaRNA params for call
+#### IntaRNA parameters used within CheRRI
 
-To generate the current features IntaRNA parameters are set link this:
+To generate the current features IntaRNA parameters by default are set to:
 
 | parameters  | value  | description | 
 |---|---|---|
@@ -396,51 +398,37 @@ To generate the current features IntaRNA parameters are set link this:
 | temperature |  37  | experimental temperature |
 | intLoopMax |  3  | number of unpaired bases between inter molecular base pairs |
 
-IntaRNA parameters can be changed by specifying a IntaRNA parameter file.
+
+IntaRNA parameters can be changed by specifying a custom IntaRNA parameter file.
 
 
 
-#### Output 
+#### Output of generate_pos_neg_with_context.py
 Positive and negative datasets stored in tabular format. 
 
 
-### Feature extraction: get_features.py
-Here additional sequence features are computed and the output is filtered for the final or a given feature set. The features are stored in a tabular format.
-Note that the graph-kernel features are computed directly in CheRRI's main functions and do not have a sparat file. 
+### Feature extraction with get_features.py
 
-#### Input Parameter
+Here additional sequence features are computed and the output is filtered for the final or a given feature set. The features are stored in tabular format.
+Note that the graph-kernel features are computed directly in CheRRI's main functions and do not have a separate file. 
+
+#### Input parameters for get_features.py
+
 | ID | name | description |
 |---|---|-----|
 | `-i` | `--input` | Path to input file |
 | `-f` | `--feature_set_list` | Set of features the script will output |
-| `-o` | `--output_file` | Output file path inclusive of the file name |
+| `-o` | `--output_file` | Output file path including the file name |
 
 
-#### Prediction output used to build the features
+#### Output of get_features.py
 
-The following columns are used to build the set of features:
-
-| description  | column name  | 
-|---|---|
-| start position of RRI target  | 'start1'  |
-| end position of RRI target   |  'end1' | 
-|  start position of RRI query  |  'start2' |
-| end position of RRI query   |  'end2' | 
-| dotbrackad of interaction  | hybridDP  |
-| RRI sequence target&query  |  subseqDP | 
-| MFE  |  E | 
-| seeds starts listed for target |  seedStart1 | 
-| interacting target sequence  |  target | 
-| interacting query sequence | query |
-
-
-#### Output 
-- tabular file having all features given via the feature_set_list
+Tabular file having all features given via `--feature_set_list`.
 
 
 ### Feature selection and optimization
 
-If you would only like to run the feature selection or optimization please check out the [biofilm](https://github.com/smautner/biofilm). 
+If you would only like to run the feature selection or optimization, please check out [biofilm](https://github.com/smautner/biofilm). 
 
 
 
