@@ -174,39 +174,39 @@ If no additional occupied regions are specified (`--occupied_regions`), only the
 
 
 
-#### Example call CheRRI **eval** mode
+#### Example call for CheRRI's evaluation mode
 
-For the test call please download the [Cherri_models_data](https://doi.org/10.5281/zenodo.6533932) zip folder. The PARIS_human model is needed to execute the call. Be sure to provide the correct location for the model and its feature set (`-m`, `-mp`). For example, assuming the data (zip folder extracted to folder `Cherri_models_data`) is stored inside the Cherri folder:
+For the test call please download the [Cherri_models_data](https://doi.org/10.5281/zenodo.6533932) zip folder. The PARIS_human model is needed to execute the call. Be sure to provide the correct location for the model and its feature set (`-m`, `-mp`). For example, assuming the data (zip folder extracted to folder `Cherri_models_data`) is stored inside the CheRRI folder:
 
 ```
-cherri eval -i1 test_data/evaluate/test_evaluate_rris.cvs -g human -l human -o ./ -n test_eval -c 150 -st on -m Cherri_models_data/Model_with_graph_features/PARIS_human/model/full_PARIS_human_context_150.model -mp Cherri_models_data/Model_with_graph_features/PARIS_human/feature_files/training_data_PARIS_human_context_150.npz
+cherri eval -i1 test_data/evaluate/test_evaluate_rris.cvs -g human -l human -o ./ -n test_eval -c 150 -st on -m Cherri_models_data/Model_with_graph_features/PARIS_human/model/full_PARIS_human_context_150.model -mp Cherri_models_data/Model_with_graph_features/PARIS_human/feature_files/training_data_PARIS_human_context_150.npz -i2 Cherri_models_data/Model_with_graph_features/PARIS_human/occupied_regions/occupied_regions.obj
 ```
 
 
 
-#### Input Parameters
+#### Input Parameters in evaluation mode
 
-Input parameters for Cherri's **eval** mode (`cherri eval`):
+Input parameters for CheRRI's **eval** mode (`cherri eval`):
 
 ##### required:
 | ID | name | description |
 |---|---|-----|
 | `-i1` |`--RRIs_table` | Table containing all RRIs that should be evaluated in the correct format|
-| `-g` | `--genome_file`| Path to 2bit genome file, or used the build in download if you want the human or mouse genome |
+| `-g` | `--genome_file`| Path to 2bit genome file, or use the built-in download function if you want the human or mouse genome |
 | `-o` | `--out_path`| Path to output directory where the output folder will be stored. It will contain separate output folders for each step of the data and feature preparation as well as the evaluated instances |
-| `-l` | `--chrom_len_file` | Tabular file containing data in two columns format for each chromosome: 'chrom name' \t 'chrom length'. You can directly specify 'human' or 'mouse' |
+| `-l` | `--chrom_len_file` | Tabular file containing data in two-column format for each chromosome: 'chrom name' \t 'chrom length'. You can directly specify 'human' or 'mouse' |
 | `-m` | `--model_file` | Set path to the model which should be used for evaluation |
 | `-mp` | `--model_params` | Set path to the feature file of the given model |
 ##### optional:
 | ID | name | description |
 |---|---|-----|
 | `-i2` | `--occupied_regions` | Path to occupied regions python object file containing a dictionary |
-| `-c` | `--context` | How much context should be added at up and down stream of the sequence |
-| `-n` | `--experiment_name` | Name of the data source of the RRIs e.g. experiment and organism |
-| `-p` | `--param_file` | IntaRNA parameter file. Default: file in rrieval/IntaRNA_param |
+| `-c` | `--context` | How much context should be added at up- and downstream of the sequence |
+| `-n` | `--experiment_name` | Name of the data source of the RRIs, e.g. experiment and organism |
+| `-p` | `--param_file` | IntaRNA parameter file. Default: file in path_to_cherri_folder/Cherri/rrieval/IntaRNA_param |
 | `-st` | `--use_structure` | Set 'off' if you want to disable structure, default 'on' |
-| `-on` | `--out_name` | Name for the output directory instead of the current data |
-| `-hf` | `--hand_feat` | If you want to start from hand curated feature files meaning starting already with positive and negative input files set 'on'. Default: 'off' |
+| `-on` | `--out_name` | Name for the output directory, default 'time_stamp_Cherri_evaluating_RRIs' |
+| `-hf` | `--hand_feat` | If you want to start from hand-curated feature files. Use this for evaluating test set performance (set 'on'). Default: 'off' |
 | `-j` | `--n_jobs` | Number of jobs used for graph feature computation. Default: 1|
 
 
