@@ -1,28 +1,30 @@
 # :cherries: CheRRI (Computational Help Evaluating RNA-RNA interactions) :cherries:
 
-Cherri detects functional RNA-RNA interactions (RRI) sites, by evaluating if a interaction site most likely occurs in nature.
-It will help to filter false positive interaction sites, which can be generated either experimentally or by a RRI prediction algorithms. 
+CheRRI detects functional RNA-RNA interaction (RRI) sites, by evaluating if an interaction site most likely occurs in nature.
+It helps to filter interaction sites generated either experimentally or by an RRI prediction algorithm, by removing false positive interactions.
+
+
 
 ## Progamm Idea:
-CheRRI can be run in two modes, the model generation or **train** mode, or the RRI evaluation or **eval** mode. Here is a illustration of CheRRI's workflow:
+CheRRI can be run in two modes, the model generation or **train** mode, or the RRI evaluation or **eval** mode. Here is an illustration of CheRRI's workflow:
 
 <img src="./plots/Cherri_workflow_resuctured2.svg " alt="Cherri_workflow" width="550"/>
 
 
-For the evaluation of given RRI sites a model must be specified in Cherri's **eval** mode. Here pre-trained models can be applied or the user trains a model it self using CheRRI's **train** mode.
-To train a novel model RNA-RNA interactome specifying all RRIs sites within a organism should be provided. CheRRI makes use of replicate data by checking if a RRI site can be found in all replicates within a overlap threshold. This is how CheRRI builds the set of trusted RRIs. In the evaluation mode the interaction positions are reformatted in the same way as the trusted RRIs. Than in both cases CheRRI's core method can be run to generate a feature set which will be used to select a model in the **train** and in the **eval** mode used for the evaluation of the biological relevance for the submitted RRI sites.
+For the evaluation of a given set of RRI sites, a model must be specified in CheRRI's **eval** mode. Here pre-trained models can be applied or the user trains a model using CheRRI's **train** mode.
+To train a novel model, an RNA-RNA interactome dataset specifying all RRI sites should be provided. CheRRI makes use of replicate data by checking if an RRI site can be found in all replicates within an overlap threshold. This is how CheRRI builds the set of trusted RRIs. In **eval** mode, the interaction positions are reformatted in the same way as the trusted RRIs. In both modes, CheRRI uses the same core method to generate a feature set which will be used to select a model in **train** mode, and in **eval** mode for the evaluation of the biological relevance of the submitted RRI sites.
 
 
 
 
 ## Instalation
 
-CheRRI is developed in Linux and tested on Ubuntu (18.04 LTS). For the installation on your Conda is required. 
+CheRRI was developed in Linux and tested on Ubuntu (18.04 LTS). Conda is required to install CheRRI.
 
 
 ### Install Conda
 
-If you do not have Conda yet, you can e.g. install miniconda, a free + lightweight Conda installer. Get miniconda [here](https://docs.conda.io/en/latest/miniconda.html), choose the Python 3.8 Miniconda3 Linux 64-bit installer and follow the installation instructions. In the end, Conda should be accessed on the command line via (possibly in a more advanced version):
+If you do not have Conda yet, you can e.g. install miniconda, a free + lightweight Conda installer. Get miniconda [here](https://docs.conda.io/en/latest/miniconda.html), choose the newest Python 3 Miniconda3 Linux 64-bit installer and follow the installation instructions. In the end, Conda should be accessed on the command line via (note that your version can be different):
 
 ```
 $ conda --version
@@ -38,19 +40,20 @@ We recommend to create a new Conda environment inside which we will then install
 ```
 conda create -n cherri python=3.8 cherri -c conda-forge -c bioconda
 ```
-Or install it into your favorite existing environment
+Alternatively, you can install it into your existing environment via:
+
 ```
 conda install -c bioconda cherri
 ```
 
-If you are experiencing problems while running `conda install -c bioconda cherri` (e.g. complaints about conflicting dependencies), the following commands should do the trick:
+If you are experiencing problems while running `conda install -c bioconda cherri` (e.g. complaints about conflicting dependencies), the following commands might help:
 
 ```
 conda config --add channels bioconda
 conda config --add channels conda-forge
 ```
 
-This tells conda to explicitly look for packages in the specified channels, stored in the `.condarc` [conda configuration file](https://conda.io/projects/conda/en/latest/user-guide/configuration/use-condarc.html).
+This tells Conda to explicitly look for packages in the specified channels, stored in the `.condarc` [conda configuration file](https://conda.io/projects/conda/en/latest/user-guide/configuration/use-condarc.html).
 
 You additionally need to fix the python hash seed:
 
@@ -58,6 +61,12 @@ You additionally need to fix the python hash seed:
 conda env config vars set PYTHONHASHSEED=31337
 ```
 Please reactivate the environment to activate the PYTHONHASHSEED environment variable.
+
+```
+conda deactivate
+conda acivate cherri
+```
+
 Now CheRRI should be available and usable inside the environment:
 
 
@@ -67,14 +76,14 @@ cherri -h
 
 ### Manual installation
 
-To manually install CheRRI, you first create a Conda environment. Inside the environment, you need to install the following dependencies:
+To manually install CheRRI, first create a Conda environment:
 
 ```
 conda create -n cherri python=3.8 -c conda-forge -c bioconda
 conda activate cherri
 ```
+Inside the environment, you need to install the following dependencies:
 
-And than install the following dependencies:
 
 ```
 conda install -c conda-forge scikit-learn
@@ -88,14 +97,15 @@ conda install -c smautner eden-kernel
 conda install -c smautner biofilm=0.0.88
 conda install -c conda-forge python-wget
 ```
-Or create the environment with all dependencies at ones:
+
+Or create the environment with all dependencies at once:
 
 ```
 conda create -n cherri -c conda-forge -c bioconda -c smautner scikit-learn networkx ucsc-twobittofa interlap pandas IntaRNA python-wget eden-kernel biofilm=0.0.88 python-wget
-
+conda activate cherri
 ```
 
-Finally, to install the tool itself, you simply clone the repository and execute the installation script inside the folder:
+Finally, to install the tool itself, simply clone the repository and execute the installation script inside the cloned folder:
 
 ```
 git clone https://github.com/BackofenLab/Cherri.git
@@ -103,46 +113,51 @@ cd Cherri
 python -m pip install . --ignore-installed --no-deps -vv 
 ```
 
-You additionally need to fix the python hash seed:
+You additionally need to set a fixed python hash seed within the conda environment:
 
 ```
 conda env config vars set PYTHONHASHSEED=31337
 ```
-or just for your current session!
+Or set it just for your current session:
+
 ```
 export PYTHONHASHSEED=31337
 ```
+After setting the environment variable, reactivate your environment:
+```
+conda deactivate
+conda acivate cherri
+```
 
-Now we can run CheRRI from any given folder (just remember to re-activate the environment once you open a new shell):
+Now you can run CheRRI from any given folder:
 
 ```
 cherri -h
 ```
 
-CheRRI was tested with the following versions: 0.1. 
+
 
 ## Usage
-You can use CheRRI in two modes. The eval mode predicts weather the site of your RRI prediction is biological relevant. Pre-computed models exist for human or mouse data and can be downloaded. If you would like to build a model based on novel RRI interactome data you can use the **train** mode.
-If you cloned CheRRI's repository from GitHub you can apply CheRRI example calls. All example the following example calls should be working if you are one level before the CheRRI folder and have the conda environment activated.
 
-### Mode **eval**:  evaluation of RRIs
-Based on a tabular file containing chromosomal position data of the RRIs, CheRRI classify if the interaction region is likely to be a biological relevant one.
+You can use CheRRI in two modes. The **eval** mode predicts whether the site of your RRI prediction is biologically relevant. Pre-computed human and mouse models exist and can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.6533932). If you would like to build a model based on novel RRI interactome data you can use the **train** mode.
 
-For the **eval** mode a model and the filtered features set have to be specified.
-CheRRI's has pre-trained models for human and mouse. 
-The pre-trained models can be downloaded from [zenodo](https://zenodo.org/record/6533932#.Ynu--FxBwUE)  DOI 10.5281/zenodo.6533931.
-If there exists a RNA-RNA-interactome dataset for your preferred organism we recommend to train your own organism specific model using CheRRI's **train** mode. After the training this model can be than use, here in the **eval** mode, for the classification of your predicted RRIs positions.
+### Evaluation of RRIs
+Based on a tabular file containing chromosomal position data of the RRIs, CheRRI classifies if the interaction region is likely to be a biologically relevant one.
+
+For the **eval** mode, a model and the filtered feature set have to be specified.
+CheRRI has pre-trained models for human and mouse, which can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.6533932).
+If there exists an RNA-RNA-interactome dataset for your preferred organism, we recommend to train your own organism-specific model using CheRRI's **train** mode. After training, the model can be than used in the **eval** mode for the classification of your predicted RRI positions.
 
 
 #### Input format of the RRI evaluation table (RRIs_table)
-The to evaluate instances should in a tabular format. You should specify a header lines, with the chromosome interaction start interaction end and strand of the two interacting partners:
+The to evaluate instances should be in a tabular format. You should specify a header line, with the chromosome, interaction start, interaction end and strand of the two interacting partners:
 ```
 chrom1,start1,stop1,strand1,chrom2,start2,stop2,strand2
 ```
-With a specific setting only 'positive' instances are computed. If no additional occupied regions are specified only the once of the given input interactions are used. However, we recommend to specify the occupied regions of the trained model, to be consisted within the feature generation.
+Within the default setting only 'positive' feature instances are computed. If no additional occupied regions are specified only the once of the given input interactions are used. However, we recommend to specify the occupied regions used for the trained model, to be consisted to its feature generation.
 
 #### Example call CheRRI **eval** mode
-For the test call please download the [Cherri_models_data](https://zenodo.org/record/6533932#.Ynu--FxBwUE).
+For the test call please download the [Cherri_models_data](https://zenodo.org/record/6533932#.Ynu--FxBwUE). The PARIS_human model is needed to execute the call. Check it the correct location for the model and its feature set is given (-m, -mp)
 ```
 cherri eval -i1 /vol/scratch/Cherri/test_data/evaluate/test_evalueat_rris.cvs -g human -l human -o ./ -n test_eval -c 150 -st on -m ./Cherri_models_data/Model_with_graph_features/PARIS_human/model/full_PARIS_human_context_150.model -mp ./Cherri_models_data/Model_with_graph_features/PARIS_human/feature_files/training_data_PARIS_human_context_150.npz
 ```
@@ -154,29 +169,29 @@ cherri eval -i1 /vol/scratch/Cherri/test_data/evaluate/test_evalueat_rris.cvs -g
 | ID | name | description |
 |---|---|-----|
 | `-i1` |`--RRIs_table` | Table containing all RRIs that should be evaluated in the correct format|
-| `-g` | `--genome_file`| Path to 2bit genome file, or used the build in download if you want the human or moues genomes |
-| `-o` | `--out_path`| Path to folder all output folder of each step of the data preparation |
-| `-l` | `--chrom_len_file` | Tabular file containing data in two columns one row for each chromosome: 'chrom name' \t 'chrom length'. You can specify 'human' or 'mouse' directly. |
+| `-g` | `--genome_file`| Path to 2bit genome file, or used the build in download if you want the human or mouse genome |
+| `-o` | `--out_path`| Path to output directory where the output folder will be stored. It will contain separate output folders for each step of the data and feature preparation as well as the evaluated instances |
+| `-l` | `--chrom_len_file` | Tabular file containing data in two columns format for each chromosome: 'chrom name' \t 'chrom length'. You can directly specify 'human' or 'mouse' |
 | `-m` | `--model_file` | Set path to the model which should be used for evaluation |
-| `-mp` | `--model_params` | Set path to feature file of the given model |
+| `-mp` | `--model_params` | Set path to the feature file of the given model |
 ##### optional:
 | ID | name | description |
 |---|---|-----|
-| `-i2` | `--occupyed_regions` | Path to occupied regions object file |
-| `-c` | `--context` | How much context should be added at left an right of the sequence |
-| `-n` | `--experiment_name` | Name of the data source of RRIs |
-| `-p` | `--param_file` | IntaRNA parameter file. default: file in rrieval/IntaRNA_param |
+| `-i2` | `--occupyed_regions` | Path to occupied regions python object file containing a dictionary |
+| `-c` | `--context` | How much context should be added at up and down stream of the sequence |
+| `-n` | `--experiment_name` | Name of the data source of the RRIs e.g. experiment and organism |
+| `-p` | `--param_file` | IntaRNA parameter file. Default: file in rrieval/IntaRNA_param |
 | `-st` | `--use_structure` | Set 'off' if you want to disable structure, default 'on' |
-| `-on` | `--out_name` | Name for output dir instead of the current data |
-| `-hf` | `--hand_feat` | If you want to start from hand curated feature files meaning starting already with pos and neg input file |
-| `-j` | `--n_jobs` | Number of jobs used for graph feature computation |
+| `-on` | `--out_name` | Name for the output directory instead of the current data |
+| `-hf` | `--hand_feat` | If you want to start from hand curated feature files meaning starting already with positive and negative input files set 'on'. Default: 'off' |
+| `-j` | `--n_jobs` | Number of jobs used for graph feature computation. Default: 1|
 
 
 #### Output 
 At the end of the run the location of the result table is given.
-The final result table will have all columns of the input table and the additional a prediction column, where you find the predicted class of each RRI (0 or 1).
+The final result table will have all columns of the input table and an additional prediction column, where you find the predicted class of each RRI (0 or 1).
 
-Thought the program seveal output files are generated in the following structure:
+Throughout the program several output files are generated and stored in the following structure:
 
     ├── date_Cherri_evaluation_mode
     |   ├── evaluate_RRIs.table
@@ -193,13 +208,15 @@ Thought the program seveal output files are generated in the following structure
 
 
 ### Mode train: built new CheRRI model
-Within CheRRI's train mode you to train your own model. 
-Using ChiRA RRI output data 'ChiRA interaction summary' table for "build model" mode will generate a prediction classifier.
-If you want to prepare the 'ChiRA interaction summary' table please follow the [tutorial](https://training.galaxyproject.org/training-material//topics/transcriptomics/tutorials/rna-interactome/tutorial.html).
+Within CheRRI's **train** mode you can train your own model. 
+This input data are the RRI interactions found by Direct Duplex Detection (DDD) methods. To extract this RRI interaction form DDD methods a tool named ChiRA is used to generate the 'ChiRA interaction summary' table. CheRRI expects as input the 'ChiRA interaction summary' file.
 
+If you want to prepare a 'ChiRA interaction summary' table file please follow the [tutorial](https://training.galaxyproject.org/training-material//topics/transcriptomics/tutorials/rna-interactome/tutorial.html).
 
-#### Retive RNA-RNA interactome files
-Please select the ChiRA RRI output files as input for CheRRI train mode as replicates. You should specify the path to the folders containing all replicates. If you want to filter for interactions, where ChiRA already found a hybrid within its analysis you should enable the hybridization with the ChiRA workflow and set within CheRRI's input parameters the filter_hybrid parameter to 'on'. Some of the possible interaction maid be missed this way, but it will also filter out potential false positive interactions. 
+Starting from the RRI site information CheRRI will build a model based on features generated from the DDD method interactions site data. 
+
+#### Retrieve RNA-RNA interactome files
+Please select the ChiRA RRI output files as input for CheRRI **train** mode. Retive one file per replicate. You should specify the path to the folders containing all replicates. If you want to filter for interactions, where ChiRA already found a hybrid within its analysis you should enable the hybridization with the ChiRA workflow and set within CheRRI's  parameters filter_hybrid to 'on'. Some of the possible interaction maid be missed this way, but it will also filter out potential false positive interactions. 
 
 #### Example call CheRRI train model mode
 ```
@@ -210,34 +227,34 @@ cherri train -i1 ./Cherri/test_data/training/Paris/ -r miRNA_human_1.tabular miR
 
 #### Input Parameter
 ##### required
-| ID | name | desctiption |
+| ID | name | description |
 |---|---|-----|
 | `-i1` | `--RRI_path`| Path to folder storing the ChiRA interaction summary files|
-| `-o` | `--out_path`| Path to folder all output folder of each step of the data preparation |
-| `-r` | `--list_of_replicates`| List ChiRA interaction summary files names of all replicates |
-| `-l` | `--chrom_len_file`| Tabular file containing data in two columns one row for each chromosome: 'chrom name' \t 'chrom lenght' |
-| `-g` | `--genome`| Path to 2bit genome file
+| `-o` | `--out_path`| Path to output directory where the output folder will be stored. It will contain separate output folders for each step of the data, feature and model preparation |
+| `-r` | `--list_of_replicates`| List the ChiRA interaction summary file for each replicate |
+| `-l` | `--chrom_len_file`| Tabular file containing data in two columns format for each chromosome: 'chrom name' \t 'chrom length'. You can directly specify 'human' or 'mouse' |
+| `-g` | `--genome`| Path to 2bit genome file, or used the build in download if you want the human or mouse genome |
 ##### optional
-| ID | name | desctiption |
+| ID | name | description |
 |---|---|-----|
-| `-c` | `--context`| How much context should be added at left an right of the sequence |
-| `-n` | `--experiment_name`| E.g. name of the data source of RRIs. Will be used for the file names|
-| `-p` | `--param_file`| IntaRNA parameter file |
+| `-c` | `--context`| How much context should be added at up and down stream of the sequence |
+| `-n` | `--experiment_name`| Name of the data source of RRIs. Will be used for the file names|
+| `-p` | `--param_file`| IntaRNA parameter file. Default: file in rrieval/IntaRNA_param |
 | `-st` | `--use_structure`| Set 'off' if you want to disable graph-kernel features default: 'on' (when set to 'on' the feature optimization will be performed directly and the data will be stored in feature_files and no model/feature folder will be set up)|
-| `-i2` | `--RBP_path`| Path to the genomics RBP cross link positions location (in bed format) |
+| `-i2` | `--RBP_path`| Path to the genomic RBP cross link positions location (in BED format) |
 | `-t` | `--run_time`| Time used for the optimization in seconds default: 12h|
 | `-me` | `--memoryPerThread`| Memory in MB which each thread can use (total ram/threads)|
-| `-j` | `--n_jobs`| Number of jobs for the optimization|
+| `-j` | `--n_jobs`| Number of jobs used for graph feature computation and model selection. Default: 1|
 | `-mi` | `--mixed`| Use mixed model to combine different dataset into a combined model. Default. 'off' (advanced option)| 
-| `-fh` |`--filter_hybrid`| Filter the data for hybrids already detected by ChiRA (set to 'on' to filter default:'off') |
+| `-fh` |`--filter_hybrid`| Filter the data for hybrids already detected by ChiRA (set 'on' to filter default:'off') |
 
-For the mixed mode parameter you need to add all pre-computed models, who's data you would like to combine in one single folder. Rename the first level folder to the experiment name and specify the path to this folder as i1 parameter and the experiment names as replicates (-r). The CheRRI pipeline will than first concatenate all positive and negative data set file of the given experiments and stars the CheRRI call form the feature generation step. 
+For the mixed mode parameter you need to add all pre-computed models, who's data you would like to combine in one single folder (set -mi 'on'). Rename the first level folder to the experiment name and specify the path to this folder as '-i1' parameter and the experiment names as replicates (-r). The CheRRI pipeline will than first concatenate all positive and negative data set file of the given experiments and stars the CheRRI call form the feature generation step. 
 
 
 #### Output 
 At the end of the run the location of the trained model is given.
 
-Thought the program several output files are generated in the following structure:
+Throughout the program several output files are generated in the following structure:
 
     ├── date_Cherri_model_build
     |   ├── date_occ_out
@@ -265,13 +282,13 @@ CheRRI is build as a modular tool calling individual scrips doing the tasks of t
 
 
 ### RRI detection: find_trusted_RRI.py
-Here we search for trusted RRIs, so RRIs which can be found in all replicates. In a first filter step only uniquely mapped RRIs are taken. Than RRI sequence partners in all replicas are found, using a overlap threshold. Output are the ChiRA input tables, now containing only the trusted RRIs. Only one of the sequence RRI pairs is added to the output. 
+Here we search for trusted RRIs, so RRIs which can be found in all replicates. In a first filter step only uniquely mapped RRIs are taken. Than RRI sequence partners in all replicates are found, using a overlap threshold. Output are the ChiRA input tables, now containing only the trusted RRIs. Out of all RRI pairs of the replicates only the one with the highest overlap to all others is added to the trusted_RRI data set. 
 
 #### Input Parameter
 | ID | name | description |
 |---|---|-----|
-| `-i` | `--input_path` |  Path to folder storing input data (replicates) |
-|`-r`| `--list_of_replicats` | Filenames list of all replicates |
+| `-i` | `--input_path` | Path to folder storing input data (meaning storing all replicates) |
+|`-r`| `--list_of_replicats` | List of filenames for all replicates |
 | `-o` | `--overlap_th` | Overlap threshold to find trusted RRIs |
 | `-d` | `--output_path` | Path where output folder should be stored |
 |`-n` | `--experiment_name` | Name of the data soruce of positive trusted RRIs |
