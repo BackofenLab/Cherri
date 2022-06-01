@@ -108,16 +108,16 @@ def extention_df(df):
     return df
 
 
-def find_occu_overlaps(dict_key,s,e, occupyed_InteLab):
+def find_occu_overlaps(dict_key,s,e, occupied_InteLab):
     """
     finding all interaction sites for a given sequence by genomic indexes
 
         Parameters
         ----------
-        dict_key: key chrom:strand of the given sequence neede for the occupyed_InteLab
+        dict_key: key chrom:strand of the given sequence neede for the occupied_InteLab
         s: start postion of given sequence
         e: end postion of given sequence
-        occupyed_InteLab: Interlap object having all interacting site postions
+        occupied_InteLab: Interlap object having all interacting site postions
 
         Raises
         ------
@@ -130,13 +130,13 @@ def find_occu_overlaps(dict_key,s,e, occupyed_InteLab):
 
         """
 
-    temp_list = list(occupyed_InteLab[dict_key].find((s,e)))
+    temp_list = list(occupied_InteLab[dict_key].find((s,e)))
     #print('###Overlaping list ########')
     #print(dict_key)
     #print(s,e)
-    #print(list(occupyed_InteLab[dict_key]))
+    #print(list(occupied_InteLab[dict_key]))
     if len(temp_list) < 1:
-        print('Warning: occupyed list is not compleate, please repuduce the occupied object again.')
+        print('Warning: occupied list is not compleate, please repuduce the occupied object again.')
         sys.exit()
     if temp_list:
         #print('found overlap:')
@@ -337,7 +337,7 @@ def add_block_end_pos(seq_s, seq_e, block_ends,strand, new_occ_list):
         seq_e: target/query sequence end pos
         block_ends: nt that should be blocked at the end and start of seq
         strand: +/-
-        new_occ_list: list with occupyed sequences
+        new_occ_list: list with occupied sequences
 
         Returns
         -------
@@ -366,7 +366,7 @@ def get_pos_occ_list(seq_s, seq_e, seed_s, seed_e, strand, converted_occ_list):
         seed_s: target/query seed sequence start pos
         seed_e: target/query seed sequence end pos
         strand: +/-
-        converted_occ_list: list with occupyed sequences
+        converted_occ_list: list with occupied sequences
 
         Returns
         -------
@@ -545,26 +545,26 @@ def get_context_added(input_rris, output_path, genome_file, context, context_not
     return df_contex
 
 
-def load_occupyed_data(input_occupyed):
+def load_occupied_data(input_occupied):
     """
-    load occupyed data
+    load occupied data
 
         Parameters
         ----------
-        input_occupyed: input file path
+        input_occupied: input file path
 
         Returns
         -------
-        occupyed_InteLab: Interlab object of occupyed regions
+        occupied_InteLab: Interlab object of occupied regions
         """
-    overlap_handle = open(input_occupyed,'rb')
-    occupyed_InteLab = pickle.load(overlap_handle)
+    overlap_handle = open(input_occupied,'rb')
+    occupied_InteLab = pickle.load(overlap_handle)
     # print(overlap_avg_val)
     overlap_handle.close()
-    return occupyed_InteLab
+    return occupied_InteLab
 
 
-def get_occ_regions(target_key, query_key, target_pos_s,target_pos_e, occupyed_InteLab, query_pos_s,query_pos_e,strand_t, strand_q, block_ends, target_seed_s, target_seed_e, query_seed_s, query_seed_e):
+def get_occ_regions(target_key, query_key, target_pos_s,target_pos_e, occupied_InteLab, query_pos_s,query_pos_e,strand_t, strand_q, block_ends, target_seed_s, target_seed_e, query_seed_s, query_seed_e):
     """
     get_occ_regions
 
@@ -574,7 +574,7 @@ def get_occ_regions(target_key, query_key, target_pos_s,target_pos_e, occupyed_I
         query_key: chrom;strand as key for interlap object of query sequences
         target_pos_s:
         target_pos_e:
-        occupyed_InteLab:
+        occupied_InteLab:
         query_pos_s:
         query_pos_e:
         strand_t:
@@ -595,12 +595,12 @@ def get_occ_regions(target_key, query_key, target_pos_s,target_pos_e, occupyed_I
         """
     occupied_regions_target = find_occu_overlaps(target_key,
                                                  target_pos_s,target_pos_e,
-                                                 occupyed_InteLab)
+                                                 occupied_InteLab)
     occupied_regions_query = find_occu_overlaps(query_key,
                                                 query_pos_s,query_pos_e,
-                                                occupyed_InteLab)
+                                                occupied_InteLab)
 
-    # covert occupyed prositons:
+    # covert occupied prositons:
     new_occupied_reg_t, pos_occ_list_t = convert_occu_positons(target_pos_s,
                                                target_pos_e,
                                                occupied_regions_target,
@@ -624,7 +624,7 @@ def get_occ_regions(target_key, query_key, target_pos_s,target_pos_e, occupyed_I
     neg_param_t = get_neg_pos_intarna_str(new_occupied_reg_t, '--tAccConstr=\"b:', target_pos_s, target_pos_e)
     neg_param_q = get_neg_pos_intarna_str(new_occupied_reg_q, '--qAccConstr=\"b:', query_pos_s, query_pos_e)
     if neg_param_t == '' or neg_param_q == '':
-        print('Warining: full sequence is occupyed!')
+        print('Warining: full sequence is occupied!')
         full_seq_occ += 1
         return '', '', '', ''
     return pos_param_t, pos_param_q, neg_param_t, neg_param_q
@@ -646,7 +646,7 @@ def report(context_not_full,full_seq_occ,no_neg,lost_inst_pos,lost_inst_neg,no_l
 
         """
     print('####\nContext could not be extended for %i sequences'%context_not_full)
-    print('####\nFor %i sequences target and or query is full occupyed'%full_seq_occ)
+    print('####\nFor %i sequences target and or query is full occupied'%full_seq_occ)
 
     print('####\nIntaRNA calls failed:')
     print('%i number of positive IntaRNA calls did not lead to a result'%lost_inst_pos)
@@ -758,7 +758,7 @@ def main():
     parser.add_argument("-i1", "--input_rris", action="store", dest="input_rris",
                         required=True,
                         help= "path to file storing all trusted RRIs")
-    parser.add_argument("-i2", "--input_occupyed", action="store", dest="input_occupyed",
+    parser.add_argument("-i2", "--input_occupied", action="store", dest="input_occupied",
                         required=True,
                         help= "path to occupying regions file")
     parser.add_argument("-d", "--output_path", action="store", dest="output_path",
@@ -795,7 +795,7 @@ def main():
 
     args = parser.parse_args()
     input_rris = args.input_rris
-    input_occupyed = args.input_occupyed
+    input_occupied = args.input_occupied
     output_path = args.output_path
     experiment_name = args.experiment_name
     genome_file = args.genome_file
@@ -829,11 +829,11 @@ def main():
 
 
 ###########Not needed any more!!!!!!!###################################
-    # load occupyed data
-    if input_occupyed == 'none':
+    # load occupied data
+    if input_occupied == 'none':
         # set only give out positive instances!!
         no_neg = True
-        #occupyed_InteLab = defaultdict(InterLap)
+        #occupied_InteLab = defaultdict(InterLap)
         file = input_rris.split('/')[-1]
         i1 = input_rris.replace(file, "")
         occ_file = output_path +  '/occupied_regions.obj'
@@ -844,23 +844,23 @@ def main():
         rl.call_script(call_occ_regions)
         timestr = time.strftime("%Y%m%d")
         out_path =  output_path + '/' + timestr + '_occ_out/'
-        input_occupyed = out_path + '/occupied_regions.obj'
+        input_occupied = out_path + '/occupied_regions.obj'
 
 ############################################################################
 
-    occupyed_InteLab = rl.load_occupyed_data(input_occupyed)
+    occupied_InteLab = rl.load_occupied_data(input_occupied)
 
 
 
         #chrom_dict = rl.read_table_into_dic(chrom_len_file)
-        #occupyed_InteLab = defaultdict(InterLap)
+        #occupied_InteLab = defaultdict(InterLap)
 
         #for i in chrom_dict:
             #chrom = rl.check_convert_chr_id(i)
             #if chrom != False:
-                #occupyed_InteLab[str(chrom) + ';+'].add((0, 0, ['empty']))
-                #occupyed_InteLab[str(chrom) + ';-'].add((0, 0, ['empty']))
-        #print(occupyed_InteLab)
+                #occupied_InteLab[str(chrom) + ';+'].add((0, 0, ['empty']))
+                #occupied_InteLab[str(chrom) + ';-'].add((0, 0, ['empty']))
+        #print(occupied_InteLab)
 
 
     # Reporting how many instances did not lead to a result
@@ -921,13 +921,13 @@ def main():
         #print('target inter seq: ',row['ineraction_site_2end'])
 
 
-        ########### find places which are occupyed
+        ########### find places which are occupied
         #print('### RRI strands ########')
         #print('target site infos: ',strand_t)
         #print('query site infos: ',strand_q)
 
 
-        ########### find places which are occupyed
+        ########### find places which are occupied
         #print('### RRI genome positions ########')
         #print('target site infos: ',target_seed_s,target_seed_e)
         #print('query site infos: ',query_seed_s,query_seed_e)
@@ -937,9 +937,9 @@ def main():
         #occupied_regions_target = []
         #occupied_regions_query = []
 
-        ##### occupyed regions:
+        ##### occupied regions:
 
-        pos_param_t, pos_param_q, neg_param_t, neg_param_q = get_occ_regions(row['target_key'], row['query_key'], target_pos_s,target_pos_e, occupyed_InteLab, query_pos_s,query_pos_e,strand_t, strand_q, block_ends, target_seed_s, target_seed_e, query_seed_s, query_seed_e)
+        pos_param_t, pos_param_q, neg_param_t, neg_param_q = get_occ_regions(row['target_key'], row['query_key'], target_pos_s,target_pos_e, occupied_InteLab, query_pos_s,query_pos_e,strand_t, strand_q, block_ends, target_seed_s, target_seed_e, query_seed_s, query_seed_e)
         if not neg_param_t:
             # this instance will be ignored!
             continue
@@ -955,7 +955,7 @@ def main():
                        str(no_sub_opt))
 
         ####POSITIVE DATA##########################
-        #### covert occupyed prositons:
+        #### covert occupied prositons:
         t_seed_pos_new = convert_positions(target_pos_s, target_pos_e,
                                            target_seed_s, target_seed_e,
                                            strand_t)
@@ -972,7 +972,7 @@ def main():
             pos_param_occ = ' ' + pos_param_t + ' ' + pos_param_q + ' '
             call_pos = call_general + pos_param + pos_param_occ + output_columns
         else:
-            print('not using occupyed regions for pos data!')
+            print('not using occupied regions for pos data!')
             call_pos = call_general + pos_param + output_columns
 
         df_pos_data_old = df_pos_data

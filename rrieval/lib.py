@@ -662,23 +662,23 @@ def bp_suffeling(hybrid_seq, IntaRNA_prediction,times):
 
 ################################################################################
 
-def load_occupyed_data(input_occupyed):
+def load_occupied_data(input_occupied):
     """
-    load occupyed data
+    load occupied data
 
         Parameters
         ----------
-        input_occupyed: input file path
+        input_occupied: input file path
 
         Returns
         -------
-        occupyed_InteLab: Interlab object of occupyed regions
+        occupied_InteLab: Interlab object of occupied regions
         """
-    overlap_handle = open(input_occupyed,'rb')
-    occupyed_InteLab = pickle.load(overlap_handle)
+    overlap_handle = open(input_occupied,'rb')
+    occupied_InteLab = pickle.load(overlap_handle)
     # print(overlap_avg_val)
     overlap_handle.close()
-    return occupyed_InteLab
+    return occupied_InteLab
 
 ################################################################################
 

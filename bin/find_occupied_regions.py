@@ -137,10 +137,10 @@ def main():
     parser.add_argument("-i2", "--rbp_path",
                         help= "path to RBP site data file (BED format)",
                         default="non")
-    parser.add_argument("-r", "--list_of_replicats", action="store",
+    parser.add_argument("-r", "--list_of_replicates", action="store",
                         nargs='+',
-                        dest="list_of_replicats", required=True,
-                        help= "filenames list of all replicats")
+                        dest="list_of_replicates", required=True,
+                        help= "filenames list of all replicates")
     parser.add_argument("-o", "--out_path",
                         help= "path where output folder should be stored")
     parser.add_argument("-t", "--overlap_th",
@@ -152,7 +152,7 @@ def main():
     parser.add_argument("-e", "--external_object",
                         help= "external rri  overlaping object (Interlap dict)",
                         default="non")
-    parser.add_argument("-fh", "--filter_hybrind",
+    parser.add_argument("-fh", "--filter_hybrid",
                         default="off",
                         help= "filter the data for hyprids alrady detected by ChiRA")
     parser.add_argument("-mo", "--mode",
@@ -164,12 +164,12 @@ def main():
     args = parser.parse_args()
     input_path_RRIs = args.RRI_path
     file_rbp_pos = args.rbp_path
-    replicats = args.list_of_replicats
+    replicates = args.list_of_replicates
     out_path = args.out_path
     overlap_th = args.overlap_th
     score_th = args.score_th
     external_object = args.external_object
-    filter_hybrind = args.filter_hybrind
+    filter_hybrid = args.filter_hybrid
     mode = args.mode
 
     timestr = time.strftime("%Y%m%d")
@@ -189,27 +189,27 @@ def main():
     exp_score_th = 10
     if file_rbp_pos == 'non':
         flag_prot = False
-        print('no RBP occupyed postions given')
+        print('no RBP occupied postions given')
     else:
         flag_prot = True
 
     #### Get RRI data by calling find trusted RRI with a very low overlap th of 5%
-    ### only take uniquly mapped reads but they do not need to be to stricke over the replicats:
+    ### only take uniquly mapped reads but they do not need to be to stricke over the replicates:
 
     ####### Get RRI data
-    rri_call_param = ('-i ' + input_path_RRIs + ' -r ' + ' '.join(replicats) +
+    rri_call_param = ('-i ' + input_path_RRIs + ' -r ' + ' '.join(replicates) +
                      ' -o ' + str(overlap_th) +' -n rri_occupied_regions -d ' +
                      out_path + ' -s ' +  str(score_th))
-    if filter_hybrind == 'on':
+    if filter_hybrid == 'on':
         rri_call_param = f'{rri_call_param} -fh on'
     rri_call  = 'find_trusted_RRI.py '  + rri_call_param
 
     rri_file = (out_path + 'rri_occupied_regions_overlap_' +
                 str(overlap_th) + '.csv')
 
-    if len(replicats) == 1:
-        print('Info: only one experiment is used to build occupyed regions')
-        in_file = input_path_RRIs + replicats[0]
+    if len(replicates) == 1:
+        print('Info: only one experiment is used to build occupied regions')
+        in_file = input_path_RRIs + replicates[0]
         print(in_file)
         # df_replicat = rl.read_chira_data(in_file)
         if mode == 'train':
@@ -255,7 +255,7 @@ def main():
         count_entrys(inter_rri, 'both')
 
     if external_object != 'non':
-        inter_external = rl.load_occupyed_data(external_object)
+        inter_external = rl.load_occupied_data(external_object)
         count_entrys(inter_external, 'external')
         for key in inter_rri:
             if key in inter_external:

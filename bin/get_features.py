@@ -22,11 +22,11 @@ import re
 
 def get_no_bps(hybrid):
     """
-    compute number of base pairs based on a dot bracked string
+    compute number of base pairs based on a dot bracket string
 
         Parameters
         ----------
-        hybrid: interaction in a dot bracked notation
+        hybrid: interaction in a dot bracket notation
 
 
         Returns
@@ -44,7 +44,7 @@ def get_no_bps(hybrid):
     no_bps = hybrid.count('(')
     no_bps_back = hybrid.count(')')
 
-    assert no_bps == no_bps_back, "not equal number of open and closing brackes: %s"%(hybrid)
+    assert no_bps == no_bps_back, "unequal number of open and closing brackets: %s"%(hybrid)
 
     return no_bps
 

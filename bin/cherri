@@ -45,7 +45,7 @@ def setup_argument_parser():
     # Tool description text.
     help_description = """
 
-    Classification of predicted RNA-RNA Interactions (RRI)
+    Classification of RNA-RNA Interaction (RRI) sites
 
     """
 
@@ -62,10 +62,10 @@ def setup_argument_parser():
     subparsers = p.add_subparsers(help='Program modes')
 
     """
-    Evlauate predicted RRIs: evaluations mode.
+    Evaluate predicted RRIs: evaluations mode.
     """
     p_ex = subparsers.add_parser('eval',
-                                  help='classify predicted RRI')
+                                  help='classify predicted RRIs')
     p_ex.set_defaults(which='eval')
     # Add required arguments group.
     p_exm = p_ex.add_argument_group("required arguments")
@@ -73,7 +73,7 @@ def setup_argument_parser():
     p_exm.add_argument("-i1", "--RRIs_table",
                        dest="RRIs_table",
                        required = True,
-                       help= "Table containg all rris that should be evalutated in the corrct fromat")
+                       help= "Table containing all rris that should be evalutated in the corrct fromat")
     p_exm.add_argument("-g", "--genome",
                        dest="genome",
                        action="store",
@@ -96,9 +96,9 @@ def setup_argument_parser():
 
 
     # Optional arguments for evaluate.
-    p_ex.add_argument("-i2", "--occupyed_regions",
+    p_ex.add_argument("-i2", "--occupied_regions",
                       default="non",
-                      help= "Path to occupyed regions file or specify: human, mouse or non")
+                      help= "Path to occupied regions file or specify: human, mouse or non")
     p_ex.add_argument("-c", "--context",
                       nargs='?',
                       type=int,
@@ -243,10 +243,10 @@ def read_RRI_table(file):
 
     return RRI_dict
 
-def call_occupyed_regions_eval(eval_rri_file, output_path,external_file='non'):
+def call_occupied_regions_eval(eval_rri_file, output_path,external_file='non'):
     # set only give out positive instances!!
     no_neg = True
-    #occupyed_InteLab = defaultdict(InterLap)
+    #occupied_InteLab = defaultdict(InterLap)
     file = eval_rri_file.split('/')[-1]
     i1 = eval_rri_file.replace(file, "")
     # brauche glaube nicht!!!!!
@@ -258,8 +258,8 @@ def call_occupyed_regions_eval(eval_rri_file, output_path,external_file='non'):
     rl.call_script(call_occ_regions)
     timestr = time.strftime("%Y%m%d")
     out_path =  f'{output_path}/{timestr}_occ_out/'
-    input_occupyed = f'{out_path}/occupied_regions.obj'
-    return input_occupyed
+    input_occupied = f'{out_path}/occupied_regions.obj'
+    return input_occupied
 
 
 
@@ -292,7 +292,7 @@ def main_eval(args):
 
     args = parser.parse_args()
     RRIs_table = args.RRIs_table
-    occupyed_regions = args.occupyed_regions
+    occupied_regions = args.occupied_regions
 
     genome = args.genome
     out_path = args.out_path
@@ -378,15 +378,15 @@ def main_eval(args):
 
 
         ### Call find_occupied_regions.py ######################################
-        if occupyed_regions == 'non':
+        if occupied_regions == 'non':
             print('Info: only the evaluated RRIs are set to occupied regions')
-            occupyed_regions = call_occupyed_regions_eval(eval_rri_file,
+            occupied_regions = call_occupied_regions_eval(eval_rri_file,
                                                           out_path)
         else:
             print('Info: adding your additional occupied regions objects')
-            occupyed_regions = call_occupyed_regions_eval(eval_rri_file,
+            occupied_regions = call_occupied_regions_eval(eval_rri_file,
                                                           output_path,
-                                                          occupyed_regions)
+                                                          occupied_regions)
         ##download genomes #####################################################
         genome_file, chrom_len_file = rl.download_genome(out_path, genome,
                                                          chrom_len_file)
@@ -398,7 +398,7 @@ def main_eval(args):
         if not os.path.exists(pos_neg_out_path):
             os.mkdir(pos_neg_out_path)
 
-        pos_neg_param = (f' -i1 {eval_rri_file} -i2  {occupyed_regions} '
+        pos_neg_param = (f' -i1 {eval_rri_file} -i2  {occupied_regions} '
                          f' -d {pos_neg_out_path} -g {genome_file} '
                          f'-n {experiment_name} -c {str(context)} --no_pos_occ '
                          f'-s 1 -l {chrom_len_file} -p {param_file} -m eval')
@@ -515,11 +515,11 @@ def main_train(args):
     input_path_RRIs = args.RRI_path
     #print(args.list_of_replicates)
     if type(args.list_of_replicates) == list and len(args.list_of_replicates) > 1:
-        replicats = ' '.join(args.list_of_replicates)
-        #replicats = args.list_of_replicates
+        replicates = ' '.join(args.list_of_replicates)
+        #replicates = args.list_of_replicates
         # print('hallo #############################')
     else:
-        replicats = args.list_of_replicates[0]
+        replicates = args.list_of_replicates[0]
         #print('yes #############################')
     genome = args.genome
     chrom_len_file = args.chrom_len_file
@@ -576,30 +576,30 @@ def main_train(args):
 
     ### Call find_occupied_regions.py ##########################################
     occupied_regions_param = (f' -i1 {input_path_RRIs}  -i2 {file_rbp_pos} '
-                              f'-r {replicats} -o {out_path} '
+                              f'-r {replicates} -o {out_path} '
                               f'-t {str(overlap_th)} -s 0.5 ')
     if filter_hybrid == 'on':
         occupied_regions_param = f'{occupied_regions_param} -fh on'
     call_occupied_regions = f'find_occupied_regions.py {occupied_regions_param}'
     if mixed == 'off':
-        print('1. find occupyed regions')
+        print('1. find occupied regions')
         print(call_occupied_regions)
         rl.call_script(call_occupied_regions,reprot_stdout=False,
                        asset_err=False)
 
         # output:
-        occupyed_outfile =  out_path + '/' + timestr + '_occ_out/'
+        occupied_outfile =  out_path + '/' + timestr + '_occ_out/'
 
 
         #### Call find_occupied_regions.py #####################################
         pos_neg_out_path = out_path + 'pos_neg_data/'
         if not os.path.exists(pos_neg_out_path):
             os.mkdir(pos_neg_out_path)
-        trusted_rri_file = (f'{occupyed_outfile}rri_occupied_regions_overlapTH_'
+        trusted_rri_file = (f'{occupied_outfile}rri_occupied_regions_overlapTH_'
                             f'{str(overlap_th)}_scoreTH_1.csv')
-        occupyed_regions_file =  f'{occupyed_outfile}occupied_regions.obj'
+        occupied_regions_file =  f'{occupied_outfile}occupied_regions.obj'
 
-        pos_neg_param = (f' -i1 {trusted_rri_file} -i2 {occupyed_regions_file} '
+        pos_neg_param = (f' -i1 {trusted_rri_file} -i2 {occupied_regions_file} '
                          f'-d {pos_neg_out_path} -g {genome_file} '
                          f'-n {experiment_name} -c {str(context)} --pos_occ '
                          f'-b 40 -l {chrom_len_file} -p {param_file} -m train')
@@ -648,7 +648,7 @@ def main_train(args):
         midel_name =  f'{experiment_name}_context_{str(context)}'
         X_list = []
         y_list = []
-        for data in replicats:
+        for data in replicates:
             feature_path = f'{input_path_RRIs}/{data}/feature_files/'
             feature_neg = (f'{feature_path}/feature_filtered_{data}_context_'
                            f'{str(context)}_pos_occ_neg.csv')

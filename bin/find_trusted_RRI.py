@@ -130,22 +130,22 @@ def build_interlap_for_replicat(df_interactions):
 
 
 
-def build_replicat_library_to_compare(input_path, list_of_replicats, score_th):
+def build_replicat_library_to_compare(input_path, list_of_replicates, score_th):
     """
     Building for each replicat a inter object
 
         Parameters
         ----------
         input_path : path to the input files
-        list_of_replicats: list of replicat file names
+        list_of_replicates: list of replicat file names
         score_th: threshold for the expactation maximization score of Chira
 
         Returns
         -------
         inter_replicat_list
             list for all replicat inter object
-        no_replicats
-            number of replicats (integer)
+        no_replicates
+            number of replicates (integer)
         rep_size_list
             list number of instace within each replicat
 
@@ -153,7 +153,7 @@ def build_replicat_library_to_compare(input_path, list_of_replicats, score_th):
         """
     inter_replicat_list = []
     rep_size_list = []
-    for file in list_of_replicats:
+    for file in list_of_replicates:
         in_file = input_path + '/' + file
         df_replicat = rl.read_chira_data(in_file)
         df_filtered_replicat = rl.filter_score(df_replicat, score_th)
@@ -164,21 +164,21 @@ def build_replicat_library_to_compare(input_path, list_of_replicats, score_th):
     #print(len(inter_replicat_list))
     # sort the replicat list by size...
 
-    no_replicats = len(inter_replicat_list)
+    no_replicates = len(inter_replicat_list)
     inter_replicat_sorted_list = sort_list_replicat(inter_replicat_list,
                                                     rep_size_list)
 
-    return inter_replicat_sorted_list, no_replicats, rep_size_list
+    return inter_replicat_sorted_list, no_replicates, rep_size_list
 
 
 def sort_list_replicat(inter_replicat_list, rep_size_list):
     """
     looks for the rep with the least RRI and adds it to the first pair_position
-    of the replicats list
+    of the replicates list
 
         Parameters
         ----------
-        inter_replicat_list : list contining all replicats
+        inter_replicat_list : list contining all replicates
         rep_size_list: list number of instace within each replicat
 
 
@@ -197,7 +197,7 @@ def sort_list_replicat(inter_replicat_list, rep_size_list):
 
 def rep_seq_pos(inter_rep):
     """
-    extracts the start and stop positions of a interaction for one replicats
+    extracts the start and stop positions of a interaction for one replicates
     for a inter opject:
     (s1, e1, 'Chrom1:Chrom2;strand1:strand2', [s2, e2],
     ['swap' or not, structure, enegy])
@@ -272,7 +272,7 @@ def check_last_position(pos_replicat, inter_list, trusted_rri_temp,
     return trusted_rri_temp, pair_position, max_overlap
 
 
-def compare_overlap(overlap_pairs_list, overlap_th, no_replicats):
+def compare_overlap(overlap_pairs_list, overlap_th, no_replicates):
     """
     compare_overlap
 
@@ -280,7 +280,7 @@ def compare_overlap(overlap_pairs_list, overlap_th, no_replicats):
         ----------
         overlap_pairs_list: list of overlapping RRIs
         overlap_th: overlap threshold
-        no_replicats: number of replicats
+        no_replicates: number of replicates
 
 
         Returns
@@ -349,7 +349,7 @@ def compare_overlap(overlap_pairs_list, overlap_th, no_replicats):
                                                                                    trusted_rri_temp,
                                                                                    pair_position,
                                                                                    max_overlap)
-    if len(trusted_rri_temp) == no_replicats:
+    if len(trusted_rri_temp) == no_replicates:
         trusted_rri = trusted_rri_temp
     else:
         trusted_rri = ['nan']
@@ -359,36 +359,36 @@ def compare_overlap(overlap_pairs_list, overlap_th, no_replicats):
 
 
 
-def find_relayble_replicats(inter_replicat_list, overlap_th, no_replicats):
+def find_relayble_replicates(inter_replicat_list, overlap_th, no_replicates):
     """
-    find_relayble_replicats
+    find_relayble_replicates
 
         Parameters
         ----------
         inter_replicat_list: list of replicat file names
         overlap_th : overlap threshold
-        no_replicats: number of replicats
+        no_replicates: number of replicates
 
 
         Returns
         -------
         no_relayble_rri
-            number of relayble RRIs found in all replicats
+            number of relayble RRIs found in all replicates
         trusted_rri_list
-            list of relayble RRIs found in all replicats
-        no_replicats
-            number of replicats
+            list of relayble RRIs found in all replicates
+        no_replicates
+            number of replicates
 
         """
     # get the first replicat
-    # no_replicats = len(inter_replicat_list)
+    # no_replicates = len(inter_replicat_list)
     inter_rep1 = inter_replicat_list.pop(0)
     overlap_pairs_list = []
     trusted_rri_list = []
     no_relayble_rri = 0
-    #print(no_replicats)
+    #print(no_replicates)
 
-    # find the pairs in all replicats
+    # find the pairs in all replicates
     for key in inter_rep1:
         #print(inter_rep1[key])
         for rep1 in inter_rep1[key]:
@@ -405,15 +405,15 @@ def find_relayble_replicats(inter_replicat_list, overlap_th, no_replicats):
                     #print(inter_rep_next[key])
                     overlap_pairs_list.append(list(inter_rep_next[key].find(rep1)))
                     #print(idx)
-                    if (idx == (no_replicats -2)):
+                    if (idx == (no_replicates -2)):
                         overlap_pairs_list
                         # check if all overlaps in overlap_pairs_list are in overlap_th
-                        trusted_rri = compare_overlap(overlap_pairs_list, overlap_th, no_replicats)
+                        trusted_rri = compare_overlap(overlap_pairs_list, overlap_th, no_replicates)
                         #print('final rri list:')
                         #print(trusted_rri)
                         if len(trusted_rri) <= 1:
                             continue
-                        elif len(trusted_rri) == no_replicats:
+                        elif len(trusted_rri) == no_replicates:
                             no_relayble_rri += 1
                             trusted_rri_list.append(trusted_rri)
                             #print('trusted RRI:')
@@ -426,10 +426,10 @@ def find_relayble_replicats(inter_replicat_list, overlap_th, no_replicats):
                 else:
                     # we do not need to evaluate this RRI instance further, because it does not overlap
                     break
-    return no_relayble_rri, trusted_rri_list, no_replicats
+    return no_relayble_rri, trusted_rri_list, no_replicates
 
 
-def get_numbers_nan(no_replicats, trusted_rri_list):
+def get_numbers_nan(no_replicates, trusted_rri_list):
     """
     finding the interacitons, where the enegry value for some or all
     interaction could not be computed. Mening no IntaRNA prediciton is
@@ -438,7 +438,7 @@ def get_numbers_nan(no_replicats, trusted_rri_list):
         Parameters
         ----------
         overlap_th : overlap threshold
-        list_of_replicats: list of replicat file names
+        list_of_replicates: list of replicat file names
 
 
         Returns
@@ -447,9 +447,9 @@ def get_numbers_nan(no_replicats, trusted_rri_list):
             list of all interactions without a IntaRNA perdiction
         instances_also_nan_list
             list of all interactions missing the IntaRNA perdiction for some
-            replicats
+            replicates
         instances_no_nan_list
-            list of all interactions where all replicats have a
+            list of all interactions where all replicates have a
             IntaRNA perdiction
 
         """
@@ -467,7 +467,7 @@ def get_numbers_nan(no_replicats, trusted_rri_list):
             sturcture_list.append(structure)
         if count_nan == 0:
             instances_no_nan_list.append(rep_list)
-        elif count_nan == no_replicats:
+        elif count_nan == no_replicates:
             instances_just_nan_list.append(rep_list)
         else:
             instances_also_nan_list.append(rep_list)
@@ -475,13 +475,13 @@ def get_numbers_nan(no_replicats, trusted_rri_list):
     return instances_just_nan_list, instances_also_nan_list, instances_no_nan_list
 
 
-def get_rep_highest_overlap(no_replicats, trusted_rri_list):
+def get_rep_highest_overlap(no_replicates, trusted_rri_list):
     """
     finding the interaciton, where overlap is biggest
 
         Parameters
         ----------
-        no_replicats : number of replicates
+        no_replicates : number of replicates
         trusted_rri_list: list of replicat
 
 
@@ -499,8 +499,8 @@ def get_rep_highest_overlap(no_replicats, trusted_rri_list):
     instances_list = []
 
     for rep_list in trusted_rri_list:
-        seq1_pos = [0]*no_replicats
-        seq2_pos = [0]*no_replicats
+        seq1_pos = [0]*no_replicates
+        seq2_pos = [0]*no_replicates
         idx1 = 0
         #print(rep_list)
 
@@ -512,10 +512,10 @@ def get_rep_highest_overlap(no_replicats, trusted_rri_list):
             seq2_pos[idx1] = [6,15]
             idx1 +=1
 
-        not_overlapLen_list_seq1 = find_overlap_of_all(seq1_pos, no_replicats)
-        not_overlapLen_list_seq2 = find_overlap_of_all(seq2_pos, no_replicats)
+        not_overlapLen_list_seq1 = find_overlap_of_all(seq1_pos, no_replicates)
+        not_overlapLen_list_seq2 = find_overlap_of_all(seq2_pos, no_replicates)
         idx2 = 0
-        overlap_list = [0]*no_replicats
+        overlap_list = [0]*no_replicates
         for i in not_overlapLen_list_seq1:
             curr_min = i + not_overlapLen_list_seq2[idx2]
             overlap_list[idx2] = curr_min
@@ -529,10 +529,10 @@ def get_rep_highest_overlap(no_replicats, trusted_rri_list):
     return instances_list
 
 
-def find_overlap_of_all(pos_list, no_replicats):
+def find_overlap_of_all(pos_list, no_replicates):
     """
     finding the interaciton, where overlap is biggest
-    no_replicats : number of replicates
+    no_replicates : number of replicates
 
         Parameters
         ----------
@@ -547,7 +547,7 @@ def find_overlap_of_all(pos_list, no_replicats):
     >>> find_overlap_of_all(in_list, 2)
     [1, 5]
         """
-    not_overlapLen_list = [0]*no_replicats
+    not_overlapLen_list = [0]*no_replicates
     start_overlap = max([i[0] for i in pos_list])
     end_overlap = min([i[1] for i in pos_list])
 
@@ -782,11 +782,11 @@ def main():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument("-i", "--input_path", action="store", dest="input_path",
                         required=True,
-                        help= "path to folder storing input data (replicats)")
-    parser.add_argument("-r", "--list_of_replicats", action="store",
+                        help= "path to folder storing input data (replicates)")
+    parser.add_argument("-r", "--list_of_replicates", action="store",
                         nargs='+',
-                        dest="list_of_replicats", required=True,
-                        help= "filenames list of all replicats")
+                        dest="list_of_replicates", required=True,
+                        help= "filenames list of all replicates")
     parser.add_argument("-o", "--overlap_th", action="store",  type=float,
                         dest="overlap_th", required=True,
                         help= "overlap threshold to find trusted RRIs")
@@ -806,8 +806,8 @@ def main():
 
     args = parser.parse_args()
     input_path = args.input_path
-    list_of_replicats = args.list_of_replicats
-    #print(list_of_replicats)
+    list_of_replicates = args.list_of_replicates
+    #print(list_of_replicates)
     overlap_th = args.overlap_th
     output_path = args.output_path
     experiment_name = args.experiment_name
@@ -822,24 +822,24 @@ def main():
     #plot_path_full = plot_path + '_' + str(overlap_th) + '_'
 
 
-    inter_replicat_list, no_replicats, rep_size_list = build_replicat_library_to_compare(input_path, list_of_replicats, score_th)
+    inter_replicat_list, no_replicates, rep_size_list = build_replicat_library_to_compare(input_path, list_of_replicates, score_th)
 
 
 
 
 
     len_smalles_replicat = rep_size_list[0]
-    no_relayble_rri, trusted_rri_list, no_replicats = find_relayble_replicats(inter_replicat_list, overlap_th, no_replicats)
+    no_relayble_rri, trusted_rri_list, no_replicates = find_relayble_replicates(inter_replicat_list, overlap_th, no_replicates)
     #print(trusted_rri_list[0][0][5])
     #print(trusted_rri_list[0][1][5])
 
     # use_enegy = False
 
     percentage_trustable_rri_all = (no_relayble_rri/len_smalles_replicat)*100
-    print('######\n for %i replicates the following number of reliable interactions are found: %i (%.2f %%)'%(no_replicats, no_relayble_rri, percentage_trustable_rri_all))
+    print('######\n for %i replicates the following number of reliable interactions are found: %i (%.2f %%)'%(no_replicates, no_relayble_rri, percentage_trustable_rri_all))
 
     if filter_hybrind == 'on':
-        instances_just_nan_list, instances_also_nan_list, instances_no_nan_list = get_numbers_nan(no_replicats, trusted_rri_list)
+        instances_just_nan_list, instances_also_nan_list, instances_no_nan_list = get_numbers_nan(no_replicates, trusted_rri_list)
 
         #avg_overlap_list, avg_overlap_len_list = get_list_overlaps(instances_no_nan_list)
 
@@ -857,7 +857,7 @@ def main():
         print('Number of RRI all having hybrids: %i'%len(instances_no_nan_list))
         print('######')
     else:
-        instances_list = get_rep_highest_overlap(no_replicats, trusted_rri_list)
+        instances_list = get_rep_highest_overlap(no_replicates, trusted_rri_list)
         final_output_list = []
 
         for rep in instances_list:
@@ -914,7 +914,7 @@ def main():
     #myFig.savefig(plot_path + "boxplot_rri_len_seq.pdf", bbox_inches='tight')
 
     # input_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/RNA_RNA_binding_evaluation/data/training/Paris/'
-    # list_of_replicats = ['test_rep1.tabular', 'test_rep2.tabular', 'test_rep3.tabular']
+    # list_of_replicates = ['test_rep1.tabular', 'test_rep2.tabular', 'test_rep3.tabular']
 
 if __name__ == '__main__':
     main()
