@@ -13,7 +13,7 @@ import pickle
 
 def build_interlap_occ_sites(df_interactions, flag):
     """
-    Building the inerlap objects for a fast overlap comparision for one replicat
+    Building the inerLap objects for a fast overlap comparison for one replicate
 
         Parameters
         ----------
@@ -24,12 +24,12 @@ def build_interlap_occ_sites(df_interactions, flag):
         Returns
         -------
         inter_rep
-            inerlap objects for a fast overlap comparision
+            inerLap objects for a fast overlap comparison
 
         """
 
     flag_name = 'crl'
-    # use defaultdict to key by chromosome.
+    # use default dict to key by chromosome.
     inter_rep = defaultdict(InterLap)
 
     if flag_name == 'hybrid':
@@ -73,9 +73,9 @@ def build_interlap_occ_sites(df_interactions, flag):
 
 
 
-def count_entrys(inter_obj, name):
+def count_entries(inter_obj, name):
     """
-    count enteys of inter lap object and prints the the counts
+    count entries of inter lap object and prints the the counts
 
         Parameters
         ----------
@@ -89,7 +89,7 @@ def count_entrys(inter_obj, name):
         # print(key)
         # print(list(inter_rri[key]))
     print('##########')
-    print('entrys in list ',name, ' are: ' , count)
+    print('entries in list ',name, ' are: ' , count)
 
 
 def get_prot_occ_regions(file_rbp_pos, exp_score_th, context):
@@ -98,14 +98,14 @@ def get_prot_occ_regions(file_rbp_pos, exp_score_th, context):
 
         Parameters
         ----------
-        file_rbp_pos: bed file storing singel interaction positions
+        file_rbp_pos: bed file storing single interaction positions
         exp_score_th: threshold to filter sequences with bed file
-        context: number of nucleotide postions added to the interaction position
+        context: number of nucleotide positions added to the interaction position
 
         Returns
         -------
         inter_rbp
-            interLab object storing all cromosomal RBP sites {chrom:strand}->[s,e,rbp]
+            interLab object storing all chromosomal RBP sites {chrom:strand}->[s,e,rbp]
 
 
     """
@@ -113,12 +113,12 @@ def get_prot_occ_regions(file_rbp_pos, exp_score_th, context):
     df_bed_temp = pd.read_table(file_rbp_pos, header=None, sep="\t")
     df_bed = pd.DataFrame(df_bed_temp.values, columns=header)
 
-    # filter by sorcre
+    # filter by score
     #print(df_bed)
     df_bed = df_bed[df_bed.score >= exp_score_th]
     #print(df_bed)
 
-    # check that chorm starts with chr
+    # check that Chromosome starts with chr
     df_bed['chrom'] = df_bed['chrom'].apply(lambda x: rl.check_convert_chr_id(x))
     # add context
     df_context =  rl.add_context(df_bed, context, 'start', 'end')
@@ -132,7 +132,7 @@ def get_prot_occ_regions(file_rbp_pos, exp_score_th, context):
 def main():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument("-i1", "--RRI_path",
-                        help= "path to folder storing all RRI data (tabel)",
+                        help= "path to folder storing all RRI data (table)",
                         default="/vol/scratch/data/RRIs/Paris/")
     parser.add_argument("-i2", "--rbp_path",
                         help= "path to RBP site data file (BED format)",
@@ -150,11 +150,11 @@ def main():
                         help= "score threshold",
                         default="0.5")
     parser.add_argument("-e", "--external_object",
-                        help= "external rri  overlaping object (Interlap dict)",
+                        help= "external rri  overlapping object (Interlap dict)",
                         default="non")
     parser.add_argument("-fh", "--filter_hybrid",
                         default="off",
-                        help= "filter the data for hyprids alrady detected by ChiRA")
+                        help= "filter the data for hybrids already detected by ChiRA")
     parser.add_argument("-mo", "--mode",
                         default="train",
                         help= "function call within which cherri mode [train/eval]")
@@ -189,12 +189,12 @@ def main():
     exp_score_th = 10
     if file_rbp_pos == 'non':
         flag_prot = False
-        print('no RBP occupied postions given')
+        print('no RBP occupied positions given')
     else:
         flag_prot = True
 
     #### Get RRI data by calling find trusted RRI with a very low overlap th of 5%
-    ### only take uniquly mapped reads but they do not need to be to stricke over the replicates:
+    ### only take uniquely mapped reads
 
     ####### Get RRI data
     rri_call_param = ('-i ' + input_path_RRIs + ' -r ' + ' '.join(replicates) +
@@ -237,13 +237,13 @@ def main():
 
 #check data:
     print('##RRI results ###')
-    count_entrys(inter_rri, 'rri')
+    count_entries(inter_rri, 'rri')
 
     ####### Get protein data
     if flag_prot:
         inter_rbp = get_prot_occ_regions(file_rbp_pos, exp_score_th, context)
         print('##RBP results ###')
-        count_entrys(inter_rbp, 'rbp')
+        count_entries(inter_rbp, 'rbp')
 
         # add the two inter laps together
         for key in inter_rri:
@@ -252,11 +252,11 @@ def main():
 
         #check data:
         print('##Results of both lists###')
-        count_entrys(inter_rri, 'both')
+        count_entries(inter_rri, 'both')
 
     if external_object != 'non':
         inter_external = rl.load_occupied_data(external_object)
-        count_entrys(inter_external, 'external')
+        count_entries(inter_external, 'external')
         for key in inter_rri:
             if key in inter_external:
                 inter_rri[key].add(list(inter_external[key]))
@@ -266,7 +266,7 @@ def main():
     or_handle = open(or_path,"wb")
     pickle.dump(inter_rri,or_handle)
     or_handle.close()
-    print('object contining InteLab object with start and end postions:\n%s'%or_path)
+    print('Path to InteLab object with start and end positions of the RRI:\n%s'%or_path)
 
     # filter rri file and save:
     output_name = 'rri_occupied_regions' + '_overlapTH_' + str(overlap_th) + '_scoreTH_1.csv'

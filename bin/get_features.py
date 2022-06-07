@@ -56,8 +56,8 @@ def count_number_of_seeds(seed_pos):
 
         Parameters
         ----------
-        seed_pos_target : start or end postion of tarted
-        seed_pos_query : start or end postion of query
+        seed_pos_target : start or end position of tarted
+        seed_pos_query : start or end position of query
 
 
         Returns
@@ -163,7 +163,7 @@ def comput_complexity(seq):
         Returns
         -------
         complexity
-            sequence complexety
+            sequence complexity
 
 
         """
@@ -202,7 +202,7 @@ def get_GC_content(interacting_seq):
 
     #print(no_A)
     #GC_content = (no_G + no_C)/len(interacting_seq)
-    #assert (no_A + no_U + no_G + no_C + 1) == len(interacting_seq), "something went wrong detecting the nucleotieds"
+    #assert (no_A + no_U + no_G + no_C + 1) == len(interacting_seq), "something went wrong detecting the nucleotides"
 
     subseqDP = str(interacting_seq)
     interacting_seq = subseqDP.replace("&", "")
@@ -215,7 +215,7 @@ def get_GC_content(interacting_seq):
 
 def get_GC_skew(interacting_seq):
     """
-    compute GC skew with the approcahc of a cumulative GC skew, published by
+    compute GC skew with the approach of a cumulative GC skew, published by
     Girgorive in 1998 (https://doi.org/10.1093/nar/26.10.2286)
 
         Parameters
@@ -282,7 +282,7 @@ def get_AT_skew(interacting_seq):
 
 
 def main():
-    # store commandline args
+    # store command line arguments
     parser = argparse.ArgumentParser(description='')
     parser.add_argument("-i", "--input", action="store", dest="input", required=True
                                            , help= "path to input file")
@@ -386,7 +386,7 @@ def main():
 
 
     if feature_set_list[0] == 'all' or feature_set_list[0] == 'All':
-        # ToDo: now we have duplicats. find a more recine set of all!!
+  
         all_list = ['subseqDP', 'hybridDP', 'E', 'E_hybrid', 'ED1', 'ED2',
                     'len_interaction_target', 'len_interaction_query', 'no_bps',
                     'max_inter_len', 'inter_len_normby_bp',
@@ -409,7 +409,7 @@ def main():
     df_feature = df_feature.loc[df_feature["GC_content"] != 0]
     df_feature.to_csv(output_file, index=False)
 
-    # Go over list of featurs for the output dir and generate table:
+    # Go over list of features for the output dir and generate table:
 
 
 

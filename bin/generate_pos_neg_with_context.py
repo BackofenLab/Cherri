@@ -58,16 +58,16 @@ def check_context_extention(df, context, output_path, context_not_full):
 
 def get_context_pos(df, context, start, end, name):
     """
-    get find object for Interlab by adding the context to start and end postions
+    get find object for Interlab by adding the context to start and end positions
 
         Parameters
         ----------
         df: dataframe holding the extended context sequences
         context: amount of nt added on both sites
 
-        Returen
+        Returns
         ------
-        df with a added coulem find_target and find_query
+        df with a added column find_target and find_query
 
         """
     col_name_s = name + '_con_s'
@@ -81,7 +81,7 @@ def get_context_pos(df, context, start, end, name):
 
 def extention_df(df):
     """
-    defining colum with ID and empty colums to store the context sequences
+    defining column with ID and empty columns to store the context sequences
 
         Parameters
         ----------
@@ -94,7 +94,7 @@ def extention_df(df):
         Returns
         -------
         df
-            colum update dataframe
+            column update dataframe
 
         """
     # add RRI number as ID
@@ -114,10 +114,10 @@ def find_occu_overlaps(dict_key,s,e, occupied_InteLab):
 
         Parameters
         ----------
-        dict_key: key chrom:strand of the given sequence neede for the occupied_InteLab
-        s: start postion of given sequence
-        e: end postion of given sequence
-        occupied_InteLab: Interlap object having all interacting site postions
+        dict_key: key chrom:strand of the given sequence needed for the occupied_InteLab
+        s: start position of given sequence
+        e: end position of given sequence
+        occupied_InteLab: Interlap object having all interacting site positions
 
         Raises
         ------
@@ -126,7 +126,7 @@ def find_occu_overlaps(dict_key,s,e, occupied_InteLab):
         Returns
         -------
         occupied_regions_list
-            list contining all occupied positions for the given sequence
+            list containing all occupied positions for the given sequence
 
         """
 
@@ -136,7 +136,7 @@ def find_occu_overlaps(dict_key,s,e, occupied_InteLab):
     #print(s,e)
     #print(list(occupied_InteLab[dict_key]))
     if len(temp_list) < 1:
-        print('Warning: occupied list is not compleate, please repuduce the occupied object again.')
+        print('Warning: occupied list is not complete, please reproduce the occupied object again.')
         sys.exit()
     if temp_list:
         #print('found overlap:')
@@ -148,26 +148,26 @@ def find_occu_overlaps(dict_key,s,e, occupied_InteLab):
 
 def convert_positions(s_seq, e_seq, s_site, e_site, strand):
     """
-    return postions one based of site in relation to given sequence
+    return positions one based of site in relation to given sequence
 
         Parameters
         ----------
-        s_seq: start postion of given sequence
-        e_seq: end postion of given sequence
-        s_site: start postion of given occupied site
-        e_site: start postion of given occupied site
+        s_seq: start position of given sequence
+        e_seq: end position of given sequence
+        s_site: start position of given occupied site
+        e_site: start position of given occupied site
         strand: + or -
 
         Returns
         -------
         new_e_site
-            one based end postion of occupied site
+            one based end position of occupied site
         new_s_site
-            one based start postion of occupied site
+            one based start position of occupied site
      >>> convert_positions(20,30,22,24,'+')
      [3, 4]
      >>> convert_positions(20,30,12,34,'+')
-     Warning: full context is overlaped
+     Warning: full context is overlapping
      [1, 10]
      >>> convert_positions(20,30,22,24,'+')
      [3, 4]
@@ -175,29 +175,29 @@ def convert_positions(s_seq, e_seq, s_site, e_site, strand):
     # check than site are outside the sequence
     if (s_site <= s_seq) or (e_site >= e_seq):
         if (s_site <= s_seq) and (e_site >= e_seq):
-            print('Warning: full context is overlaped')
+            print('Warning: full context is overlapping')
             new_end = e_seq - s_seq
             return  [1, new_end]
         # changing start
         elif s_site <= s_seq:
             s_site = s_seq
             if e_site == s_site:
-                print('Warning: start and end is same positon START!!!')
+                print('Warning: start and end is same position START!!!')
                 # should break!!
                 return(['nan','nan'])
         elif e_site > e_seq:
             e_site = e_seq
-    # compute postions
+    # compute positions
     if strand == '+':
         # new_end = e_seq - s_seq
         if e_site == s_site:
-            print('Warning: start and end is same positon!!!+END')
+            print('Warning: start and end is same position!!!+END')
             return[(e_site-s_seq),(e_site-s_seq)]
         new_e_site = e_site - s_seq
         new_s_site = (s_site+1) - s_seq
     elif strand == '-':
         if e_site == s_site:
-            print('Warning: start and end is same positon!!!-END')
+            print('Warning: start and end is same position!!!-END')
             return[1,1]
         new_e_site = e_seq - (s_site+1) +1
         new_s_site = e_seq - e_site +1
@@ -218,7 +218,7 @@ def decode_Intarna_output(out):
         Returns
         -------
         df
-            df incuding IntaRNA result
+            df inducing IntaRNA result
 
         """
 
@@ -290,8 +290,8 @@ def get_neg_pos_intarna_str(occupied_regions, neg_param, pos_s, pos_e):
 def join_result_and_infos(df, lost_inst, row, list_rows_add):
     """
     The function checks whether IntaRNA could predict anything. If it did
-    than additional infomation are appende to the IntaRNA results staming from
-    the original trusted RRI instace. This additional coulum nans are stored
+    than additional information are appended to the IntaRNA results coming from
+    the original trusted RRI instance. This additional column nan's are stored
     in the list_rows_add list.
 
         Parameters
@@ -329,7 +329,7 @@ def join_result_and_infos(df, lost_inst, row, list_rows_add):
 
 def add_block_end_pos(seq_s, seq_e, block_ends,strand, new_occ_list):
     """
-    convert the list conining all occupied postions
+    convert the list containing all occupied positions
 
         Parameters
         ----------
@@ -342,7 +342,7 @@ def add_block_end_pos(seq_s, seq_e, block_ends,strand, new_occ_list):
         Returns
         -------
         new_occ_list
-            list start and stop postions for the end postions
+            list start and stop positions for the end positions
         """
     block_ends_s = seq_s + block_ends
     block_ends_e = seq_e - block_ends
@@ -357,21 +357,21 @@ def add_block_end_pos(seq_s, seq_e, block_ends,strand, new_occ_list):
 
 def get_pos_occ_list(seq_s, seq_e, seed_s, seed_e, strand, converted_occ_list):
     """
-    convert the list conining all occupied postions
+    convert the list containing all occupied positions
 
         Parameters
         ----------
-        seq_s: target/query sequence start pos
-        seq_e: target/query sequence end pos
-        seed_s: target/query seed sequence start pos
-        seed_e: target/query seed sequence end pos
+        seq_s: target/query sequence start position
+        seq_e: target/query sequence end position
+        seed_s: target/query seed sequence start position
+        seed_e: target/query seed sequence end position
         strand: +/-
         converted_occ_list: list with occupied sequences
 
         Returns
         -------
         pos_occ_list
-            list not containing seed postions
+            list not containing seed positions
         >>> get_pos_occ_list(1, 100, 50, 59, '+', [(2,10),(55,60),(62,70)])
         [(2, 10), (62, 70)]
         >>> get_pos_occ_list(1, 100, 30, 40, '+', [(30,40)])
@@ -401,12 +401,12 @@ def get_pos_occ_list(seq_s, seq_e, seed_s, seed_e, strand, converted_occ_list):
 
 def convert_occu_positons(seq_s, seq_e, occupied_regions,strand, block_ends, seed_s, seed_e):
     """
-    convert the list conining all occupied postions
+    convert the list containing all occupied positions
 
         Parameters
         ----------
-        seq_s: target/query sequence start pos
-        seq_e: target/query sequence end pos
+        seq_s: target/query sequence start positions
+        seq_e: target/query sequence end positions
         occupied_regions: occupied regions list [(s,e)(s,e)...]
         strand: +/-
         block_ends: nt that should be blocked at the end and start of seq
@@ -414,7 +414,7 @@ def convert_occu_positons(seq_s, seq_e, occupied_regions,strand, block_ends, see
         Returns
         -------
         new_occ_list
-            list with updated postions
+            list with updated positions
         """
     new_occ_list = []
     for i in occupied_regions:
@@ -453,18 +453,18 @@ def decode_IntaRNA_call(call, lost_inst, row, list_rows_add, df_data, no_sub_opt
         ----------
         call: IntaRNA call
         lost_inst: no of lost instances so fare
-        row: infos of the curren RRI (line of df)
+        row: infos of the current RRI (line of df)
         list_rows_add:
-        df_data: df contining the already calculated training instances
+        df_data: df containing the already calculated training instances
         no_sub_opt: suboptimals that should reported by IntaRNA if possible
         no_less_sub_opt: no of suboptimals that could not be predicted
 
         Returns
         -------
         df_data
-            calculated instaces including the new prediction if prediction was sucessfull
+            calculated instances including the new prediction if prediction was successful
         lost_inst
-            number of lost instaces so fare. Inceased of one if prediction failed
+            number of lost instances so fare. Increased of one if prediction failed
         no_less_sub_opt
             no of suboptimal that could not be predicted so fare!
         """
@@ -472,7 +472,7 @@ def decode_IntaRNA_call(call, lost_inst, row, list_rows_add, df_data, no_sub_opt
     #print(call)
     df = decode_Intarna_output(out)
     #print(df)
-    # reset the indix of the df and avoid the old index being added as a column
+    # reset the index of the df and avoid the old index being added as a column
     df = df.reset_index(drop=True)
     #print(df)
 
@@ -483,7 +483,7 @@ def decode_IntaRNA_call(call, lost_inst, row, list_rows_add, df_data, no_sub_opt
         # IntaRNA could not predict anything!
         lost_inst = lost_inst_new
     else:
-        #print('instace appended to data')
+        #print('instance appended to data')
         # check if found all number of subotpimals
         if no_sub_opt != len(df_result):
             print('Warning IntaRNA could not find %i interaction but %i interactions for a particular call'%(no_sub_opt, len(df_result)))
@@ -509,7 +509,7 @@ def get_context_added(input_rris, output_path, genome_file, context, context_not
         Returns
         -------
         df_contex
-            datafram including the context appended sequences
+            dataframe including the context appended sequences
         """
     df_RRIs = pd.read_table(input_rris, sep=",")
     #print(df_RRIs)
@@ -654,7 +654,7 @@ def report(context_not_full,full_seq_occ,no_neg,lost_inst_pos,lost_inst_neg,no_l
         print('%i number of negative IntaRNA calls did not lead to a result'%lost_inst_neg)
 
 
-    print('####\nNumber of sequences haveing not all suboptimals:')
+    print('####\nNumber of sequences having not all suboptimals:')
     print('%i number of positive IntaRNA calls not all suboptimals'%no_less_sub_opt_pos)
     if not no_neg:
         print('%i number of negative IntaRNA calls not all suboptimals'%no_less_sub_opt_neg)
@@ -674,11 +674,11 @@ def get_context_file_name(context, pos_occ, block_ends, output_path, experiment_
 
         Returns
         -------
-        context_file: all no of instaces (trusted rris)
+        context_file: all no of instances (trusted rris)
         """
     context_info = '_context_' +  str(context)
     if pos_occ:
-        print('%%%%%\nIntaRNA calls including occupied regions for pos and neg instances!!!!\n%%%%%')
+        print('%%%%%\nIntaRNA calls including occupied regions for positive and negative instances!!!!\n%%%%%')
         context_info = context_info + '_pos_occ_'
     out_info =  '_block_ends_' +  str(block_ends) + '_'
     context_file = (output_path + experiment_name +  context_info + out_info +
@@ -692,11 +692,11 @@ def get_report_steps(df_contex):
 
         Parameters
         ----------
-        df_contex: datafram continig all instances that will be computed
+        df_contex: dataframe containing all instances that will be computed
 
         Returns
         -------
-        data_100: all no of instaces (trusted rris)
+        data_100: all no of instances (trusted rris)
         data_25: 25 % of number of instances
         data_50: 50 % of number of instances
         date_75: 75 % of number of instances
@@ -714,7 +714,7 @@ def print_status(index, data_100, data_25, data_50, date_75):
         Parameters
         ----------
         index:
-        data_100: all no of instaces (trusted rris)
+        data_100: all no of instances (trusted rris)
         data_25: 25 % of number of instances
         data_50: 50 % of number of instances
         date_75: 75 % of number of instances
@@ -766,7 +766,7 @@ def main():
                         help= "path where output folder should be stored")
     parser.add_argument("-n", "--experiment_name", action="store",
                         dest="experiment_name", required=True,
-                        help= "name of the datasoruce of positve trusted RRIs")
+                        help= "name of the data source of positive trusted RRIs")
     parser.add_argument("-g", "--genome_file", action="store", dest="genome_file",
                         required=True, help= "path to 2bit genome file")
     parser.add_argument("-c", "--context",  nargs='?', type=int,
@@ -779,7 +779,7 @@ def main():
                         help= "# nts blocked at the ends of the sequence")
     parser.add_argument("-s", "--no_sub_opt",  nargs='?', type=int,
                         dest="no_sub_opt",  default=5,
-                        help= "# of ineractions IntraRNA will give is possible")
+                        help= "# of interactions IntraRNA will give is possible")
     parser.add_argument("-l", "--chrom_len_file",  action="store", dest="chrom_len_file",
                         required=True,
                         help= "tabular file containing chrom name \t chrom lenght for each chromosome")
@@ -815,7 +815,7 @@ def main():
     elif mode == 'eval':
         no_neg = True
     else:
-        print('ERORR: please specify train or eval as cherri mode')
+        print('ERROR: please specify train or eval as cherri mode')
 
     #block_ends = 20
     # pos_occ = False
@@ -877,7 +877,7 @@ def main():
         print('used existing context file: %s'%(context_file))
     else:
         df_contex = get_context_added(input_rris, output_path, genome_file, context, context_not_full, context_file,chrom_len_file)
-        print('***\ncontext is appende pos and negative data generation is starting:\n****')
+        print('***\ncontext is append pos and negative data generation is starting:\n****')
 
 
     ### prepare calling ########################
@@ -915,8 +915,8 @@ def main():
         #t_id = t_chr + ';' + strand_t
         #q_id = q_chr + ';' + strand_q
 
-        ########### Interacting sequeces
-        #print('### RRI Interacting sequeces ########')
+        ########### Interacting sequences
+        #print('### RRI Interacting sequences ########')
         #print('target inter seq: ',row['ineraction_site_1st'])
         #print('target inter seq: ',row['ineraction_site_2end'])
 

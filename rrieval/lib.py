@@ -120,7 +120,7 @@ def filter_score(df, score_th):
         Parameters
         ----------
         df : df including the containing all RRIs (Interactions)
-        score_th: threshold for the expactation maximization score of Chira
+        score_th: threshold for the expectation maximization score of Chira
 
 
         Returns
@@ -152,13 +152,13 @@ def delet_empty_col(df):
         Parameters
         ----------
         df : df including the containing all RRIs
-        col_name: name of to be filterd colum
+        col_name: name of to be filtered column
 
 
         Returns
         -------
         df_filtered
-            dataframes without empty column entrys
+            dataframes without empty column entries
 
 
     >>> df = pd.DataFrame({'a':[0.3,'',1,''],'b':[1,1,1,1]})
@@ -175,12 +175,12 @@ def delet_empty_col(df):
 
 def call_script(call,reprot_stdout=False,asset_err=True):
     """
-    Starts a subprosses to call a script and checks for errors.
+    Starts a subprocess to call a script and checks for errors.
 
 
         Parameters
         ----------
-        call : cmd comand
+        call : cmd command
 
         Returns
         -------
@@ -209,18 +209,18 @@ def call_script(call,reprot_stdout=False,asset_err=True):
 
 def calculate_overlap(s1,e1,s2,e2,len_flag=False):
     """
-    Building for each replicat a inter object
+    Building for each replicate a inter object
 
         Parameters
         ----------
-        s1: start of one sequence of the first replicat
-        e1: end of one sequence of the first replicat
-        s2: start of one sequence of the current replicat
-        e2: end of one sequence of the current replicat
+        s1: start of one sequence of the first replicate
+        e1: end of one sequence of the first replicate
+        s2: start of one sequence of the current replicate
+        e2: end of one sequence of the current replicate
 
         Returns
         -------
-        compinde_overlap
+        combined_overlap
             the combined overlap of sequence 1 and sequence 2
 
         """
@@ -248,21 +248,21 @@ def calculate_overlap(s1,e1,s2,e2,len_flag=False):
     # print(overlap_seq1)
     overlap_seq2 = overlap_len/seq2_len
     # print(overlap_seq2)
-    # compinde_overlap = (overlap_seq1 + overlap_seq2)/2
+    # combined_overlap = (overlap_seq1 + overlap_seq2)/2
     # select overlap of shorter sequence:
-    compinde_overlap = max([overlap_seq1, overlap_seq2])
-    # print(compinde_overlap)
+    combined_overlap = max([overlap_seq1, overlap_seq2])
+    # print(combined_overlap)
     if len_flag:
         return overlap_len
     else:
-        return compinde_overlap
+        return combined_overlap
 
 
 ################################################################################
 
 def get_chrom_list_no_numbers(df_interactions, chrom):
     """
-    Generates a unique list of chromosmes or conticts for both interaction
+    Generates a unique list of chromosomes or conticts for both interaction
     partners
 
         Parameters
@@ -274,7 +274,7 @@ def get_chrom_list_no_numbers(df_interactions, chrom):
         Returns
         -------
         sort_list_chrom
-            sorted list of unique chromosmes or contics which are not a number
+            sorted list of unique chromosomes or contics which are not a number
             and present in the input data frame
 
         """
@@ -290,7 +290,7 @@ def get_chrom_list_no_numbers(df_interactions, chrom):
 
 def get_list_chrom(df):
     """
-    Generates a unique list of chromosmes or conticts for both interaction
+    Generates a unique list of chromosomes or contics for both interaction
     partners
 
         Parameters
@@ -301,7 +301,7 @@ def get_list_chrom(df):
         Returns
         -------
         sort_list_chrom
-            sorted list of unique chromosmes or contics which are not a number
+            sorted list of unique chromosomes or contics which are not a number
             and present in the input data frame
 
         """
@@ -320,7 +320,7 @@ def check_convert_chr_id(chr_id):
     Check and convert chromosome IDs to format:
     chr1, chr2, chrX, ...
     If chromosome IDs like 1,2,X, .. given, convert to chr1, chr2, chrX ..
-    Return False if given chr_id not standard and not convertable.
+    Return False if given chr_id not standard and not convertible.
 
     Filter out scaffold IDs like:
     GL000009.2, KI270442.1, chr14_GL000009v2_random
@@ -334,7 +334,7 @@ def check_convert_chr_id(chr_id):
         Returns
         -------
         chr_id
-            updated chromosme id
+            updated chromosome id
 
     """
     assert chr_id, "given chr_id empty"
@@ -358,21 +358,21 @@ def check_convert_chr_id(chr_id):
 
 def add_context(df_bed, context, start, end):
     """
-    edding the changing the start and end postion of the sequences
+    edding the changing the start and end position of the sequences
     to add context to both sites of the sequences in the dataframe
 
         Parameters
         ----------
-        df_bed: dataframe containing start and end positon
-        context: amount of nucleotied
-        start: column name of start positons
-        end: column name of end positons
+        df_bed: dataframe containing start and end position
+        context: amount of nucleotide
+        start: column name of start position
+        end: column name of end position
 
 
         Returns
         -------
         df_bed
-            datafram with updated postions
+            dataframe with updated positions
 
         """
     #print(df_bed[start])
@@ -405,7 +405,7 @@ def bed_extract_sequences_from_2bit(in_bed, out_fa, in_2bit,
         Returns
         -------
         seqs_dic
-            dictinary holding the sequence ID as key and seqeuce as value
+            dictionary holding the sequence ID as key and sequence as value
 
     """
     # Check for twoBitToFa.
@@ -441,13 +441,13 @@ def check_context(df, seq_tag, chrom_dict):
         ----------
         df: df with added context
         seq_tag: target or query
-        chrom_dict: dictionary storing chrmosome length {name->len,...}
+        chrom_dict: dictionary storing chromosome length {name->len,...}
 
 
         Returns
         -------
         df
-            df with changed postions
+            df with changed positions
 
     >>> chrom_dict = {'chr1':60,
     ...         'chr2':80}
@@ -465,7 +465,7 @@ def check_context(df, seq_tag, chrom_dict):
     0          0      chr1       30
 
     >>> check_context(dfq, 'query', chrom_dict)
-    Warning: added context to query is out of bourder for 4 instances
+    Warning: added context to query is out of border for 4 instances
        start_2end  end_2end chrom_2end
     0           0        30       chr1
 
@@ -491,7 +491,7 @@ def check_context(df, seq_tag, chrom_dict):
     df = df.loc[df[start] >= 0]
     df = df.loc[df[end] <= df[chrom].apply(lambda x: chrom_dict[x])]
 
-    print('Warning: added context to %s is out of bourder for %i instances'%(seq_tag,no_seq_out_boder))
+    print('Warning: added context to %s is out of border for %i instances'%(seq_tag,no_seq_out_boder))
     return df
 
 
@@ -499,7 +499,7 @@ def check_context(df, seq_tag, chrom_dict):
 
 def filter_false_chr(df, col_name):
     """
-    If a cell of a column has False as a entry the row will be filterd out!
+    If a cell of a column has False as a entry the row will be filtered out!
 
         Parameters
         ----------
@@ -510,8 +510,8 @@ def filter_false_chr(df, col_name):
         Returns
         -------
         df_filtered
-            dataframe without rows contining False rows with the col_name column
-            df with changed postions
+            dataframe without rows containing False rows with the col_name column
+            df with changed positions
 
     >>> data = {'start_1st':[0, -40, 40, -2],
     ...         'chrom_1st':['chr1', 'False', 'chr1', 'False']}
@@ -530,15 +530,15 @@ def filter_false_chr(df, col_name):
 
 def get_context(seq_tag, df, out_dir, in_2bit_file, context, chrom_len_file):
     """
-    defining column with ID and empty colums to store the context sequences
+    defining column with ID and empty columns to store the context sequences
 
         Parameters
         ----------
         seq_tag: dataframe
-        df: dataframe contining position of the extraction
+        df: dataframe containing position of the extraction
         out_dir: directory where to store bed and fa file
         in_2bit_file: genome 2bit file
-        context: amout of nt that should be added on both sites
+        context: amount of nt that should be added on both sites
 
 
         Returns
@@ -579,8 +579,8 @@ def get_context(seq_tag, df, out_dir, in_2bit_file, context, chrom_len_file):
         #no_del_entys += len(df_context) - len(df_context_filted)
     else:
         print('error: please specify the parameter seq_tag with target or query')
-    # delet all 'False' chromosmes of in the df
-    print('loost %i instaces because of the Chromosome'%(no_del_entys))
+    # delet all 'False' chromosomes of in the df
+    print('lost %i instances because of the chromosome'%(no_del_entys))
     df_context_filted.to_csv(out_bed, sep="\t", index=False, header=False)
     #df = df_context
     seqs_dic = bed_extract_sequences_from_2bit(out_bed, out_fa, in_2bit_file,lc_repeats=False, convert_to_rna=True)
@@ -630,11 +630,11 @@ def shuffle_sequence(seq, times, kind_of_shuffel):
 
 def bp_suffeling(hybrid_seq, IntaRNA_prediction,times):
     """
-    basepair shufelling of the given IntaRNA prediction
+    base pair shuffling of the given IntaRNA prediction
 
         Parameters
         ----------
-        hybrid_seq: tartet sequence
+        hybrid_seq: target sequence
         IntaRNA_prediction: query sequence
 
 
@@ -653,8 +653,8 @@ def bp_suffeling(hybrid_seq, IntaRNA_prediction,times):
     #print(tup_list)
     # randomize the list with tuples where each tuple is a bp or bulge
     for i in range(times):
-        suffled_list = random.sample(tup_list, k=len(tup_list))
-        traget, query = make_seq_from_list(suffled_list)
+        shuffled_list = random.sample(tup_list, k=len(tup_list))
+        traget, query = make_seq_from_list(shuffled_list)
         shuffled_target_list.append(traget)
         shuffled_query_list.append(query)
 
@@ -682,13 +682,13 @@ def load_occupied_data(input_occupied):
 
 ################################################################################
 
-def encode_hybrid_by_BPs(dot_bracked, seq):
+def encode_hybrid_by_BPs(dot_bracket, seq):
     """
     encode_hybrid_by_BPs
 
         Parameters
         ----------
-        dot_bracked:
+        dot_bracket:
         seq: query
 
         Returns
@@ -698,17 +698,17 @@ def encode_hybrid_by_BPs(dot_bracked, seq):
         """
     # Test:    seq = 'ACCCACCCCCAA&AAGGAAGGGGGGA' hybrid = '.(((.(((((..&..))..)))))).'
     # result: [('A', '-'), ('-', 'A'), ('C', 'G'), ('C', 'G'), ('C', 'G'), ('A', '-'), ('C', 'G'), ('C', 'G'), ('C', 'G'), ('-', 'A'), ('-', 'A'), ('C', 'G'), ('C', 'G'), ('A', '-'), ('-', 'A'), ('A', '-'), ('-', 'A')]
-    dot_bracked_list = list(dot_bracked)
+    dot_bracket_list = list(dot_bracket)
     seq_list = list(seq)
 
-    assert len(dot_bracked_list) == len(seq_list), 'RRI sequence and dotbracked string do not have the same lenght'
+    assert len(dot_bracket_list) == len(seq_list), 'RRI sequence and dot bracket string do not have the same length'
 
     idx_end = len(seq_list) - 1
     idx_start = 0
     tup_list = []
-    for idx, start in enumerate(dot_bracked_list):
-        end = dot_bracked_list[idx_end]
-        start = dot_bracked_list[idx_start]
+    for idx, start in enumerate(dot_bracket_list):
+        end = dot_bracket_list[idx_end]
+        start = dot_bracket_list[idx_start]
         if start == '&' and end == '&':
             break
         elif start == '(' and end == ')':
@@ -727,19 +727,19 @@ def encode_hybrid_by_BPs(dot_bracked, seq):
             tup_list.append(('-',seq_list[idx_end]))
             idx_end -= 1
         else:
-            print('hybrid encode error: unexpacted case')
+            print('hybrid encode error: unexpected case')
     return tup_list
 
 
 ################################################################################
 
-def make_seq_from_list(suffled_list):
+def make_seq_from_list(shuffled_list):
     """
     make_seq_from_list
 
         Parameters
         ----------
-        suffled_list:
+        shuffled_list:
 
 
         Returns
@@ -752,7 +752,7 @@ def make_seq_from_list(suffled_list):
         """
     seq1 = ''
     seq2 = ''
-    for tup in suffled_list:
+    for tup in shuffled_list:
         character_seq1 = tup[0]
         character_seq2 = tup[1]
         if character_seq1 != '-' and character_seq2 != '-':
@@ -763,7 +763,7 @@ def make_seq_from_list(suffled_list):
         elif character_seq2 == '-':
             seq1 = seq1 + character_seq1
         else:
-            print('hybrid encode error: soemthing went wrong with the encoding')
+            print('hybrid encode error: something went wrong with the encoding')
 
     return seq1, seq2
 
@@ -772,7 +772,7 @@ def make_seq_from_list(suffled_list):
 
 def mearge_overlaps(inter_obj, info):
     """
-    mearg postions in a interlab library
+    merge positions in a interlab library
 
         Parameters
         ----------
@@ -783,7 +783,7 @@ def mearge_overlaps(inter_obj, info):
         Returns
         -------
         inter_obj_new
-            inerlap objects with the mearged positons
+            interlap objects with the merged positions
 
         """
     inter_obj_new = defaultdict(InterLap)
@@ -808,17 +808,17 @@ def mearge_overlaps(inter_obj, info):
 
 def join_pos(pos_list):
     """
-    join positons will join start end end postions whick are overlaping
+    join positions will join start end end positions which are overlapping
 
         Parameters
         ----------
-        pos_list : list of tupels containg (start, end) position
+        pos_list : list of tuples containing (start, end) position
         info: information what inter object
 
         Returns
         -------
         inter_obj_new
-            inerlap objects with the mearged positons
+            interlap objects with the merged positions
 
     >>> join_pos([(2, 4), (4, 9)])
     [(2, 4), (4, 9)]
@@ -848,7 +848,7 @@ def read_table_into_dic(file):
     Read in Table separated by \t and puts first line as key second as value
         Parameters
         ----------
-        file: file location ot the table file
+        file: file location at the table file
 
         Returns
         -------
@@ -893,7 +893,7 @@ def read_fasta_into_dic(fasta_file,
         Returns
         -------
         seqs_dic
-            dictonary with seq id as key and sequence as value
+            dictionary with seq id as key and sequence as value
 
     """
     if not seqs_dic:
@@ -932,7 +932,7 @@ def read_fasta_into_dic(fasta_file,
 
     # Check if sequences read in.
     assert seqs_dic, "no sequences read in (input FASTA file \"%s\" empty or mal-formatted?)" %(fasta_file)
-    # If sequences with N nucleotides should be skipped.
+    # If sequences with N nucleotide should be skipped.
     c_skipped_n_ids = 0
     if skip_n_seqs:
         del_ids = []
@@ -940,7 +940,7 @@ def read_fasta_into_dic(fasta_file,
             seq = seqs_dic[seq_id]
             if re.search("N", seq, re.I):
                 if report == 1:
-                    print ("WARNING: sequence with seq_id \"%s\" in file \"%s\" contains N nucleotides. Discarding sequence ... " % (seq_id, fasta_file))
+                    print (f'WARNING: sequence with seq_id {seq_id} in file {fasta_file} contains N nucleotides. Discarding sequence ... ')
                 c_skipped_n_ids += 1
                 del_ids.append(seq_id)
         for seq_id in del_ids:
@@ -1081,9 +1081,9 @@ def classify(df_eval,in_model_filepath, output_path,true_lable=False, y='off'):
     Classification of a given given elements using the input model
         Parameters
         ----------
-        df_eval: dataframe with interaction features of to evalute instances
+        df_eval: dataframe with interaction features of to evaluate instances
         in_model_filepath: path to the model
-        output_path: location whter to save output
+        output_path: location where to save output
 
         Returns
         -------
@@ -1137,7 +1137,7 @@ def param_optimize(in_positive_data_filepath,in_negative_data_filepath,output_pa
     #X = ia_df.drop(columns="label")
     X_training, X_test, y_training, y_test = model_selection.train_test_split(X, y, test_size=0.3, random_state=42)
 
-    # computing base modle perfomance:
+    # computing base model performance:
     base_model = RandomForestClassifier(n_estimators=100, random_state=42)
     base_model.fit(X_training, y_training)
     base_accuracy = evaluate(base_model, X_test, y_test)
@@ -1145,7 +1145,7 @@ def param_optimize(in_positive_data_filepath,in_negative_data_filepath,output_pa
 
     #random_forest
     random_forest = RandomForestClassifier()
-    # dict of hyperparmeters to optimize
+    # dict of hyperparameters to optimize
     param_grid = {'bootstrap': [True],
         'max_depth': [6, 10],
         'max_features': ['auto', 'sqrt'],
@@ -1212,13 +1212,13 @@ def filter_features(X,featurefile,use_structure):
     #print(X.info())
     header = X.columns
     header_list = header.tolist()
-    features_filterd=list(compress(header_list, ft))
-    #print(features_filterd)
-    X_filterd = X[features_filterd]
+    features_filtered=list(compress(header_list, ft))
+    #print(features_filtered)
+    X_filtered = X[features_filtered]
     #print('dfInfo after:')
-    #print(X_filterd.info())
+    #print(X_filtered.info())
 
-    return X_filterd
+    return X_filtered
 
 
 
@@ -1230,8 +1230,8 @@ def filter_features(X,featurefile,use_structure):
 
 def get_filted_features(featurefile,csr_mat_h):
     """
-    produces a boolian header based on a alrady filtered real header so the
-    evaluation data can filter for the same colums as was used in training
+    produces a boolean header based on a already filtered real header so the
+    evaluation data can filter for the same columns as was used in training
         Parameters
         ----------
         featurefile: feature file used for model training
@@ -1240,7 +1240,7 @@ def get_filted_features(featurefile,csr_mat_h):
         Returns
         -------
         feat
-            boolian list to filter evaluation feature data
+            boolean list to filter evaluation feature data
 
     """
     ft = np.load(featurefile)['d']
@@ -1296,7 +1296,7 @@ def convert(X, y, outname, graphfeatures, mode, feat_file='non', no_jobs=1):
 
     if graphfeatures:
         # convert df into a csr matrix
-        print(f'number of jobs: {no_jobs}')
+        # print(f'number of jobs: {no_jobs}')
         X_from_df = csr_matrix(X.to_numpy().astype(np.float64))
         graphs = tools.xmap(mkgr, hybrid_seq_list, no_jobs)
 

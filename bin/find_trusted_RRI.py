@@ -17,13 +17,13 @@ import pickle
 
 def get_chrom_list_no_numbers(df_interactions, chrom):
     """
-    Generates a unique list of chromosmes or conticts for both interaction
+    Generates a unique list of chromosomes or contict for both interaction
     partners
 
         Parameters
         ----------
         df_interactions : df including the filtered RRIs
-        chrom :  string indicating from wich seq the chromosome is
+        chrom :  string indicating from which seq the chromosome is
 
         Raises
         ------
@@ -32,7 +32,7 @@ def get_chrom_list_no_numbers(df_interactions, chrom):
         Returns
         -------
         sort_list_chrom
-            sorted list of unique chromosmes or contics which are not a number
+            sorted list of unique chromosomes or contict which are not a number
             and present in the input data frame
 
         """
@@ -46,7 +46,7 @@ def get_chrom_list_no_numbers(df_interactions, chrom):
 
 def get_list_chrom(df_interactions):
     """
-    Generates a unique list of chromosmes or conticts for both interaction
+    Generates a unique list of chromosomes or contict for both interaction
     partners
 
         Parameters
@@ -57,7 +57,7 @@ def get_list_chrom(df_interactions):
         Returns
         -------
         sort_list_chrom
-            sorted list of unique chromosmes or contics which are not a number
+            sorted list of unique chromosomes or contict which are not a number
             and present in the input data frame
 
         """
@@ -72,7 +72,7 @@ def get_list_chrom(df_interactions):
 
 def build_interlap_for_replicat(df_interactions):
     """
-    Building the inerlap objects for a fast overlap comparision for one replicat
+    Building the inerLap objects for a fast overlap comparison for one replicate
 
         Parameters
         ----------
@@ -82,13 +82,13 @@ def build_interlap_for_replicat(df_interactions):
         Returns
         -------
         inter_rep
-            inerlap objects for a fast overlap comparision
+            inerLap objects for a fast overlap comparison
 
         """
     list_chrom_no_int = get_list_chrom(df_interactions)
     #print(list_chrom_no_int)
     first_key = ''
-    # use defaultdict to key by chromosome.
+    # use default dict to key by chromosome.
     inter_rep = defaultdict(InterLap)
 
     for index, row in df_interactions.iterrows():
@@ -132,22 +132,22 @@ def build_interlap_for_replicat(df_interactions):
 
 def build_replicat_library_to_compare(input_path, list_of_replicates, score_th):
     """
-    Building for each replicat a inter object
+    Building for each replicate a inter object
 
         Parameters
         ----------
         input_path : path to the input files
-        list_of_replicates: list of replicat file names
-        score_th: threshold for the expactation maximization score of Chira
+        list_of_replicates: list of replicate file names
+        score_th: threshold for the expectation maximization score of Chira
 
         Returns
         -------
         inter_replicat_list
-            list for all replicat inter object
+            list for all replicate inter object
         no_replicates
             number of replicates (integer)
         rep_size_list
-            list number of instace within each replicat
+            list number of instances within each replicate
 
 
         """
@@ -178,14 +178,14 @@ def sort_list_replicat(inter_replicat_list, rep_size_list):
 
         Parameters
         ----------
-        inter_replicat_list : list contining all replicates
-        rep_size_list: list number of instace within each replicat
+        inter_replicat_list : list containing all replicates
+        rep_size_list: list number of instance within each replicate
 
 
         Returns
         -------
         inter_replicat_sorted_list
-            returns a list contaning the the inter opjects for each replicat
+            returns a list containing the the inter objects for each replicate
 
         """
     inter_replicat_sorted_list = inter_replicat_list
@@ -198,9 +198,9 @@ def sort_list_replicat(inter_replicat_list, rep_size_list):
 def rep_seq_pos(inter_rep):
     """
     extracts the start and stop positions of a interaction for one replicates
-    for a inter opject:
+    for a inter object:
     (s1, e1, 'Chrom1:Chrom2;strand1:strand2', [s2, e2],
-    ['swap' or not, structure, enegy])
+    ['swap' or not, structure, energy])
 
         Parameters
         ----------
@@ -209,13 +209,13 @@ def rep_seq_pos(inter_rep):
         Returns
         -------
         rep_s1
-            start postion of the first sequence
+            start position of the first sequence
         rep_e1
-            end postion of the first sequence
+            end position of the first sequence
         rep_s2
-            start postion of the second sequence
+            start position of the second sequence
         rep_e2
-            end postion of the second sequence
+            end position of the second sequence
 
         """
     rep_s2 = inter_rep[3][0]
@@ -229,32 +229,32 @@ def rep_seq_pos(inter_rep):
 def check_last_position(pos_replicat, inter_list, trusted_rri_temp,
                         pair_position, max_overlap):
     """
-    Building for each replicat a inter object
+    Building for each replicate a inter object
 
         Parameters
         ----------
-        pos_replicat: postion within the overlaping inter_inter list of the
-            current overlapping repilcat
+        pos_replicat: position within the overlapping inter_inter list of the
+            current overlapping replicate
         inter_list: list of RRIs that overlap with with the first sequence
-            of the first replicat
-        trusted_rri_temp: list to store the rri of each replicat which has the
-            highest overlap with the first replicat
-        pair_position: postion of the replicat which has the highest overlap
-            with the first replicat within the inter_list
+            of the first replicate
+        trusted_rri_temp: list to store the rri of each replicate which has the
+            highest overlap with the first replicate
+        pair_position: position of the replicate which has the highest overlap
+            with the first replicate within the inter_list
         max_overlap: the overlap of the rri having the highest overlap among all
-            overlapping rris between the first replicat and the current replicat
+            overlapping rris between the first replicate and the current replicate
 
 
         Returns
         -------
         trusted_rri_temp
-            list of rri that overlap including the one of the current replicat
+            list of rri that overlap including the one of the current replicate
             if on overlapping rri was found
         pair_position
-            index postion of the rri is initilzed with -1 for the next
-            replicat comparison round
+            index position of the rri is initialized with -1 for the next
+            replicate comparison round
         max_overlap
-            overlap is initilzed with 0 here for the next replicat comparison
+            overlap is initialized with 0 here for the next replicate comparison
             round
 
         """
@@ -286,7 +286,7 @@ def compare_overlap(overlap_pairs_list, overlap_th, no_replicates):
         Returns
         -------
         trusted_rri
-            list contining the most overlaping rri for each replicat if
+            list containing the most overlapping rri for each replicate if
             one could be found
 
         """
@@ -330,7 +330,7 @@ def compare_overlap(overlap_pairs_list, overlap_th, no_replicates):
                             max_overlap = mean_overlap
                             #print('max overlap: %f'%max_overlap)
                             pair_position = idx
-                            #print('at positon %i'%idx)
+                            #print('at position %i'%idx)
                         #print('length of list: %i|| index: %i'%(len(inter_list), (idx+1))
                         #print('length of list: %i|| index: %i'%(len(inter_list), pos_replicat)
                         #print(pos_replicat,len(inter_list),pair_position)
@@ -365,7 +365,7 @@ def find_relayble_replicates(inter_replicat_list, overlap_th, no_replicates):
 
         Parameters
         ----------
-        inter_replicat_list: list of replicat file names
+        inter_replicat_list: list of replicate file names
         overlap_th : overlap threshold
         no_replicates: number of replicates
 
@@ -373,9 +373,9 @@ def find_relayble_replicates(inter_replicat_list, overlap_th, no_replicates):
         Returns
         -------
         no_relayble_rri
-            number of relayble RRIs found in all replicates
+            number of reliable RRIs found in all replicates
         trusted_rri_list
-            list of relayble RRIs found in all replicates
+            list of reliable RRIs found in all replicates
         no_replicates
             number of replicates
 
@@ -431,26 +431,26 @@ def find_relayble_replicates(inter_replicat_list, overlap_th, no_replicates):
 
 def get_numbers_nan(no_replicates, trusted_rri_list):
     """
-    finding the interacitons, where the enegry value for some or all
-    interaction could not be computed. Mening no IntaRNA prediciton is
-    avalable.
+    finding the interactions, where the energy value for some or all
+    interaction could not be computed. Meaning no IntaRNA prediction is
+    available.
 
         Parameters
         ----------
         overlap_th : overlap threshold
-        list_of_replicates: list of replicat file names
+        list_of_replicates: list of replicate file names
 
 
         Returns
         -------
         instances_just_nan_list
-            list of all interactions without a IntaRNA perdiction
+            list of all interactions without a IntaRNA prediction
         instances_also_nan_list
-            list of all interactions missing the IntaRNA perdiction for some
+            list of all interactions missing the IntaRNA prediction for some
             replicates
         instances_no_nan_list
             list of all interactions where all replicates have a
-            IntaRNA perdiction
+            IntaRNA prediction
 
         """
     instances_just_nan_list = []
@@ -477,12 +477,12 @@ def get_numbers_nan(no_replicates, trusted_rri_list):
 
 def get_rep_highest_overlap(no_replicates, trusted_rri_list):
     """
-    finding the interaciton, where overlap is biggest
+    finding the interaction, with the largest overlap
 
         Parameters
         ----------
         no_replicates : number of replicates
-        trusted_rri_list: list of replicat
+        trusted_rri_list: list of replicate
 
 
         Returns
@@ -504,11 +504,11 @@ def get_rep_highest_overlap(no_replicates, trusted_rri_list):
         idx1 = 0
         #print(rep_list)
 
-        for rep_instans in rep_list:
+        for rep_instance in rep_list:
             #print(idx1)
             seq1_pos[idx1] = [6,15]
-            #seq1_pos[idx] = [rep_instans[0],rep_instans[1]]
-            #seq2_pos[idx] = rep_instans[3]
+            #seq1_pos[idx] = [rep_instance[0],rep_instance[1]]
+            #seq2_pos[idx] = rep_instance[3]
             seq2_pos[idx1] = [6,15]
             idx1 +=1
 
@@ -531,12 +531,12 @@ def get_rep_highest_overlap(no_replicates, trusted_rri_list):
 
 def find_overlap_of_all(pos_list, no_replicates):
     """
-    finding the interaciton, where overlap is biggest
+    finding the interaction, where overlap is lagest
     no_replicates : number of replicates
 
         Parameters
         ----------
-        pos_list : list of tupels with start, end pos
+        pos_list : list of tuples with start, end pos
 
 
         Returns
@@ -577,15 +577,15 @@ def get_seq_IntaRNA_calls(trusted_rri_list):
         -------
         df_output
             dataframe containing a the trusted rris with a instance of a
-            replicat that has a hybrid
+            replicate that has a hybrid
         """
 
     nan_seq_list = []
     for rep_list in trusted_rri_list:
         for rep_instans in rep_list:
-            enegy = rep_instans[4][2]
-            #print(enegy)
-            if str(enegy) == 'nan':
+            energy = rep_instans[4][2]
+            #print(energy)
+            if str(energy) == 'nan':
                 #print(rep_instans[5][0])
                 if isinstance(rep_instans[5][0], int):
                     #print('\nInterger: %i\n'%rep_instans[5][0])
@@ -601,22 +601,22 @@ def get_seq_IntaRNA_calls(trusted_rri_list):
     return df_output
 
 
-def get_enegy_seqlen(trusted_rri_list):
+def get_energy_seqlen(trusted_rri_list):
     """
-    finding the interacitons, where the enegry value for some or all
-    interaction could not be computed. Mening no IntaRNA prediciton is
-    avalable.
+    finding the interactions, where the energy value for some or all
+    interaction could not be computed. Meaning no IntaRNA prediction is
+    available.
 
         Parameters
         ----------
-        trusted_rri_list : list of trusted rris! each rri is a list of
+        trusted_rri_list : list of trusted rris. Each rri is a list of
         [inter_instance rep1, [list overlapping second rep]...,
         [list overlapping last rep]]
 
 
         Returns
         -------
-        enegy_list
+        energy_list
             list
         interaction_length
            list
@@ -624,61 +624,61 @@ def get_enegy_seqlen(trusted_rri_list):
            data frame
         """
 
-    enegy_list = []
+    energy_list = []
     interaction_length = []
     final_output_list = []
 
     for rep_list in trusted_rri_list:
-        enegy_temp_list = []
+        energy_temp_list = []
 
         #print(rep_list)
         for rep_instans in rep_list:
-            enegy = rep_instans[4][2]
-            if str(enegy) == 'nan':
-                enegy_temp_list.append(100)
+            energy = rep_instans[4][2]
+            if str(energy) == 'nan':
+                energy_temp_list.append(100)
             else:
-                enegy_temp_list.append(enegy)
-        min_enegry = min(enegy_temp_list)
-        #print(enegy_temp_list)
-        min_enegry_index = enegy_temp_list.index(min_enegry)
-        min_enegy_rep = rep_list[min_enegry_index]
-        #print(min_enegy_rep)
-        #print(min_enegy_rep[5])
-        instance = min_enegy_rep[5][0]
+                energy_temp_list.append(energy)
+        min_enegry = min(energy_temp_list)
+        #print(energy_temp_list)
+        min_enegry_index = energy_temp_list.index(min_enegry)
+        min_energy_rep = rep_list[min_enegry_index]
+        #print(min_energy_rep)
+        #print(min_energy_rep[5])
+        instance = min_energy_rep[5][0]
         #print(instance)
-        if isinstance(min_enegy_rep[5][0], int):
+        if isinstance(min_energy_rep[5][0], int):
             #print('Instance is int: %i'%instance)
-            #rint(min_enegy_rep[5])
-            instance = min_enegy_rep[5]
+            #rint(min_energy_rep[5])
+            instance = min_energy_rep[5]
         else:
-            instance = min_enegy_rep[5][0]
+            instance = min_energy_rep[5][0]
         #print('Instance element\n: %s\n'%instance)
         final_output_list.append(instance)
-        interaction_length = get_seq_lengths(min_enegy_rep, interaction_length)
-        enegy_list.append(min_enegy_rep[4][2])
+        interaction_length = get_seq_lengths(min_energy_rep, interaction_length)
+        energy_list.append(min_energy_rep[4][2])
     #print('final output list')
     #print(final_output_list)
     df_output = concat_series_objects(final_output_list)
     #print(df_output.info())
-    return enegy_list, interaction_length, df_output
+    return energy_list, interaction_length, df_output
 
 
-def get_seq_lengths(min_enegy_rep, interaction_length):
+def get_seq_lengths(min_energy_rep, interaction_length):
     """
-    concatinate all series instances with on list. Since the series objects are
+    concatenate all series instances with on list. Since the series objects are
     the content of one row the dataframe is transposed
         Parameters
         ----------
-        min_enegy_rep : Inter instance containing all sequence positons
+        min_energy_rep : Inter instance containing all sequence positions
         interaction_length: list with length of the two interaction RNAs so far
 
         Returns
         -------
         interaction_length:
-            list where the length of the two interaction RNAs are appendend
+            list where the length of the two interaction RNAs are appended
 
         """
-    s1, e1, s2, e2 = rep_seq_pos(min_enegy_rep)
+    s1, e1, s2, e2 = rep_seq_pos(min_energy_rep)
     sequence1_len = sequence_length(s1, e1)
     sequence2_len = sequence_length(s2, e2)
     interaction_length.append((sequence1_len, sequence2_len))
@@ -689,18 +689,18 @@ def get_seq_lengths(min_enegy_rep, interaction_length):
 
 def concat_series_objects(list_of_series):
     """
-    concatinate all series instances with on list. Since the series objects are
+    concatenate all series instances with on list. Since the series objects are
     the content of one row the dataframe is transposed
         Parameters
         ----------
-        list_of_series : list of seris objects containing the row information
-        of the choosen trusted RRI
+        list_of_series : list of series objects containing the row information
+        of the choose trusted RRI
 
 
         Returns
         -------
         df_output:
-            dataframe containg all
+            dataframe contains all
 
     >>> s1 = pd.Series([1, 2], index=['A', 'B'], name='s1')
     >>> s2 = pd.Series([3, 4], index=['A', 'B'], name='s2')
@@ -726,7 +726,7 @@ def sequence_length(start, end):
         Parameters
         ----------
         start: start position of a sequence
-        end: end postion of a sequence
+        end: end position of a sequence
 
 
         Returns
@@ -743,7 +743,7 @@ def sequence_length(start, end):
 
 def get_list_overlaps(instances_no_nan_list):
     """
-    compute list of overlabes
+    compute list of overlaps
 
         Parameters
         ----------
@@ -833,7 +833,7 @@ def main():
     #print(trusted_rri_list[0][0][5])
     #print(trusted_rri_list[0][1][5])
 
-    # use_enegy = False
+    # use_energy = False
 
     percentage_trustable_rri_all = (no_relayble_rri/len_smalles_replicat)*100
     print('######\n for %i replicates the following number of reliable interactions are found: %i (%.2f %%)'%(no_replicates, no_relayble_rri, percentage_trustable_rri_all))
@@ -843,15 +843,15 @@ def main():
 
         #avg_overlap_list, avg_overlap_len_list = get_list_overlaps(instances_no_nan_list)
 
-        enegy_list, interaction_length, df_final_output = get_enegy_seqlen(instances_no_nan_list)
+        energy_list, interaction_length, df_final_output = get_energy_seqlen(instances_no_nan_list)
 
         if len(instances_also_nan_list) > 0:
-            enegy_list_also_nan, interaction_length_also_nan, df_output_nan_temp = get_enegy_seqlen(instances_also_nan_list)
+            energy_list_also_nan, interaction_length_also_nan, df_output_nan_temp = get_energy_seqlen(instances_also_nan_list)
             out_for_IntaRNA_calls_df = get_seq_IntaRNA_calls(instances_also_nan_list)
             df_final_output = pd.concat([df_final_output, df_output_nan_temp])
             out_for_IntaRNA_calls_df.to_csv(output_path + 'NAN_' + output_name, index=False)
 
-        print('Output is filter for RRIs that have atleast one hybrid:')
+        print('Output is filter for RRIs that have at least one hybrid:')
         print('Number of RRI all not having a hybrid: %i'%len(instances_just_nan_list))
         print('Number of RRI some having a hybrid: %i'%len(instances_also_nan_list))
         print('Number of RRI all having hybrids: %i'%len(instances_no_nan_list))
@@ -895,12 +895,12 @@ def main():
 
     #### Plotting ######
 
-    #histogrom enegy
+    #histogrom energy
     #fig1 = plt.figure()
-    #bins = np.arange(min(enegy_list), max(enegy_list), 5)
+    #bins = np.arange(min(energy_list), max(energy_list), 5)
 
-    #plt.hist(enegy_list, bins=bins)
-    #fig1.savefig(plot_path + "histogram_enegy.pdf", bbox_inches='tight')
+    #plt.hist(energy_list, bins=bins)
+    #fig1.savefig(plot_path + "histogram_energy.pdf", bbox_inches='tight')
 
     #seq1_len_list = [len[0] for len in interaction_length_also_nan]
     #seq2_len_list = [len[1] for len in interaction_length_also_nan]
