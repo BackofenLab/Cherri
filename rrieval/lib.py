@@ -1078,7 +1078,7 @@ def base_model(in_positive_data_filepath,in_negative_data_filepath,output_path,n
 
 def classify(df_eval,in_model_filepath, output_path,true_lable=False, y='off'):
     """
-    Classification of a given given elements using the input model
+    Classification of the given RRIs features using the input model
         Parameters
         ----------
         df_eval: dataframe with interaction features of to evaluate instances
@@ -1108,6 +1108,10 @@ def classify(df_eval,in_model_filepath, output_path,true_lable=False, y='off'):
     #print(y_pred)
     if true_lable:
         df_result['true_label'] = y.tolist()
+        # calculates prob for each label. We only returen prob for one label?
+        proba = model.predict_proba(df_eval)[:,1]
+        instance_score = pd.DataFrame({'instance_score': proba})
+        df_result = pd.concat([df_result, instance_score], axis=1)
     df_result.to_csv(output_path,index=False)
     return df_result
 
