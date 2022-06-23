@@ -85,17 +85,17 @@ def main():
                 # file example: evaluation_results_PARIS_mouse_PARIS_human_RBP.cvs
                 file_name = f'{input_path}evaluation_results_{name}_{name2}.csv'
                 f1_cross_model, auc_prc_model = calculate_measures(file_name)
-                measures_dict_f1[key] = f1_cross_model
-                measures_dict_auc[key] = auc_prc_model
+                #measures_dict_f1[key] = f1_cross_model
+                #measures_dict_auc[key] = auc_prc_model
                 #print(key, val[0])
-                temp_dict_f1[name2]= measures_dict_f1[key]
-                temp_dict_auc[name2]= measures_dict_auc[key]
+                temp_dict_f1[name2]= f1_cross_model
+                temp_dict_auc[name2]= auc_prc_model
         key_diag = name + '$' + name
         f1, auc = calculate_diag(name, input_path)
-        measures_dict_f1[key_diag] = f1
-        measures_dict_auc[key_diag] = auc
-        temp_dict_f1[name]= measures_dict_f1[key_diag]
-        temp_dict_auc[name]= measures_dict_auc[key_diag]
+        #measures_dict_f1[key_diag] = f1
+        #measures_dict_auc[key_diag] = auc
+        temp_dict_f1[name]= f1
+        temp_dict_auc[name]= auc
         print(key_diag, f1)
         f1_dict[name]=[temp_dict_f1[i] for i in sorted(temp_dict_f1.keys())]
         AUC_dict[name]=[temp_dict_auc[i] for i in sorted(temp_dict_auc.keys())]
@@ -106,10 +106,9 @@ def main():
     df_auc = generate_df(AUC_dict, feature_file_names)
     #df_f1.to_latex(f'{input_path}/f1_talbel', float_format="{:0.2f}".format)
     print(f'{input_path}/f1_talbel')
-    df_f1.style.to_latex(f'{input_path}/f1_talbel')
+    df_f1.style.to_latex(f'{input_path}/f1_table')
 
-
-    df_auc.style.to_latex(f'{input_path}/auc_talbel')
+    df_auc.style.to_latex(f'{input_path}/auc_table')
 
     #for key in measures_dict:
         #print(key)
