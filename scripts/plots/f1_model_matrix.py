@@ -27,8 +27,9 @@ def calculate_measures(data, read=True):
     #print(df_model['true_label'])
     f1 = f1_score(df_model['true_label'].tolist(), df_model['predicted_label'].tolist())
     #print(f1)
-    #precision, recall, thresholds, auc_prc = compute_prc(df_model['true_label'].tolist(), df_model['instance_score'].tolist())
-    return f1
+    precision, recall, thresholds, auc_prc = compute_prc(df_model['true_label'].tolist(), df_model['instance_score'].tolist())
+    print(f'AUC_PCR: {auc_prc}')
+    return f1, auc_prc
 
 def calculate_diag(name, input_path):
     df_val0 = pd.read_csv((input_path + name +'_'  + name + '_fold0.csv'))
@@ -37,9 +38,21 @@ def calculate_diag(name, input_path):
     df_val3 = pd.read_csv((input_path + name +'_'  + name + '_fold3.csv'))
     df_val4 = pd.read_csv((input_path + name +'_' + name + '_fold4.csv'))
     df_cv = pd.concat([df_val0, df_val1, df_val2, df_val3, df_val4], ignore_index=True)
-    f1 = calculate_measures(df_cv, read=False)
+    f1, auc_prc = calculate_measures(df_cv, read=False)
 
-    return f1
+    return f1, auc_prc
+
+
+def generate_df(in_dict, feature_file_names):
+    df_temp = pd.DataFrame(in_dict)
+    df_sorted = df_temp.reindex(sorted(df_temp.columns), axis=1)
+    df_sorted['names']= sorted(feature_file_names)
+    df_out = df_sorted.set_index('names')
+    df_out.round(2)
+    return df_out
+
+
+
 
 def main():
     parser = argparse.ArgumentParser(description='Trains models for RRIeval')
@@ -57,38 +70,46 @@ def main():
 
 
     # contains all measurments
-    measures_dict = {}
+    measures_dict_f1 = {}
+    measures_dict_auc = {}
     # model -> [f1 socres of all datasets]
     f1_dict = {}
+    AUC_dict = {}
 
     for name in feature_file_names:
-        temp_dict = {}
+        temp_dict_f1 = {}
+        temp_dict_auc = {}
         for name2 in feature_file_names:
             if name != name2:
                 key = name + '$' + name2
                 # file example: evaluation_results_PARIS_mouse_PARIS_human_RBP.cvs
                 file_name = f'{input_path}evaluation_results_{name}_{name2}.csv'
-                f1_cross_model = calculate_measures(file_name)
-                measures_dict[key] = f1_cross_model
+                f1_cross_model, auc_prc_model = calculate_measures(file_name)
+                measures_dict_f1[key] = f1_cross_model
+                measures_dict_auc[key] = auc_prc_model
                 #print(key, val[0])
-                temp_dict[name2]= measures_dict[key]
+                temp_dict_f1[name2]= measures_dict_f1[key]
+                temp_dict_auc[name2]= measures_dict_auc[key]
         key_diag = name + '$' + name
-        f1 = calculate_diag(name, input_path)
-        measures_dict[key_diag] = f1
-        temp_dict[name]= measures_dict[key_diag]
+        f1, auc = calculate_diag(name, input_path)
+        measures_dict_f1[key_diag] = f1
+        measures_dict_auc[key_diag] = auc
+        temp_dict_f1[name]= measures_dict_f1[key_diag]
+        temp_dict_auc[name]= measures_dict_auc[key_diag]
         print(key_diag, f1)
-        f1_dict[name]=[temp_dict[i] for i in sorted(temp_dict.keys())]
+        f1_dict[name]=[temp_dict_f1[i] for i in sorted(temp_dict_f1.keys())]
+        AUC_dict[name]=[temp_dict_auc[i] for i in sorted(temp_dict_auc.keys())]
 
-    # generate table form f1 dict
-    df_temp = pd.DataFrame(f1_dict)
-    df_sorted = df_temp.reindex(sorted(df_temp.columns), axis=1)
-    df_sorted['names']= sorted(feature_file_names)
-    df_f1 = df_sorted.set_index('names')
-    df_f1.round(2)
+
+
+    df_f1 = generate_df(f1_dict, feature_file_names)
+    df_auc = generate_df(AUC_dict, feature_file_names)
     #df_f1.to_latex(f'{input_path}/f1_talbel', float_format="{:0.2f}".format)
     print(f'{input_path}/f1_talbel')
     df_f1.style.to_latex(f'{input_path}/f1_talbel')
 
+
+    df_auc.style.to_latex(f'{input_path}/auc_talbel')
 
     #for key in measures_dict:
         #print(key)
