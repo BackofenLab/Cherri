@@ -28,7 +28,7 @@ def calculate_measures(data, read=True):
     f1 = f1_score(df_model['true_label'].tolist(), df_model['predicted_label'].tolist())
     #print(f1)
     precision, recall, thresholds, auc_prc = compute_prc(df_model['true_label'].tolist(), df_model['instance_score'].tolist())
-    print(f'AUC_PCR: {auc_prc}')
+    #print(f'AUC_PCR: {auc_prc}')
     return f1, auc_prc
 
 def calculate_diag(name, input_path):
@@ -69,9 +69,7 @@ def main():
 
 
 
-    # contains all measurments
-    measures_dict_f1 = {}
-    measures_dict_auc = {}
+
     # model -> [f1 socres of all datasets]
     f1_dict = {}
     AUC_dict = {}
@@ -85,15 +83,12 @@ def main():
                 # file example: evaluation_results_PARIS_mouse_PARIS_human_RBP.cvs
                 file_name = f'{input_path}evaluation_results_{name}_{name2}.csv'
                 f1_cross_model, auc_prc_model = calculate_measures(file_name)
-                #measures_dict_f1[key] = f1_cross_model
-                #measures_dict_auc[key] = auc_prc_model
+
                 #print(key, val[0])
                 temp_dict_f1[name2]= f1_cross_model
                 temp_dict_auc[name2]= auc_prc_model
         key_diag = name + '$' + name
         f1, auc = calculate_diag(name, input_path)
-        #measures_dict_f1[key_diag] = f1
-        #measures_dict_auc[key_diag] = auc
         temp_dict_f1[name]= f1
         temp_dict_auc[name]= auc
         print(key_diag, f1)
