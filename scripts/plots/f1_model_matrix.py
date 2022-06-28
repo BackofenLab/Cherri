@@ -37,7 +37,15 @@ def calculate_diag(name, input_path):
     df_val2 = pd.read_csv((input_path + name +'_'  + name + '_fold2.csv'))
     df_val3 = pd.read_csv((input_path + name +'_'  + name + '_fold3.csv'))
     df_val4 = pd.read_csv((input_path + name +'_' + name + '_fold4.csv'))
+    print(df_val0.columns)
+    #print(df_val0['true_label'])
+    #print(df_val1['true_label'])
+    #print(df_val2['true_label'])
+    #print(df_val3['true_label'])
+    #print(df_val4['true_label'])
     df_cv = pd.concat([df_val0, df_val1, df_val2, df_val3, df_val4], ignore_index=True)
+    print(df_cv)
+
     f1, auc_prc = calculate_measures(df_cv, read=False)
 
     return f1, auc_prc
@@ -75,20 +83,25 @@ def main():
     AUC_dict = {}
 
     for name in feature_file_names:
+        print(f'investation {name}')
         temp_dict_f1 = {}
         temp_dict_auc = {}
         for name2 in feature_file_names:
             if name != name2:
+                print(f'\n******combined with {name2}')
                 key = name + '$' + name2
                 # file example: evaluation_results_PARIS_mouse_PARIS_human_RBP.cvs
                 file_name = f'{input_path}evaluation_results_{name}_{name2}.csv'
                 f1_cross_model, auc_prc_model = calculate_measures(file_name)
+                print(f'**done**\n')
 
                 #print(key, val[0])
                 temp_dict_f1[name2]= f1_cross_model
                 temp_dict_auc[name2]= auc_prc_model
         key_diag = name + '$' + name
+        print(f'\n******combined with {name}')
         f1, auc = calculate_diag(name, input_path)
+        print(f'**done**\n')
         temp_dict_f1[name]= f1
         temp_dict_auc[name]= auc
         print(key_diag, f1)
