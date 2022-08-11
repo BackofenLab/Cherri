@@ -1,4 +1,4 @@
-# :cherries: CheRRI (Computational Help Evaluating RNA-RNA interactions) :cherries:
+# CheRRI (Computational Help Evaluating RNA-RNA interactions)
 
 CheRRI detects functional RNA-RNA interaction (RRI) sites, by evaluating if an interaction site most likely occurs in nature.
 It helps to filter interaction sites generated either experimentally or by an RRI prediction algorithm, by removing false positive interactions.
@@ -7,11 +7,7 @@ It helps to filter interaction sites generated either experimentally or by an RR
 
 ## CheRRI's workflow
 
-CheRRI can be run in two modes, the model generation or **train** mode, or the RRI evaluation or **eval** mode. Here is an illustration of CheRRI's workflow:
-
-<img src="./plots/Cherri_workflow_resuctured2.svg " alt="Cherri_workflow" width="550"/>
-
-
+CheRRI can be run in two modes, the model generation or **train** mode, or the RRI evaluation or **eval** mode. 
 For the evaluation of a given set of RRI sites, a model must be specified in CheRRI's **eval** mode. Here pre-trained models can be applied or the user trains a model using CheRRI's **train** mode.
 To train a novel model, an RNA-RNA interactome dataset specifying all RRI sites should be provided. CheRRI makes use of replicate data by checking if an RRI site can be found in all replicates within an overlap threshold. This is how CheRRI builds the set of trusted RRIs. In **eval** mode, the interaction positions are reformatted in the same way as the trusted RRIs. In both modes, CheRRI uses the same core method to generate a feature set which will be used to select a model in **train** mode, and in **eval** mode for the evaluation of the biological relevance of the submitted RRI sites.
 
@@ -32,50 +28,9 @@ $ conda --version
 conda 4.10.3
 ```
 
-### Install CheRRI Conda package **not working jet**
-
-CheRRI is available as a Conda package [here](https://anaconda.org/bioconda/).
-
-We recommend to create a new Conda environment inside which we will then install CheRRI:
-
-```
-conda create -n cherri python=3.8 cherri -c conda-forge -c bioconda
-```
-Alternatively, you can install it into your existing environment via:
-
-```
-conda install -c bioconda cherri
-```
-
-If you are experiencing problems while running `conda install -c bioconda cherri` (e.g. complaints about conflicting dependencies), the following commands might help:
-
-```
-conda config --add channels bioconda
-conda config --add channels conda-forge
-```
-
-This tells Conda to explicitly look for packages in the specified channels, stored in the `.condarc` [conda configuration file](https://conda.io/projects/conda/en/latest/user-guide/configuration/use-condarc.html).
-
-You additionally need to fix the python hash seed:
-
-```
-conda env config vars set PYTHONHASHSEED=31337
-```
-Please reactivate the environment to activate the PYTHONHASHSEED environment variable.
-
-```
-conda deactivate
-conda acivate cherri
-```
-
-Now CheRRI should be available and usable inside the environment:
 
 
-```
-cherri -h
-```
-
-### Manual installation
+### Create environment manually
 
 To manually install CheRRI, first create a Conda environment:
 
@@ -106,13 +61,6 @@ conda create -n cherri -c conda-forge -c bioconda -c smautner scikit-learn netwo
 conda activate cherri
 ```
 
-Finally, to install the tool itself, simply clone the repository and execute the installation script inside the cloned folder:
-
-```
-git clone https://github.com/BackofenLab/Cherri.git
-cd Cherri
-python -m pip install . --ignore-installed --no-deps -vv 
-```
 
 You additionally need to set a fixed python hash seed within the conda environment:
 
@@ -130,12 +78,43 @@ conda deactivate
 conda acivate cherri
 ```
 
+#### Manual installation
+
+To install the tool itself, simply clone the repository and execute the installation script inside the cloned folder:
+
+```
+git clone https://github.com/BackofenLab/Cherri.git 
+```
+
+Make sure you are inside the CheRRI's conda environment and you are inside the tools folder. 
+
+```
+conda acivate cherri
+cd Cherri
+```
+
+Than you can install CheRRI.
+
+```
+python -m pip install . --ignore-installed --no-deps -vv 
+```
+
+
 Now you can run CheRRI from any given folder:
 
 ```
 cherri -h
 ```
 
+### Install using pip
+If you don't want to download the CheRRI's git folder you can also use the pipy package. 
+```
+pip install cherri
+```
+
+### Install CheRRI Conda package
+
+work in progress
 
 
 ## Usage
