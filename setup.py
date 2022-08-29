@@ -11,9 +11,10 @@ with open('LICENSE') as f:
 
 setup(
     name='cherri',
-    version='0.1',
+    version='0.3',
     description='Cherri is a tool for classification of RNA-RNA interactions.',
     long_description=readme,
+    long_description_content_type='text/markdown',
     author='Teresa Mueller',
     author_email='muellert@informatik.uni-freiburg.de',
     url='https://github.com/teresa-m/Cherri',
