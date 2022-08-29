@@ -49,15 +49,15 @@ conda install -c bioconda interlap
 conda install -c bioconda IntaRNA
 conda install -c bioconda numpy
 conda install -c bioconda pandas
-conda install -c smautner eden-kernel
-conda install -c smautner biofilm=0.0.88
+conda install -c conda-forge eden-kernel
+conda install -c conda-forge biofilm
 conda install -c conda-forge python-wget
 ```
 
 Or create the environment with all dependencies at once:
 
 ```
-conda create -n cherri -c conda-forge -c bioconda -c smautner scikit-learn networkx ucsc-twobittofa interlap pandas IntaRNA python-wget eden-kernel biofilm=0.0.88 python-wget
+conda create -n cherri -c conda-forge -c bioconda scikit-learn networkx ucsc-twobittofa interlap pandas IntaRNA eden-kernel biofilm python-wget
 conda activate cherri
 ```
 
