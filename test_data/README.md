@@ -1,6 +1,6 @@
 # Test Datasets
 
-## training data:
+## Training data:
 To thest if the Cherri **train** mode is running for you you cna use one of the given datasets in the test data. 
 The ./training/Paris/miRNA_human[1-3].tabular are a subset of the original data and well suited to test the opation of the Cherri tool.
 
@@ -9,7 +9,7 @@ cherri train -i1 test_data/training/Paris/ -r miRNA_human_1.tabular miRNA_human_
 ```
 
 
-### test data:
+### Test data:
 The ./evaluate/test_evaluate_rri.cvs dataset is a artifical data set created to test Cherris **eval** function.
 
 ```
