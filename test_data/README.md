@@ -1,6 +1,6 @@
 # Test Datasets
 
-## Training data:
+### Training data:
 To thest if the Cherri **train** mode is running for you you cna use one of the given datasets in the test data. 
 The ./training/Paris/miRNA_human[1-3].tabular are a subset of the original data and well suited to test the opation of the Cherri tool.
 
