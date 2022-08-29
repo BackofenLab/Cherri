@@ -15,10 +15,6 @@ import subprocess
 __version__ = "0.3"
 
 """
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~ OPEN FOR BUSINESS ~~~~~~
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Check out available modes
@@ -724,7 +720,7 @@ def main_train(args):
 
 
 
-        print('4a. Refit model\n')
+        print('4b. Refit model\n')
         call_refit = (f'$(which python) -m biofilm.biofilm-cv --infile '
                       f'{feat_output} --folds 0 --model {model_path} '
                       f'--out {full_model_path}')
@@ -741,7 +737,7 @@ def main_train(args):
         out = rl.call_script(opt_call, reprot_stdout=True,asset_err=False)
         #print(out.decode())
 
-        print('4b. refit model\n')
+        print('4c. Refit model\n')
         call_refit = (f'$(which python) -m biofilm.biofilm-cv '
                       f'--infile {feat_output} --folds 0 '
                       f'--featurefile {out_feat} '
