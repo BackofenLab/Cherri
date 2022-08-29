@@ -9,7 +9,7 @@ cherri train -i1 test_data/training/Paris/ -r miRNA_human_1.tabular miRNA_human_
 ```
 
 
-### Test data:
+### Evaluation data:
 The ./evaluate/test_evaluate_rri.cvs dataset is a artifical data set created to test Cherris **eval** function.
 
 ```
