@@ -45,10 +45,10 @@ Inside the environment, you need to install the following dependencies:
 conda install -c conda-forge scikit-learn
 conda install -c conda-forge networkx
 conda install -c bioconda ucsc-twobittofa
-conda install -c bioconda interlap
-conda install -c bioconda IntaRNA
-conda install -c bioconda numpy
-conda install -c bioconda pandas
+conda install -c conda-forge interlap
+conda install -c bioconda intarna
+conda install -c conda-forge numpy
+conda install -c conda-forge pandas
 conda install -c conda-forge eden-kernel
 conda install -c conda-forge biofilm
 conda install -c conda-forge python-wget
@@ -57,7 +57,7 @@ conda install -c conda-forge python-wget
 Or create the environment with all dependencies at once:
 
 ```
-conda create -n cherri -c conda-forge -c bioconda scikit-learn networkx ucsc-twobittofa interlap pandas IntaRNA eden-kernel biofilm python-wget
+conda create -n cherri -c conda-forge -c bioconda scikit-learn networkx ucsc-twobittofa interlap pandas intarna eden-kernel biofilm python-wget
 conda activate cherri
 ```
 
