@@ -158,7 +158,7 @@ If no additional occupied regions are specified (`--occupied_regions`), only the
 For the test call please download the [Cherri_models_data](https://doi.org/10.5281/zenodo.6533932) zip folder. The PARIS_human model is needed to execute the call. Be sure to provide the correct location for the model and its feature set (`-m`, `-mp`). For example, assuming the data (zip folder extracted to folder `Cherri_models_data`) is stored inside the CheRRI folder:
 
 ```
-cherri eval -i1 test_data/evaluate/test_evaluate_rris.cvs -g human -l human -o ./ -n test_eval -c 150 -st on -m Cherri_models_data/Model_with_graph_features/PARIS_human/model/full_PARIS_human_context_150.model -mp Cherri_models_data/Model_with_graph_features/PARIS_human/feature_files/training_data_PARIS_human_context_150.npz -i2 Cherri_models_data/Model_with_graph_features/PARIS_human/occupied_regions/occupied_regions.obj
+cherri eval -i1 test_data/evaluate/test_evaluate_rris.csv -g human -l human -o ./ -n test_eval -c 150 -st on -m Cherri_models_data/Model_with_graph_features/PARIS_human/model/full_PARIS_human_context_150.model -mp Cherri_models_data/Model_with_graph_features/PARIS_human/feature_files/training_data_PARIS_human_context_150.npz -i2 Cherri_models_data/Model_with_graph_features/PARIS_human/occupied_regions/occupied_regions.obj
 ```
 
 
@@ -270,7 +270,7 @@ Throughout the program, several output files are generated inside the output fol
     ├── date_Cherri_model_build
     |   ├── date_occ_out
     |       ├── occupied_regions.obj
-    |       ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.cvs
+    |       ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.csv
     |   ├── read_pos_neg_data
     |       ├── test_train_context_50_pos_occ_neg.csv
     |       ├── test_train_context_50_pos_occ_pos.csv
@@ -283,7 +283,7 @@ Throughout the program, several output files are generated inside the output fol
     |           ├── test_train_context_50.npz (only present when use_structure==off)
     |       ├── optimized
     |           ├── test_train_context_50.model
-    |           ├── test_train_context_50.cvs
+    |           ├── test_train_context_50.csv
 
 
 
