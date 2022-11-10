@@ -155,11 +155,19 @@ def build_replicat_library_to_compare(input_path, list_of_replicates, score_th):
     rep_size_list = []
     for file in list_of_replicates:
         in_file = input_path + '/' + file
-        df_replicat = rl.read_chira_data(in_file)
+        df_test = pd.read_table(in_file, sep=',')
+        #print(df_test.info())
+        sep = rl.check_file_type(in_file)
+        df_replicat = rl.check_input_data(in_file, sep)
+        #print(df_replicat.info())
+        # df_replicat = rl.read_chira_data(in_file)
         df_filtered_replicat = rl.filter_score(df_replicat, score_th)
+        #print(df_filtered_replicat.info())
         rep_size = len(df_filtered_replicat)
+        #print(rep_size)
         rep_size_list.append(rep_size)
         inter_replicat = build_interlap_for_replicat(df_filtered_replicat)
+        #print(len(inter_replicat))
         inter_replicat_list.append(inter_replicat)
     #print(len(inter_replicat_list))
     # sort the replicat list by size...

@@ -43,7 +43,7 @@ import wget
 
 """
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~ OPEN FOR BUSINESS ~~~~~~
+~~~~~~ CheRRI library ~~~~~~~~~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Author: muellert [at] informatik.uni-freiburg.de
@@ -65,7 +65,7 @@ def read_chira_data(in_file, header='no', separater="\t"):
 
         Parameters
         ----------
-        in_file : tabular file with output of chira RRI results
+        in_file : tabular file with output of ChiRA RRI results
 
         Raises
         ------
@@ -83,9 +83,9 @@ def read_chira_data(in_file, header='no', separater="\t"):
 
         header_line = ['#reads','chrom_1st','start_1st','end_1st', 'strand_1st',
                 'chrom_2end','start_2end','end_2end', 'strand_2end',
-                'ineraction_site_1st', 'ineraction_site_2end',
+                'interaction_site_1st', 'interaction_site_2end',
                 'IntaRNA_prediction', 'energy',
-                'seq_1st_ineraction_site', 'seq_2end_ineraction_site',
+                'seq_1st_interaction_site', 'seq_2end_interaction_site',
                 'start_interaction',
                 'chrom_seq_1st_site', 'start_seq_1st_site',
                 'stop_seq_1st_site','strand_seq_1st_site',
@@ -113,6 +113,261 @@ def read_chira_data(in_file, header='no', separater="\t"):
 
 ################################################################################
 
+def get_input_positions_df(df_interactions, needed_header):
+    """
+    Create a dataframe that contains the interaction information for the user provided format
+
+        Parameters
+        ----------
+        df_interactions : user defined input in a dataframe
+        needed_header: header line required by a user defined input setting
+
+
+        Returns
+        -------
+        df_pos
+            dataframe containgin the columns matching the needed_header
+
+        """
+    if len(df_interactions.columns) == 8:
+        assert set(list(df_interactions.columns)) == set(needed_header), 'You input header line is not fitting the needed format'
+        df_pos = df_interactions
+    elif len(df_interactions.columns) > 8 and len(df_interactions.columns) < 34:
+        df_pos = df_interactions[needed_header]
+        # print(df_pos)
+    else:
+        assert len(df_interactions.columns) >= 34, 'Unexpected number of input columns'
+    return df_pos
+
+################################################################################
+
+def build_df_and_check_input(df_in, header,NA_list):
+
+    """
+    Build the a dataframe having all header columns either with NA list or if existing data stored in df_in
+
+        Parameters
+        ----------
+        df_in : user defined input in a dataframe
+        header: header line of the df that should be build
+
+
+        Returns
+        -------
+        df_pos
+            dataframe with columns matching the needed_header
+
+        """
+    if set(header).issubset(set(list(df_in.columns))):
+        df_out = df_interactions[header]
+    else:
+        data_dict = {}
+        for col in header:
+            if col in list(df_in.columns):
+                data_dict[col] = df_in[col]
+            else:
+                data_dict[col] = NA_list
+        df_out = pd.DataFrame(data_dict)
+
+    return df_out
+
+################################################################################
+
+def set_score_if_not_defined(df_in, df_score, col, score_val=1.0):
+
+    """
+    Set a score_val if no score was defined already by the user
+
+        Parameters
+        ----------
+        df_in : user defined input in a dataframe
+        df_score: dataframe containing score information
+        col: column name that should be checked and maybe changed
+        score_val: score value which should be higher than score_th
+
+
+        Returns
+        -------
+        df_score
+            dataframe containing changed scores if not defined by the user
+
+    >>> df_in_1 = pd.DataFrame({'score':[0.3,0.3,1,1],'b':[1,1,1,1]})
+    >>> df_score_1 = pd.DataFrame({'score':[0.3,0.3,1,1],'b':[1,1,1,1]})
+    >>> set_score_if_not_defined(df_in, df_score, 'score')
+       score  b
+    0  0.3    1
+    1  0.3    1
+    2  1.0    1
+    3  1.0    1
+    >>> df_in_2 = pd.DataFrame({'a':['a','b','c','d'],'b':[1,1,1,1]})
+    >>> df_score_2 = pd.DataFrame({'score':['NA','NA','NA','NA'],'b':[1,1,1,1]})
+    >>> set_score_if_not_defined(df_in, df_score, 'score')
+     score b
+    0   0.3 1
+    1   0.3 1
+    2   1.0 1
+    3   1.0 1
+        """
+    if not col in list(df_in.columns):
+        df_score[col] = [score_val]*len(df_in)
+
+    return df_score
+
+
+
+################################################################################
+
+def check_file_type(in_file):
+    """
+    Checks file type of the input file to find the delimiter
+
+        Parameters
+        ----------
+        in_file : inupt file
+
+
+
+        Returns
+        -------
+        delimiter
+            type of delimiter
+
+        """
+    delimiter = ''
+    if in_file.endswith('.tabular'):
+        delimiter="\t"
+    elif in_file.endswith('.table'):
+        delimiter="\t"
+    elif in_file.endswith('.csv'):
+        delimiter = ","
+    else:
+        assert delimiter != '', 'Unknown file ending. Use .csv or .tabular'
+    return delimiter
+
+################################################################################
+
+
+
+def check_input_data(in_file, delimiter):
+    """
+    Function checks if input data originate form ChiRA or is
+    the user defined data.
+    If it is a user defined input data is converted to ChiRA format
+
+        Parameters
+        ----------
+        in_file : tabular file with output of C RRI results
+        delimiter : ',' or '\t'
+
+
+        Returns
+        -------
+        df_user_in
+            user defined input data
+
+        """
+
+    # inclued header
+    header_line = ['#reads','chrom_1st','start_1st','end_1st', 'strand_1st',
+                  'chrom_2end','start_2end','end_2end', 'strand_2end',
+                  'interaction_site_1st', 'interaction_site_2end',
+                  'IntaRNA_prediction', 'energy',
+                  'seq_1st_interaction_site', 'seq_2end_interaction_site',
+                  'start_interaction', 'chrom_seq_1st_site',
+                  'start_seq_1st_site', 'stop_seq_1st_site',
+                  'strand_seq_1st_site', 'chrom_seq_2end_site',
+                  'start_seq_2end_site', 'stop_seq_2end_site',
+                  'strand_seq_2end_site', 'TPM_seq_1st_site',
+                  'TPM_seq_2end_site', 'TPM_summary', 'score_seq_1st_site',
+                  'score_seq_2end_site','score_product', 'biotype_region_1st',
+                  'biotype_region_2end', 'ID_1st','ID_2end']
+
+    needed_header = ['chrom_1st','start_1st','end_1st','strand_1st',
+                    'chrom_2end','start_2end','end_2end','strand_2end']
+
+    prediction_info_h = ['interaction_site_1st', 'interaction_site_2end',
+                        'IntaRNA_prediction', 'energy',
+                        'seq_1st_interaction_site',
+                        'seq_2end_interaction_site', 'start_interaction']
+    prediciton_pos_h = ['chrom_seq_1st_site', 'start_seq_1st_site',
+                       'stop_seq_1st_site','strand_seq_1st_site',
+                       'chrom_seq_2end_site', 'start_seq_2end_site',
+                       'stop_seq_2end_site','strand_seq_2end_site']
+
+    score_h = ['TPM_seq_1st_site', 'TPM_seq_2end_site', 'TPM_summary',
+              'score_seq_1st_site', 'score_seq_2end_site','score_product',
+              'biotype_region_1st', 'biotype_region_2end', 'ID_1st',
+              'ID_2end']
+
+
+    # check input format
+    df_interactions = pd.read_table(in_file, sep=delimiter, low_memory=False)
+
+    #print(df_interactions.info())
+    num_interaction = len(df_interactions)
+    #print(num_interaction)
+    NA_list = ['NA']*num_interaction
+
+    df_reads = pd.DataFrame([1]*num_interaction, columns=['#reads'])
+
+
+    # check if length is shorter than 34
+    if len(df_interactions.columns) == 34 and 'chrom_1st' not in list(df_interactions.columns):
+        print('Detected input data in format of ChiRA without header')
+        df_interactions = pd.read_table(in_file, header=None, sep=delimiter,
+                                low_memory=False, names=header_line)
+        return df_interactions
+    else:
+        print('Convert user input into ChiRA input format')
+        df_pos = get_input_positions_df(df_interactions, needed_header)
+
+
+    #build intaRNA_interaction
+
+    df_pred_i = build_df_and_check_input(df_interactions,
+                                            prediction_info_h, NA_list)
+    #print(df_pred_i)
+    #print(df_pos)
+    if not 'chrom_seq_1st_site' in set(df_interactions.columns):
+        df_pred_pos = df_pos.copy()
+        df_pred_pos.columns = prediciton_pos_h
+    else:
+        dict_pred_pos = {}
+        for col in prediciton_pos_h:
+            assert col in df_interactions.columns, 'please provide all predicted interaction positions'
+            dict_pred_pos[col] = df_interactions[col]
+        df_pred_pos = pd.DataFrame(data=dict_pred_pos)
+    #print(df_pos)
+    # print(df_pred_pos)
+
+    #df_pred_pos = build_df_and_check_input(df_interactions,
+    #                                             prediciton_pos_h, NA_list)
+    #print(df_pred_pos)
+
+    df_score_temp = build_df_and_check_input(df_interactions, score_h, NA_list)
+
+    df_score = set_score_if_not_defined(df_interactions, df_score_temp,
+                                        'score_seq_1st_site')
+    df_score = set_score_if_not_defined(df_interactions, df_score_temp,
+                                        'score_seq_2end_site')
+
+    #print(df_reads.info())
+    #print(df_pos.info())
+    #print(df_pred_i.info())
+    #print(df_pred_pos.info())
+    #print(df_score.info())
+
+    df_user_in = pd.concat([df_reads, df_pos, df_pred_i, df_pred_pos, df_score],
+                           axis=1)
+    #print(df_user_in)
+
+    assert len(df_user_in.columns) == 34, 'Wrongly converted user input'
+
+    return df_user_in
+
+
+################################################################################
+
 def filter_score(df, score_th):
     """
     Filter dataframe for instances with a score of 1
@@ -120,7 +375,7 @@ def filter_score(df, score_th):
         Parameters
         ----------
         df : df including the containing all RRIs (Interactions)
-        score_th: threshold for the expectation maximization score of Chira
+        score_th: threshold for the expectation maximization score of ChiRA
 
 
         Returns
@@ -147,7 +402,7 @@ def filter_score(df, score_th):
 
 def delet_empty_col(df):
     """
-    Filters out all rows with a emty column entry in a dataframe
+    Filters out all rows with a empty column entry in a dataframe
 
         Parameters
         ----------
@@ -232,7 +487,7 @@ def calculate_overlap(s1,e1,s2,e2,len_flag=False):
         elif e2 < e1:
             e_overlap = e2
         else:
-            print('error: somthing is not overlaping hier')
+            print('error: something is not overlapping hire')
     elif s2 < s1:
         s_overlap = s1
         if e1 <= e2:
@@ -240,7 +495,7 @@ def calculate_overlap(s1,e1,s2,e2,len_flag=False):
         elif e2 < e1:
             e_overlap = e2
         else:
-            print('error: somthing is not overlaping hier')
+            print('error: something is not overlapping hire')
     overlap_len = e_overlap - s_overlap +1
     seq1_len = e1 - s1 + 1
     seq2_len = e2 - s2 + 1
@@ -268,7 +523,7 @@ def get_chrom_list_no_numbers(df_interactions, chrom):
         Parameters
         ----------
         df_interactions : df including the filtered RRIs
-        chrom : string indicating from wich seq the chromosome is
+        chrom : string indicating from which seq the chromosome is
 
 
         Returns
@@ -295,7 +550,7 @@ def get_list_chrom(df):
 
         Parameters
         ----------
-        df : df including the filtered RRIs
+        df : dataframe including the filtered RRIs
 
 
         Returns
@@ -305,8 +560,8 @@ def get_list_chrom(df):
             and present in the input data frame
 
         """
-    chrom1_list = get_chrom_list_no_numbers(df, 'chrom_seq_1st_site')
-    chrom2_list = get_chrom_list_no_numbers(df, 'chrom_seq_2end_site')
+    chrom1_list = get_chrom_list_no_numbers(df, 'chrom_1st')
+    chrom2_list = get_chrom_list_no_numbers(df, 'chrom_2end')
     list_chrom_no_int = list(set().union(chrom1_list,chrom2_list))
     sort_list_chrom = sorted(list_chrom_no_int)
     return sort_list_chrom
@@ -688,12 +943,14 @@ def encode_hybrid_by_BPs(dot_bracket, seq):
 
         Parameters
         ----------
-        dot_bracket:
+        dot_bracket: interaction given in with a dot bracket encoding
         seq: query
 
         Returns
         -------
         tup_list
+            List of tuples storing the complete interaction of both 
+            [(target,query)]
 
         """
     # Test:    seq = 'ACCCACCCCCAA&AAGGAAGGGGGGA' hybrid = '.(((.(((((..&..))..)))))).'
@@ -739,14 +996,14 @@ def make_seq_from_list(shuffled_list):
 
         Parameters
         ----------
-        shuffled_list:
+        shuffled_list: shuffled list
 
 
         Returns
         -------
         seq1
             shuffled target sequences
-        seq_2
+        seq2
             shuffled query sequence
 
         """
@@ -813,7 +1070,6 @@ def join_pos(pos_list):
         Parameters
         ----------
         pos_list : list of tuples containing (start, end) position
-        info: information what inter object
 
         Returns
         -------
@@ -960,7 +1216,7 @@ def read_pos_neg_data(in_positive_data_filepath, in_negative_data_filepath):
     #Inject labels
     pos_df['label'] = 1
     neg_df['label'] = 0
-    #Dataset initial characterisation
+    #Dataset initial characterization
     reporting=0
     if(reporting):
         pos_report=pandas_profiling.ProfileReport(pos_df,title="Positive data Report")
@@ -1234,7 +1490,7 @@ def filter_features(X,featurefile,use_structure):
 
 def get_filted_features(featurefile,csr_mat_h):
     """
-    produces a boolean header based on a already filtered real header so the
+    produces a Boolean header based on a already filtered real header so the
     evaluation data can filter for the same columns as was used in training
         Parameters
         ----------
@@ -1244,7 +1500,7 @@ def get_filted_features(featurefile,csr_mat_h):
         Returns
         -------
         feat
-            boolean list to filter evaluation feature data
+            Boolean list to filter evaluation feature data
 
     """
     ft = np.load(featurefile)['d']
