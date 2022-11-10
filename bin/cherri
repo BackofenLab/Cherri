@@ -99,7 +99,7 @@ def setup_argument_parser():
                       nargs='?',
                       type=int,
                       dest="context",
-                      default=50,
+                      default=150,
                       help= "How much context should be added at up- and downstream of the sequence")
     p_ex.add_argument("-n", "--experiment_name",
                       action="store",
@@ -164,7 +164,7 @@ def setup_argument_parser():
                        nargs='?',
                        type=int,
                        dest="context",
-                       default=50,
+                       default=150,
                        help= "How much context should be added at up- and downstream of the sequence")
     p_mrg.add_argument("-n", "--experiment_name",
                        action="store",
@@ -270,7 +270,7 @@ def main_eval(args):
     """
     Output files:
     ├── date_Cherri_evaluation_mode
-    |   ├── evaluate_RRIs.table
+    |   ├── evaluate_RRIs.csv
     |   ├── positive_instance
     |       ├── test_eval_context_{context}pos.csv
     |       ├── date_occ_out
@@ -336,9 +336,9 @@ def main_eval(args):
     # 34
     header = ['#reads','chrom_1st','start_1st','end_1st', 'strand_1st',
               'chrom_2end','start_2end','end_2end', 'strand_2end',
-              'ineraction_site_1st', 'ineraction_site_2end',
+              'interaction_site_1st', 'interaction_site_2end',
               'IntaRNA_prediction', 'energy',
-              'seq_1st_ineraction_site', 'seq_2end_ineraction_site',
+              'seq_1st_interaction_site', 'seq_2end_interaction_site',
               'start_interaction',
               'chrom_seq_1st_site', 'start_seq_1st_site',
               'stop_seq_1st_site','strand_seq_1st_site',
@@ -367,7 +367,7 @@ def main_eval(args):
             df_content_list.append(data)
         # print(df_content_list[-2])
         df_rris = pd.DataFrame(df_content_list,columns=header)
-        eval_rri_file = out_path + 'evaluete_RRIs.table'
+        eval_rri_file = out_path + 'evaluete_RRIs.csv'
         df_rris.to_csv(eval_rri_file, index=False, sep=',')
 
 
@@ -535,7 +535,7 @@ def main_train(args):
     #methods = f'all'
 
 
-
+    # if no user provided IntaRNA paramter fiel use the default of cherri
     if param_file == 'not_set':
         lib_path = os.path.dirname(rl.__file__)
         param_file = lib_path + "/IntaRNA_param/IntaRNA_param.txt"

@@ -210,18 +210,50 @@ Throughout the program, several output files are generated and stored in the fol
     |       ├── evaluation_results_test_eval.csv
 
 
+#### Validate your model using the **eval** mode
+You can also use CheRRIs **eval** mode to create a validation result table and than use the [coupute_f1](./scripts/plots/compute_f1.py) to get the F1 score.
+
+In the following is a example call to validate a theoretical model build from DataA
+```
+cherri eval -i1 /path/to/Model_folder/DataA/feature_files/feature_filtered_<DataA>_context_<150>_pos_occ -g human -l human -o /path/to/Model_folder -n <val_modelA> -c 150 -st on -m  /path/to/Model_folder/DataA/model/optimized/full_<DataA>_context_<150>.model -mp  /path/to/Model_folder/DataA/feature_files/training_data_<DataA>_context_<150>.npz -j 10 -on evaluation -hf on
+```
+Than use the result file to compute the F1 score using [coupute_f1](./scripts/plots/compute_f1.py).
+
 ### Build a new CheRRI model in training mode
 
 Within CheRRI's **train** mode you can train your own model. 
-The input data are the RRI interactions found by Direct Duplex Detection (DDD) methods. To extract RRI interactions from DDD methods, a tool named [ChiRA](https://github.com/pavanvidem/chira) is used to generate the 'ChiRA interaction summary' table. CheRRI expects as input the 'ChiRA interaction summary' file.
+The input data are the RRIs found by Direct Duplex Detection (DDD) methods or other interactome HTS protocols. In theory it can be any RRI which is enough to build a solid model training dataset. If the interactions are from different organisms CheRRI needs to be called in a mixed_model 'on' training mode (will be explained later).
+
+#### Retrieve RNA-RNA interactome files Using ChiRA
+
+To extract RRI interactions from DDD methods, a tool named [ChiRA](https://github.com/pavanvidem/chira) is used to generate the 'ChiRA interaction summary' table. CheRRI expects as input the 'ChiRA interaction summary' file.
 
 If you want to prepare a 'ChiRA interaction summary' table file, please follow this [tutorial](https://training.galaxyproject.org/training-material//topics/transcriptomics/tutorials/rna-interactome/tutorial.html). You should prepare one ChiRA interaction summary file per replicate.
 
 Starting from the RRI site information, CheRRI will build a model based on features generated from the DDD method interactions site data. 
 
-#### Retrieve RNA-RNA interactome files
-
 ChiRA RRI output files are needed as input for CheRRI **train** mode. `--RRI_path` (`-i1`) demands the path to the the ChiRA interaction summary files, and `--list_of_replicates` (`-r`) demands the ChiRA interaction summary file names of the replicates used by CheRRI inside the `-i1` folder.
+
+#### Build RRI interactome file as input for CheRRI
+You can add your own interaction data in a tabular of csv format. Please follow the specific guides given below to build the table. 
+You would need to provide the position information on an interaction using the following header line:
+```
+['chrom_1st','start_1st','end_1st','strand_1st','chrom_2end','start_2end','end_2end','strand_2end']
+```
+
+If you want to add the result of an interaction you should set all interaction position by using the following header names:
+predicted interaction positions:
+```
+'chrom_seq_1st_site', 'start_seq_1st_site','stop_seq_1st_site','strand_seq_1st_site','chrom_seq_2end_site', 'start_seq_2end_site', 'stop_seq_2end_site','strand_seq_2end_site'
+```
+This information of the interaction need to be complete or not provided at all. If they are not provided the RRI position information from above are used as score for finding overlaps between replicates. 
+
+If you have a score for the interactions you can also provide it in the following columns:
+```
+'score_seq_1st_site', 'score_seq_2end_site'
+```
+
+You can check the [example file](./test_data/training/user_defined.csv) to get a impression how it could look.
 
 #### Example call for CheRRI's training mode
 
@@ -232,8 +264,8 @@ cherri train -i1 test_data/training/Paris/ -r miRNA_human_1.tabular miRNA_human_
 ```
 
 
-
 #### Input parameters in training mode 
+
 
 Input parameters for CheRRI's **train** mode (`cherri train`):
 
@@ -284,6 +316,48 @@ Throughout the program, several output files are generated inside the output fol
     |       ├── optimized
     |           ├── test_train_context_50.model
     |           ├── test_train_context_50.csv
+
+
+
+#### Run train in mixed model mode
+
+CheRRI is able to build on model based on different datasets. Is the mixed parameter is set to 'on' Cherri will connect training data for different datasets. However before running the mixed mode one would create the training data for the individual datasets.
+Next we have a theoretical example of DataA, DataB and DataC, which should be trained together
+Therefore best create an dedicated output folder e.g. Cherri_build_model
+
+Than build you first model:
+```
+cherri train -i1 /path/to/Cherri_build_model/ -r dataA_1.tabular dataA_2.tabular -g human -l human -o ./ -n Data_A -c 150 -st on -t 600 -me 8000 -j 7
+```
+If you don't need the model of the individual datasets you can either set the -t very low or even interrupt the call once the model is build.
+Next rename the output folder created by Cherri to the name you gave to the Data/Model (-n Data_A)
+```
+mv /path/to/Cherri_build_model/<date>_Cherri_build_model /path/to/Cherri_build_model/Data_A
+```
+
+Than run the next dataset:
+```
+cherri train -i1 /path/to/Cherri_build_model/ -r dataB_1.tabular dataB_2.tabular -g human -l human -o ./ -n Data_B -c 150 -st on -t 600 -me 8000 -j 7
+```
+Next rename the output folder created by Cherri to the name you gave to the Data/Model (-n Data_A)
+```
+mv /path/to/Cherri_build_model/<date>_Cherri_build_model /path/to/Cherri_build_model/Data_B
+```
+
+Than run the last dataset:
+```
+cherri train -i1 /path/to/Cherri_build_model/ -r dataC_1.tabular dataC_2.tabular -g mouse -l mouse -o ./ -n Data_C -c 150 -st on -t 600 -me 8000 -j 7
+```
+And rename the output folder created by Cherri to the name you gave to the Data/Model (-n Data_A)
+```
+mv /path/to/Cherri_build_model/<date>_Cherri_build_model /path/to/Cherri_build_model/Data_C
+```
+
+Finally you can run CheRRI **train** in the mixed model mode like this:
+```
+cherri train -i1 /path/to/Cherri_build_model/  -r Data_A Data_B Data_C  -g /not/needed/ -l /not/needed/ -o /path/to/Cherri_build_model/ -n Full 
+```
+This time your replicates are the names of the training datasets you want to connect (Data_A Data_B Data_C). 
 
 
 

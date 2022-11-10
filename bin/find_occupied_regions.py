@@ -189,7 +189,7 @@ def main():
     exp_score_th = 10
     if file_rbp_pos == 'non':
         flag_prot = False
-        print('no RBP occupied positions given')
+        print('No RBP occupied positions given')
     else:
         flag_prot = True
 
@@ -212,10 +212,13 @@ def main():
         in_file = input_path_RRIs + replicates[0]
         print(in_file)
         # df_replicat = rl.read_chira_data(in_file)
+        sep = rl.check_file_type(in_file)
         if mode == 'train':
-            df_replicat = rl.read_chira_data(in_file, header='no', separater="\t")
+            df_replicat = rl.check_input_data(in_file, sep)
+            #df_replicat = rl.read_chira_data(in_file, header='no', separater=sep)
         elif mode == 'eval':
-            df_replicat = rl.read_chira_data(in_file, header='yes', separater=",")
+            df_replicat = rl.read_chira_data(in_file, header='yes',
+                                             separater=sep)
         print(df_replicat)
         if score_th == 'non':
             df_rris = df_replicat
@@ -226,8 +229,8 @@ def main():
 
             #print(df_rris.info())
     else:
+        print(rri_call)
         rl.call_script(rri_call)
-        #print(rri_call)
         df_rris = rl.read_chira_data(rri_file, header='yes', separater=",")
         #out_path =  out_path_temp
     #df_rris = rl.read_chira_data(file_test, header='yes', separater=",")
