@@ -58,7 +58,7 @@ conda install -c conda-forge python-wget
 Or create the environment with all dependencies at once:
 
 ```
-conda create -n cherri -c conda-forge -c bioconda scikit-learn networkx bedtools biopython interlap pandas intarna eden-kernel biofilm python-wget
+conda create -n cherri -c conda-forge -c bioconda scikit-learn networkx numpy bedtools biopython interlap pandas intarna eden-kernel biofilm python-wget
 conda activate cherri
 ```
 
