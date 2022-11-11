@@ -768,7 +768,7 @@ def main():
                         dest="experiment_name", required=True,
                         help= "name of the data source of positive trusted RRIs")
     parser.add_argument("-g", "--genome_file", action="store", dest="genome_file",
-                        required=True, help= "path to 2bit genome file")
+                        required=True, help= "path to genome FASTA file")
     parser.add_argument("-c", "--context",  nargs='?', type=int,
                         dest="context",  default=5,
                         help= "how much context should be added up- and downstream")

@@ -47,7 +47,7 @@ def main():
                         help= "path to occupyed regions file or specify: human, mouse or none",
                         default="none")
     parser.add_argument("-g", "--genome_file", action="store", dest="genome_file",
-                        required=True, help= "path to 2bit genome file")
+                        required=True, help= "path to genome FASTA file")
     parser.add_argument("-o", "--out_path",
                         help= "path to folder all output folder of each step of the data preparation",
                         default="/vol/scratch/data/RRIs/")

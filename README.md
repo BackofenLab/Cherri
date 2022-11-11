@@ -44,7 +44,8 @@ Inside the environment, you need to install the following dependencies:
 ```
 conda install -c conda-forge scikit-learn
 conda install -c conda-forge networkx
-conda install -c bioconda ucsc-twobittofa
+conda install -c bioconda bedtools
+conda install -c conda-forge biopython
 conda install -c conda-forge interlap
 conda install -c bioconda intarna
 conda install -c conda-forge numpy
@@ -57,7 +58,7 @@ conda install -c conda-forge python-wget
 Or create the environment with all dependencies at once:
 
 ```
-conda create -n cherri -c conda-forge -c bioconda scikit-learn networkx ucsc-twobittofa interlap pandas intarna eden-kernel biofilm python-wget
+conda create -n cherri -c conda-forge -c bioconda scikit-learn networkx bedtools biopython interlap pandas intarna eden-kernel biofilm python-wget
 conda activate cherri
 ```
 
@@ -171,7 +172,7 @@ Input parameters for CheRRI's **eval** mode (`cherri eval`):
 | ID | name | description |
 |---|---|-----|
 | `-i1` |`--RRIs_table` | Table containing all RRIs that should be evaluated in the correct format|
-| `-g` | `--genome_file`| Path to 2bit genome file, or use the built-in download function if you want the human or mouse genome |
+| `-g` | `--genome_file`| Path to genome FASTA file, or use the built-in download function if you want the human or mouse genome |
 | `-o` | `--out_path`| Path to output directory where the output folder will be stored. It will contain separate output folders for each step of the data and feature preparation as well as the evaluated instances |
 | `-l` | `--chrom_len_file` | Tabular file containing data in two-column format for each chromosome: 'chrom name' \t 'chrom length'. You can directly specify 'human' or 'mouse' |
 | `-m` | `--model_file` | Set path to the model which should be used for evaluation |
@@ -276,7 +277,7 @@ Input parameters for CheRRI's **train** mode (`cherri train`):
 | `-o` | `--out_path`| Path to output directory where the output folder will be stored. It will contain separate output folders for each step of the data, feature and model preparation |
 | `-r` | `--list_of_replicates`| List the ChiRA interaction summary file for each replicate |
 | `-l` | `--chrom_len_file`| Tabular file containing data in two-column format for each chromosome: 'chrom name' \t 'chrom length'. You can directly specify 'human' or 'mouse' |
-| `-g` | `--genome`| Path to 2bit genome file, or use the built-in download function if you want the human or mouse genome |
+| `-g` | `--genome`| Path to genome FASTA file, or use the built-in download function if you want the human or mouse genome |
 ##### Optional:
 | ID | name | description |
 |---|---|-----|
@@ -419,7 +420,7 @@ Given a set of trusted RRI sites and occupied regions, a given context is append
 |  `-i2` | `--input_occupied` | Path to occupied regions file |
 | `-d` | `--output_path` | Path where output folder should be stored |
 | `-n` | `--experiment_name` | Name of the data source of positive trusted RRIs|
-| `-g` | `--genome_file` | Path to 2bit genome file |
+| `-g` | `--genome_file` | Path to genome FASTA file |
 | `-c` | `--context` | How much context should be added up- and downstream |
 |   | `--pos_occ`  | Occupied regions are set (default) |
 |   | `--no_pos_occ`  | Set if no occupied regions should be used |
