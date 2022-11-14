@@ -640,7 +640,10 @@ def add_context(df_bed, context, start, end):
 
 ################################################################################
 
-def bed_extract_sequences_from_fasta(in_bed, out_fa, in_genome_fasta):
+def bed_extract_sequences_from_fasta(in_bed, out_fa, in_genome_fasta,report=1,
+                                     all_uc=False,
+                                     skip_data_id="set",
+                                     skip_n_seqs=True):
     """
     Extract sequences from genome (provide genome FASTA file).
     fastaFromBed executable needs to be in PATH. Store extracted
@@ -654,6 +657,10 @@ def bed_extract_sequences_from_fasta(in_bed, out_fa, in_genome_fasta):
             Path to output FASTA file
         in_genome_fasta:
             Genome in FASTA format
+        report:
+            report the sequence containing N's (1) or
+            how many sequences are skipped because of a N (2)
+
 
         Returns
         -------
@@ -696,10 +703,10 @@ def bed_extract_sequences_from_fasta(in_bed, out_fa, in_genome_fasta):
         if report == 2:
             print("# of N-containing %s regions discarded:  %i" %(skip_data_id, c_skipped_n_ids))
     
-    # After converting to RNA and filtering 'N' sequeces write again to the FASTA files
+    # After converting to RNA and filtering 'N' sequences write again to the FASTA files
     with open(out_fa, "w") as fh_outfa:
         for seq_id, seq in seqs_dic.items():
-            fh_outfa.write(seq_id + "\n" + seq + "\n")
+            fh_outfa.write(">" + seq_id + "\n" + seq + "\n")
     return seqs_dic
 
 
