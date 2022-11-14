@@ -682,6 +682,7 @@ def bed_extract_sequences_from_fasta(in_bed, out_fa, in_genome_fasta):
     # If sequences with N nucleotide should be skipped.
     c_skipped_n_ids = 0
     del_ids = []
+    report = 1
     for seq_id in seqs_dic:
         seq = seqs_dic[seq_id]
         if re.search("N", seq, re.I):
@@ -699,7 +700,7 @@ def bed_extract_sequences_from_fasta(in_bed, out_fa, in_genome_fasta):
     # After converting to RNA and filtering 'N' sequeces write again to the FASTA files
     with open(out_fa, "w") as fh_outfa:
         for seq_id, seq in seqs_dic.items():
-            fh_outfa.write(seq_id + "\n" + seq + "\n")
+            fh_outfa.write(">" + seq_id + "\n" + seq + "\n")
     return seqs_dic
 
 
