@@ -667,11 +667,11 @@ def bed_extract_sequences_from_fasta(in_bed, out_fa, in_genome_fasta):
                         '-bed', in_bed, 
                         '-fo', out_fa])
     output = subprocess.getoutput(getfasta_cmd)
-    print('fastaFromBed:' + output)
+    # print('fastaFromBed:' + output)
     error = False
-    if output:
-        error = True
-    assert error == False, "fastaFromBed is complaining:\n%s\n%s" %(getfasta_cmd, output)
+    #if output:
+    #    error = True
+    #assert error == False, "fastaFromBed is complaining:\n%s\n%s" %(getfasta_cmd, output)
 
     seqs_dic = defaultdict()
     fa_seq = SeqIO.parse(open(out_fa), 'fasta')
