@@ -74,7 +74,7 @@ def setup_argument_parser():
                        dest="genome",
                        action="store",
                        required=True,
-                       help= "Path to 2bit genome file, or use the built-in download function if you want the human or mouse genome")
+                       help= "Path to genome FASTA file, or use the built-in download function if you want the human or mouse genome")
     p_exm.add_argument("-o", "--out_path",
                        required=True,
                        help= "Path to output directory where the output folder will be stored. It will contain separate output folders for each step of the data and feature preparation as well as the evaluated instances")
@@ -157,7 +157,7 @@ def setup_argument_parser():
                         action="store",
                         dest="genome",
                         required=True,
-                        help= "Path to 2bit genome file, or use the built-in download function if you want the human or mouse genome")
+                        help= "Path to genome FASTA file, or use the built-in download function if you want the human or mouse genome")
 
     # Optional arguments for merge.
     p_mrg.add_argument("-c", "--context",
@@ -398,7 +398,7 @@ def main_eval(args):
                          f'-s 1 -l {chrom_len_file} -p {param_file} -m eval')
 
         call_pos_neg = f'generate_pos_neg_with_context.py {pos_neg_param}'
-        print('1. Prepater RRI instances\n')
+        print('1. Prepare RRI instances\n')
         #print(call_pos_neg)
         rl.call_script(call_pos_neg)
 

@@ -16,7 +16,7 @@ def main():
                         #help= "path to RBP side data file (bed format)",
                         #default="/vol/scratch/data/human_RBP_coverage/GSE38355_ProtOccProf_4SU_consensus_TC_hg38.bed")
     parser.add_argument("-g", "--genome_file", action="store", dest="genome_file",
-                        required=True, help= "path to 2bit genome file")
+                        required=True, help= "path to genome FASTA file")
     parser.add_argument("-r", "--list_of_replicats", action="store",
                         nargs='+',
                         dest="list_of_replicats", required=True,

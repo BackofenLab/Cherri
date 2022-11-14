@@ -38,7 +38,7 @@ from lmz import *
 from itertools import compress
 import biofilm.algo.feature_selection as featsel
 import wget
-
+from Bio import SeqIO
 
 
 """
@@ -640,22 +640,20 @@ def add_context(df_bed, context, start, end):
 
 ################################################################################
 
-def bed_extract_sequences_from_2bit(in_bed, out_fa, in_2bit,
-                                    lc_repeats=False,
-                                    convert_to_rna=False):
+def bed_extract_sequences_from_fasta(in_bed, out_fa, in_genome_fasta):
     """
-    Extract sequences from genome (provide genome .2bit file).
-    twoBitToFa executable needs to be in PATH. Store extracted
+    Extract sequences from genome (provide genome FASTA file).
+    fastaFromBed executable needs to be in PATH. Store extracted
     sequences in out_fa.
 
         Parameters
         ----------
-
-        convert_to_rna:
-            If true, read in extracted sequences and convert to RNA.
-        lc_repeats:
-            If True, do not convert repeat regions to uppercase and output.
-
+        in_bed:
+            Input BED file
+        out_fa:
+            Path to output FASTA file
+        in_genome_fasta:
+            Genome in FASTA format
 
         Returns
         -------
@@ -663,26 +661,45 @@ def bed_extract_sequences_from_2bit(in_bed, out_fa, in_2bit,
             dictionary holding the sequence ID as key and sequence as value
 
     """
-    # Check for twoBitToFa.
-    #assert is_tool("twoBitToFa"), "twoBitToFa not in PATH"
-
-    # Run twoBitToFa and check.
-    check_cmd = "twoBitToFa"
-    if not lc_repeats:
-        check_cmd += " -noMask"
-    check_cmd += " -bed=" + in_bed + " " + in_2bit + " " + out_fa
-    # print(check_cmd)
-    output = subprocess.getoutput(check_cmd)
+    # Run fastaFromBed and check.
+    getfasta_cmd = " ".join(['fastaFromBed', '-s', '-nameOnly', 
+                        '-fi', in_genome_fasta,
+                        '-bed', in_bed, 
+                        '-fo', out_fa])
+    output = subprocess.getoutput(getfasta_cmd)
+    # print('fastaFromBed:' + output)
     error = False
-    if output:
-        error = True
-    assert error == False, "twoBitToFa is complaining:\n%s\n%s" %(check_cmd, output)
-    #print(output)
-    if convert_to_rna:
-        # Read in tmp_fa into dictionary (this also converts sequences to RNA).
-        seqs_dic = read_fasta_into_dic(out_fa, skip_n_seqs=True)
-        # Output RNA sequences.
-        #fasta_output_dic(seqs_dic, out_fa, split=True)
+    #if output:
+    #    error = True
+    #assert error == False, "fastaFromBed is complaining:\n%s\n%s" %(getfasta_cmd, output)
+
+    seqs_dic = defaultdict()
+    fa_seq = SeqIO.parse(open(out_fa), 'fasta')
+    for record in fa_seq:
+        # ids of the form chr1:1602:1618:+(+). Strip last 3 characters
+        seqs_dic[record.id[:-3]] = str(record.seq).upper().replace('T', 'U')
+
+    # If sequences with N nucleotide should be skipped.
+    c_skipped_n_ids = 0
+    del_ids = []
+    for seq_id in seqs_dic:
+        seq = seqs_dic[seq_id]
+        if re.search("N", seq, re.I):
+            if report == 1:
+                print (f'WARNING: sequence with seq_id {seq_id} in file {out_fa} contains N nucleotides. Discarding sequence ... ')
+            c_skipped_n_ids += 1
+            del_ids.append(seq_id)
+    for seq_id in del_ids:
+        del seqs_dic[seq_id]
+    assert seqs_dic, "no sequences remaining after deleting N containing sequences (input FASTA file \"%s\")" %(fasta_file)
+    if c_skipped_n_ids:
+        if report == 2:
+            print("# of N-containing %s regions discarded:  %i" %(skip_data_id, c_skipped_n_ids))
+    
+    # After converting to RNA and filtering 'N' sequeces write again to the FASTA files
+    with open(out_fa, "w") as fh_outfa:
+        for seq_id, seq in seqs_dic.items():
+            fh_outfa.write(seq_id + "\n" + seq + "\n")
     return seqs_dic
 
 
@@ -783,7 +800,7 @@ def filter_false_chr(df, col_name):
 
 ################################################################################
 
-def get_context(seq_tag, df, out_dir, in_2bit_file, context, chrom_len_file):
+def get_context(seq_tag, df, out_dir, in_genome_fasta, context, chrom_len_file):
     """
     defining column with ID and empty columns to store the context sequences
 
@@ -792,7 +809,7 @@ def get_context(seq_tag, df, out_dir, in_2bit_file, context, chrom_len_file):
         seq_tag: dataframe
         df: dataframe containing position of the extraction
         out_dir: directory where to store bed and fa file
-        in_2bit_file: genome 2bit file
+        in_genome_fasta: genome FASTA file
         context: amount of nt that should be added on both sites
 
 
@@ -838,7 +855,7 @@ def get_context(seq_tag, df, out_dir, in_2bit_file, context, chrom_len_file):
     print('lost %i instances because of the chromosome'%(no_del_entys))
     df_context_filted.to_csv(out_bed, sep="\t", index=False, header=False)
     #df = df_context
-    seqs_dic = bed_extract_sequences_from_2bit(out_bed, out_fa, in_2bit_file,lc_repeats=False, convert_to_rna=True)
+    seqs_dic = bed_extract_sequences_from_fasta(out_bed, out_fa, in_genome_fasta)
 
     for seq_id in seqs_dic:
         #print(seq_id)
@@ -1126,86 +1143,6 @@ def read_table_into_dic(file):
     f.close()
 
     return chrom_ends_dic
-
-
-################################################################################
-
-def read_fasta_into_dic(fasta_file,
-                        seqs_dic=False,
-                        ids_dic=False,
-                        dna=False,
-                        report=1,
-                        all_uc=False,
-                        skip_data_id="set",
-                        skip_n_seqs=True):
-    """
-    Read in FASTA sequences, store in dictionary and return dictionary.
-    FASTA file can be plain text or gzipped (watch out for .gz ending).
-        Parameters
-        ----------
-        fasta_file: file location of the to be read fasta file
-
-
-        Returns
-        -------
-        seqs_dic
-            dictionary with seq id as key and sequence as value
-
-    """
-    if not seqs_dic:
-        seqs_dic = {}
-    seq_id = ""
-
-    # Open FASTA either as .gz or as text file.
-    if re.search(".+\.gz$", fasta_file):
-        f = gzip.open(fasta_file, 'rt')
-    else:
-        f = open(fasta_file, "r")
-    for line in f:
-        if re.search(">.+", line):
-            m = re.search(">(.+)", line)
-            seq_id = m.group(1)
-            assert seq_id not in seqs_dic, "non-unique FASTA header \"%s\" in \"%s\"" % (seq_id, fasta_file)
-            if ids_dic:
-                if seq_id in ids_dic:
-                    seqs_dic[seq_id] = ""
-            else:
-                seqs_dic[seq_id] = ""
-        elif re.search("[ACGTUN]+", line, re.I):
-            m = re.search("([ACGTUN]+)", line, re.I)
-            seq = m.group(1)
-            if seq_id in seqs_dic:
-                if dna:
-                    # Convert to DNA, concatenate sequence.
-                    seq = seq.replace("U","T").replace("u","t")
-                else:
-                    # Convert to RNA, concatenate sequence.
-                    seq = seq.replace("T","U").replace("t","u")
-                if all_uc:
-                    seq = seq.upper()
-                seqs_dic[seq_id] += seq
-    f.close()
-
-    # Check if sequences read in.
-    assert seqs_dic, "no sequences read in (input FASTA file \"%s\" empty or mal-formatted?)" %(fasta_file)
-    # If sequences with N nucleotide should be skipped.
-    c_skipped_n_ids = 0
-    if skip_n_seqs:
-        del_ids = []
-        for seq_id in seqs_dic:
-            seq = seqs_dic[seq_id]
-            if re.search("N", seq, re.I):
-                if report == 1:
-                    print (f'WARNING: sequence with seq_id {seq_id} in file {fasta_file} contains N nucleotides. Discarding sequence ... ')
-                c_skipped_n_ids += 1
-                del_ids.append(seq_id)
-        for seq_id in del_ids:
-            del seqs_dic[seq_id]
-        assert seqs_dic, "no sequences remaining after deleting N containing sequences (input FASTA file \"%s\")" %(fasta_file)
-        if c_skipped_n_ids:
-            if report == 2:
-                print("# of N-containing %s regions discarded:  %i" %(skip_data_id, c_skipped_n_ids))
-    return seqs_dic
 
 
 ################################################################################
@@ -1635,26 +1572,28 @@ def download_genome(out_path, genome, chrom_len_file):
     if not os.path.exists(genome_dir):
         os.mkdir(genome_dir)
     if genome == 'human':
-        genome_file = f'{genome_dir}hg38.2bit'
+        genome_file = f'{genome_dir}hg38.fa'
         chrom_len_file = f'{genome_dir}hg38.chrom.sizes'
         if not os.path.isfile(genome_file):
-            genome_url = 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/bigZips/hg38.2bit'
+            genome_url = 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/bigZips/hg38.fa.gz'
             download_file(genome_url, genome_dir)
+            os.system("gunzip " + genome_file + ".gz")
         if not os.path.isfile(chrom_len_file):
             chom_len_url = 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/bigZips/hg38.chrom.sizes'
             download_file(chom_len_url, genome_dir)
     elif genome == 'mouse':
-        genome_file = f'{genome_dir}mm10.2bit'
+        genome_file = f'{genome_dir}mm10.fa'
         chrom_len_file = f'{genome_dir}mm10.chrom.sizes'
         if not os.path.isfile(genome_file):
-            genome_url = 'https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.2bit'
+            genome_url = 'https://hgdownload.soe.ucsc.edu/goldenPath/mm10/bigZips/mm10.fa.gz'
             download_file(genome_url, genome_dir)
+            os.system("gunzip " + genome_file + ".gz")
         if not os.path.isfile(chrom_len_file):
             chom_len_url = 'https://hgdownload.soe.ucsc.edu/goldenpath/mm10/bigZips/mm10.chrom.sizes'
             download_file(chom_len_url, genome_dir)
     else:
         if not os.path.isfile(genome):
-            print(f'Error: please provide 2bit genome file path')
+            print(f'Error: please provide genome FASTA file path')
         else:
             genome_file = genome
         if not os.path.isfile(chrom_len_file):
