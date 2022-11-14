@@ -698,7 +698,7 @@ def bed_extract_sequences_from_fasta(in_bed, out_fa, in_genome_fasta,report=1,
             del_ids.append(seq_id)
     for seq_id in del_ids:
         del seqs_dic[seq_id]
-    assert seqs_dic, "no sequences remaining after deleting N containing sequences (input FASTA file \"%s\")" %(fasta_file)
+    assert seqs_dic, "no sequences remaining after deleting N containing sequences (input FASTA file)" 
     if c_skipped_n_ids:
         if report == 2:
             print("# of N-containing %s regions discarded:  %i" %(skip_data_id, c_skipped_n_ids))
