@@ -19,7 +19,7 @@ def calculate_measures(df_model):
     df_model.columns = df_model.columns.str.strip()
     #print(df_model.columns)
     #print(df_model['true_label'])
-    f1 = f1_score(df_model['true_label'].tolist(), df_model['prediction'].tolist())
+    f1 = f1_score(df_model['true_label'].tolist(), df_model['predicted_label'].tolist())
     #print(f1)
     #precision, recall, thresholds, auc_prc = compute_prc(df_model['true_label'].tolist(), df_model['instance_score'].tolist())
     return f1
