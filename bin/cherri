@@ -408,14 +408,14 @@ def main_eval(args):
             os.mkdir(feature_out_path)
 
 
-        file_pos = f'{pos_neg_out_path}{midel_name}pos.csv'
+        pos_data_file = f'{pos_neg_out_path}{midel_name}pos.csv'
         feature_pos = f'{feature_out_path}feature_filtered_{midel_name}_pos.csv'
 
-        if not os.path.isfile(file_pos):
+        if not os.path.isfile(pos_data_file):
             print(f'Error: no positive IntaRNA interaction found')
             sys.exit()
 
-        pos_feature_param = f'-i {file_pos} -f all -o {feature_pos}'
+        pos_feature_param = f'-i {pos_data_file} -f all -o {feature_pos}'
         call_pos_feature = f'get_features.py {pos_feature_param}'
         print('2. Compute features\n')
         #print(call_pos_feature)
@@ -431,9 +431,9 @@ def main_eval(args):
         if not os.path.exists(feature_out_path):
             os.mkdir(feature_out_path)
 
-        pos_data = f'{RRIs_table}_pos.csv'
-        neg_data = f'{RRIs_table}_neg.csv'
-        X, y = rl.read_pos_neg_data(pos_data, neg_data)
+        pos_data_file = f'{RRIs_table}_pos.csv'
+        neg_data_file = f'{RRIs_table}_neg.csv'
+        X, y = rl.read_pos_neg_data(pos_data_file, neg_data_file)
         # X['true_label'] = y
         #äprint(X.info())
 
@@ -456,14 +456,22 @@ def main_eval(args):
         os.mkdir(eval_path)
     print('2b. Classify RRI instances\n')
 
+    # get ID_df
+    #print(pos_data_file)
+    df_ID = rl.get_ids(pos_data_file)
+    #print('***df IDS')
+    #print(df_ID)
+
     #print(X_filterd.info())
     #print(X_filterd.columns.tolist())
     eval_file = f'{eval_path}evaluation_results_{experiment_name}.csv'
 
     if hand_feat == 'off':
-        df_eval = rl.classify(X_filterd, model_file, eval_file)
+        df_eval = rl.classify(X_filterd, model_file, eval_file, df_ID)
     elif hand_feat == 'on':
-        df_eval = rl.classify(X_filterd, model_file, eval_file, True, y)
+        df_eval = rl.classify(X_filterd, model_file, eval_file, df_ID, True, y)
+
+
 
     #print(df_eval)
     print('##########################################')

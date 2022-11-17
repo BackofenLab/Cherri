@@ -317,8 +317,11 @@ def join_result_and_infos(df, lost_inst, row, list_rows_add):
     else:
         val = {}
         # information of RRI is prepared to attach to predictions by IntaRNA
+        #print('*** row: ***')
+        #print(row)
         for col_n in list_rows_add:
             #print(col_n)
+            #print()
             val[col_n] = [row[col_n]]*len(df)
 
         df_append = pd.DataFrame.from_dict(val)
@@ -541,7 +544,12 @@ def get_context_added(input_rris, output_path, genome_file, context, context_not
     df_contex['target_key'] =  df_contex['chrom_1st'].astype(str)+ ';' + df_contex['strand_1st'].astype(str)
     df_contex['query_key'] =  df_contex['chrom_2end'].astype(str)+ ';' + df_contex['strand_2end'].astype(str)
 
+    df_contex['target_ID'] =  df_contex['target_key'].astype(str)+ ';' + df_contex['start_1st'].astype(str) + ';' + df_contex['end_1st'].astype(str)
+    df_contex['query_ID'] =  df_contex['query_key'].astype(str)+ ';' + df_contex['start_2end'].astype(str)+ ';' + df_contex['end_2end'].astype(str)
+
+
     df_contex.to_csv(context_file, index=False)
+    # print(df_contex.info())
     return df_contex
 
 
@@ -746,7 +754,8 @@ def get_header():
                      'biotype_region_1st', 'biotype_region_2end',
                      'ID_1st','ID_2end','con_target','con_query',
                      'target_con_s','target_con_e','query_con_s',
-                     'query_con_e', 'target_key', 'query_key']
+                     'query_con_e', 'target_key', 'query_key',
+                     'target_ID', 'query_ID']
     intaRNA_col_name = 'id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E,seedStart1,seedEnd1,seedStart2,seedEnd2,seedE,E_hybrid,ED1,ED2'
     list_intaRNA_col_name = intaRNA_col_name.split(',')
     header = list_intaRNA_col_name + list_rows_add
@@ -787,7 +796,7 @@ def main():
                         help= "IntaRNA parameter file",
                         default="./IntaRNA_param.txt")
     parser.add_argument("-m", "--mode",
-                        help= "which Cherri mode is running",
+                        help= "which CheRRI mode is running",
                         default="eval")
 
 
@@ -849,18 +858,6 @@ def main():
 ############################################################################
 
     occupied_InteLab = rl.load_occupied_data(input_occupied)
-
-
-
-        #chrom_dict = rl.read_table_into_dic(chrom_len_file)
-        #occupied_InteLab = defaultdict(InterLap)
-
-        #for i in chrom_dict:
-            #chrom = rl.check_convert_chr_id(i)
-            #if chrom != False:
-                #occupied_InteLab[str(chrom) + ';+'].add((0, 0, ['empty']))
-                #occupied_InteLab[str(chrom) + ';-'].add((0, 0, ['empty']))
-        #print(occupied_InteLab)
 
 
     # Reporting how many instances did not lead to a result

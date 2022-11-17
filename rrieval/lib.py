@@ -669,9 +669,9 @@ def bed_extract_sequences_from_fasta(in_bed, out_fa, in_genome_fasta,report=1,
 
     """
     # Run fastaFromBed and check.
-    getfasta_cmd = " ".join(['fastaFromBed', '-s', '-nameOnly', 
+    getfasta_cmd = " ".join(['fastaFromBed', '-s', '-nameOnly',
                         '-fi', in_genome_fasta,
-                        '-bed', in_bed, 
+                        '-bed', in_bed,
                         '-fo', out_fa])
     output = subprocess.getoutput(getfasta_cmd)
     # print('fastaFromBed:' + output)
@@ -698,11 +698,11 @@ def bed_extract_sequences_from_fasta(in_bed, out_fa, in_genome_fasta,report=1,
             del_ids.append(seq_id)
     for seq_id in del_ids:
         del seqs_dic[seq_id]
-    assert seqs_dic, "no sequences remaining after deleting N containing sequences (input FASTA file)" 
+    assert seqs_dic, "no sequences remaining after deleting N containing sequences (input FASTA file)"
     if c_skipped_n_ids:
         if report == 2:
             print("# of N-containing %s regions discarded:  %i" %(skip_data_id, c_skipped_n_ids))
-    
+
     # After converting to RNA and filtering 'N' sequences write again to the FASTA files
     with open(out_fa, "w") as fh_outfa:
         for seq_id, seq in seqs_dic.items():
@@ -973,7 +973,7 @@ def encode_hybrid_by_BPs(dot_bracket, seq):
         Returns
         -------
         tup_list
-            List of tuples storing the complete interaction of both 
+            List of tuples storing the complete interaction of both
             [(target,query)]
 
         """
@@ -1276,7 +1276,28 @@ def base_model(in_positive_data_filepath,in_negative_data_filepath,output_path,n
 
 ################################################################################
 
-def classify(df_eval,in_model_filepath, output_path,true_lable=False, y='off'):
+
+def get_ids(pos_data):
+    """
+    Extract target und query IDs from df
+        ----------
+        pos_data: file contining positive IntaRNA calls including ID's
+
+        Returns
+        -------
+        df_ID
+            datafram contianing IDs
+
+    """
+    df_pos = df_interactions = pd.read_table(pos_data, sep=',')
+    df_ID = df_pos[['target_ID','query_ID']]
+
+    return df_ID
+
+
+
+def classify(df_eval,in_model_filepath, output_path, df_ID,
+            true_lable=False, y='off'):
     """
     Classification of the given RRIs features using the input model
         Parameters
@@ -1284,6 +1305,10 @@ def classify(df_eval,in_model_filepath, output_path,true_lable=False, y='off'):
         df_eval: dataframe with interaction features of to evaluate instances
         in_model_filepath: path to the model
         output_path: location where to save output
+        df_ID: all ids adding to the final table
+        true_lable: Boolien to set lable or not (needed for evaluation)
+        y:
+
 
         Returns
         -------
@@ -1303,7 +1328,7 @@ def classify(df_eval,in_model_filepath, output_path,true_lable=False, y='off'):
     y_pred=model.predict(df_eval)
     #print('model predictions')
     xtra = pd.DataFrame({'predicted_label': y_pred})
-    df_result = pd.concat([df_eval, xtra], axis=1)
+    df_result = pd.concat([xtra, df_eval], axis=1)
     # df_eval['prediction'] = y_pred
     #print(y_pred)
     if true_lable:
@@ -1311,7 +1336,10 @@ def classify(df_eval,in_model_filepath, output_path,true_lable=False, y='off'):
         # calculates prob for each label. We only returen prob for one label?
     proba = model.predict_proba(df_eval)[:,1]
     instance_score = pd.DataFrame({'instance_score': proba})
-    df_result = pd.concat([df_result, instance_score], axis=1)
+    df_result = pd.concat([df_ID, instance_score, df_result], axis=1)
+
+    # reformat data structure
+
     df_result.to_csv(output_path,index=False)
     return df_result
 
