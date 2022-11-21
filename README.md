@@ -76,7 +76,7 @@ export PYTHONHASHSEED=31337
 After setting the environment variable, reactivate your environment:
 ```
 conda deactivate
-conda acivate cherri
+conda activate cherri
 ```
 
 #### Manual installation
@@ -193,7 +193,9 @@ Input parameters for CheRRI's **eval** mode (`cherri eval`):
 #### Output in evaluation mode
 
 At the end of the run the location of the results table is given.
-The final results table will have all columns of the input table and an additional prediction column, where you find the predicted class of each RRI (0 or 1).
+The final results table will have your the query and target ID's or your input sequences (`target_ID`,`query_ID`), the score of your instance (`instance_score`), the predicted class of each RRI (0 or 1) (`predicted_label`), if you are running the validation mode with `-hf on` the positive or negative label is given (`true_lable`), and finally all features of the instance are provided.
+
+The Ids are a summary of `chromosme;strand;start;stop` oft the first (target) and the second (query) sequence.
 
 Throughout the program, several output files are generated and stored in the following structure:
 

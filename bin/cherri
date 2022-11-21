@@ -198,6 +198,9 @@ def setup_argument_parser():
     p_mrg.add_argument("-fh", "--filter_hybrid",
                         default="off",
                         help= "Filter the data for hybrids already detected by ChiRA (set 'on' to filter, default:'off')")
+    p_mrg.add_argument("-on", "--out_name",
+                        default="non",
+                        help= "Name for the output directory, default 'date_Cherri_evaluating_RRIs' ")
 
 
 
@@ -502,15 +505,16 @@ def main_train(args):
     |       ├── test_train_context_50_pos_occ_neg.csv
     |       ├── test_train_context_50_pos_occ_pos.csv
     |   ├── feature_files
-    |       ├── feature_filtered_test_eval_context_150_pos.csv
-    |       ├── feature_filtered_test_eval_context_150_neg.csv
-    |       ├── training_data_test_eval_context_150.npz
+    |       ├── feature_filtered_test_train_context_150_pos.csv
+    |       ├── feature_filtered_test_train_context_150_neg.csv
+    |       ├── training_data_test_train_context_150.npz
     |   ├── model
     |       ├── features
     |           ├── test_train_context_50.npz
     |       ├── optimized
     |           ├── test_train_context_50.model
     |           ├── test_train_context_50.csv
+    |           ├── full_test_train_context_50.model
     """
 
     args = parser.parse_args()
@@ -537,6 +541,8 @@ def main_train(args):
     n_jobs = args.n_jobs
     mixed = args.mixed
     filter_hybrid = args.filter_hybrid
+    out_name = args.out_name
+
 
     methods = (f'extra_trees passive_aggressive random_forest sgd '
                f'gradient_boosting mlp')
@@ -552,7 +558,12 @@ def main_train(args):
 
     # define output folder
     timestr = time.strftime("%Y%m%d")
-    out_path =  f'{out_path}/{timestr}_Cherri_build_model/'
+
+    if out_name == 'non':
+        out_path =  f'{out_path}/{timestr}_Cherri_build_model/'
+    else:
+        out_path =  f'{out_path}/{out_name}/'
+
     #if set_path == 'off' and mixed == 'off':
     #    if not os.path.exists(out_path):
     #        os.mkdir(out_path)
@@ -650,7 +661,8 @@ def main_train(args):
         midel_name =  f'{experiment_name}_context_{str(context)}'
         X_list = []
         y_list = []
-        for data in replicates:
+        # args.list_of_replicates
+        for data in args.list_of_replicates:
             feature_path = f'{input_path_RRIs}/{data}/feature_files/'
             feature_neg = (f'{feature_path}/feature_filtered_{data}_context_'
                            f'{str(context)}_pos_occ_neg.csv')
@@ -719,7 +731,9 @@ def main_train(args):
         opt_call = (f'python -W ignore -m biofilm.biofilm-optimize6 {loaddata} '
                     f'--memoryMBthread {memoryPerThread} --folds 0 '
                     f'--out {opt_path}{midel_name} --preprocess True '
-                    f'--n_jobs {n_jobs} --time {run_time} --methods {methods}')
+                    f'--n_jobs {n_jobs} --time {run_time} --methods {methods}'
+                    # f' --tmp_folder {opt_path}\autosklearn_temp'
+                    )
 
         print('4a. Optimize model\n')
         #print(opt_call)

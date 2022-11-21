@@ -196,16 +196,8 @@ def main():
     #### Get RRI data by calling find trusted RRI with a very low overlap th of 5%
     ### only take uniquely mapped reads
 
-    ####### Get RRI data
-    list_rep = []
-    for rep in replicates:
-        list_rep.append(input_path_RRIs + '/' + rep)
-    replicate_string = ' '.join(list_rep)
 
-    print(list_rep)
-
-
-    rri_call_param = ('-i ' + 'not_needed' + ' -r ' + replicate_string +
+    rri_call_param = ('-i ' +  input_path_RRIs + ' -r ' + ' '.join(replicates) +
                      ' -o ' + str(overlap_th) +' -n rri_occupied_regions -d ' +
                      out_path + ' -s ' +  str(score_th))
     if filter_hybrid == 'on':
@@ -215,9 +207,9 @@ def main():
     rri_file = (out_path + 'rri_occupied_regions_overlap_' +
                 str(overlap_th) + '.csv')
 
-    if len(list_rep) == 1:
+    if len(replicates) == 1:
         print('Info: only one experiment is used to build occupied regions')
-        in_file = list_rep[0]
+        in_file = replicates[0]
         print(in_file)
         # df_replicat = rl.read_chira_data(in_file)
         sep = rl.check_file_type(in_file)

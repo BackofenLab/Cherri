@@ -152,8 +152,8 @@ def build_replicat_library_to_compare(input_path, list_of_replicates, score_th):
     inter_replicat_list = []
     rep_size_list = []
     for file in list_of_replicates:
-        # in_file = input_path + '/' + file
-        in_file = file
+        in_file = input_path + '/' + file
+        #in_file = file
         df_test = pd.read_table(in_file, sep=',')
         #print(df_test.info())
         sep = rl.check_file_type(in_file)
