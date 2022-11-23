@@ -2,8 +2,6 @@
 import pandas as pd
 import math
 import numpy as np
-#import matplotlib as mpl
-#import matplotlib.pyplot as plt
 from collections import defaultdict
 from interlap import InterLap
 import sys
@@ -155,6 +153,7 @@ def build_replicat_library_to_compare(input_path, list_of_replicates, score_th):
     rep_size_list = []
     for file in list_of_replicates:
         in_file = input_path + '/' + file
+        #in_file = file
         df_test = pd.read_table(in_file, sep=',')
         #print(df_test.info())
         sep = rl.check_file_type(in_file)
@@ -901,28 +900,6 @@ def main():
     df_final_output.to_csv(output_path + output_name, index=False)
 
 
-    #### Plotting ######
-
-    #histogrom energy
-    #fig1 = plt.figure()
-    #bins = np.arange(min(energy_list), max(energy_list), 5)
-
-    #plt.hist(energy_list, bins=bins)
-    #fig1.savefig(plot_path + "histogram_energy.pdf", bbox_inches='tight')
-
-    #seq1_len_list = [len[0] for len in interaction_length_also_nan]
-    #seq2_len_list = [len[1] for len in interaction_length_also_nan]
-
-    #d = {'rri_seq1': seq1_len_list, 'rri_seq2': seq2_len_list}
-    #df_rri_len = pd.DataFrame(data=d)
-
-    #myFig = plt.figure()
-    #boxplot = df_rri_len.boxplot(column=['rri_seq1', 'rri_seq2'])
-
-    #myFig.savefig(plot_path + "boxplot_rri_len_seq.pdf", bbox_inches='tight')
-
-    # input_path = '/home/teresa/Dokumente/RNA_RNA_interaction_evaluation/RNA_RNA_binding_evaluation/data/training/Paris/'
-    # list_of_replicates = ['test_rep1.tabular', 'test_rep2.tabular', 'test_rep3.tabular']
 
 if __name__ == '__main__':
     main()

@@ -76,7 +76,7 @@ export PYTHONHASHSEED=31337
 After setting the environment variable, reactivate your environment:
 ```
 conda deactivate
-conda acivate cherri
+conda activate cherri
 ```
 
 #### Manual installation
@@ -193,7 +193,9 @@ Input parameters for CheRRI's **eval** mode (`cherri eval`):
 #### Output in evaluation mode
 
 At the end of the run the location of the results table is given.
-The final results table will have all columns of the input table and an additional prediction column, where you find the predicted class of each RRI (0 or 1).
+The final results table will have your the query and target ID's or your input sequences (`target_ID`,`query_ID`), the score of your instance (`instance_score`), the predicted class of each RRI (0 or 1) (`predicted_label`), if you are running the validation mode with `-hf on` the positive or negative label is given (`true_lable`), and finally all features of the instance are provided.
+
+The Ids are a summary of `chromosme;strand;start;stop` oft the first (target) and the second (query) sequence.
 
 Throughout the program, several output files are generated and stored in the following structure:
 
@@ -212,13 +214,13 @@ Throughout the program, several output files are generated and stored in the fol
 
 
 #### Validate your model using the **eval** mode
-You can also use CheRRIs **eval** mode to create a validation result table and than use the [coupute_f1](./scripts/plots/compute_f1.py) to get the F1 score.
+You can also use CheRRIs **eval** mode to create a validation result table and than use the [compute_f1](./scripts/plots/compute_f1.py) to get the F1 score.
 
 In the following is a example call to validate a theoretical model build from DataA
 ```
 cherri eval -i1 /path/to/Model_folder/DataA/feature_files/feature_filtered_<DataA>_context_<150>_pos_occ -g human -l human -o /path/to/Model_folder -n <val_modelA> -c 150 -st on -m  /path/to/Model_folder/DataA/model/optimized/full_<DataA>_context_<150>.model -mp  /path/to/Model_folder/DataA/feature_files/training_data_<DataA>_context_<150>.npz -j 10 -on evaluation -hf on
 ```
-Than use the result file to compute the F1 score using [coupute_f1](./scripts/plots/compute_f1.py).
+Than use the result file to compute the F1 score using [compute_f1](./scripts/plots/compute_f1.py).
 
 ### Build a new CheRRI model in training mode
 

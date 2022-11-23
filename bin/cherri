@@ -8,11 +8,13 @@ import sys
 import rrieval.lib as rl
 from scipy.sparse import csr_matrix, vstack, hstack, load_npz, save_npz
 from ubergauss.tools import loadfile, dumpfile
+#import logging
+## DeBug, INFO
 # import subprocess
 
+#logging.basicConfing(filenema='cherri.log'level=logging.DEBUG)
 
-
-__version__ = "0.5"
+__version__ = "0.6"
 
 """
 
@@ -198,7 +200,12 @@ def setup_argument_parser():
     p_mrg.add_argument("-fh", "--filter_hybrid",
                         default="off",
                         help= "Filter the data for hybrids already detected by ChiRA (set 'on' to filter, default:'off')")
-
+    p_mrg.add_argument("-on", "--out_name",
+                        default="non",
+                        help= "Name for the output directory, default 'date_Cherri_evaluating_RRIs' ")
+    p_mrg.add_argument("-tp", "--temp_dir",
+                        default="off",
+                        help= "Set a temporary directory for autosklearn. Either provede a path or 'out' to set it to the output directory Defalut:off")
 
 
     return p
@@ -408,14 +415,14 @@ def main_eval(args):
             os.mkdir(feature_out_path)
 
 
-        file_pos = f'{pos_neg_out_path}{midel_name}pos.csv'
+        pos_data_file = f'{pos_neg_out_path}{midel_name}pos.csv'
         feature_pos = f'{feature_out_path}feature_filtered_{midel_name}_pos.csv'
 
-        if not os.path.isfile(file_pos):
+        if not os.path.isfile(pos_data_file):
             print(f'Error: no positive IntaRNA interaction found')
             sys.exit()
 
-        pos_feature_param = f'-i {file_pos} -f all -o {feature_pos}'
+        pos_feature_param = f'-i {pos_data_file} -f all -o {feature_pos}'
         call_pos_feature = f'get_features.py {pos_feature_param}'
         print('2. Compute features\n')
         #print(call_pos_feature)
@@ -431,9 +438,9 @@ def main_eval(args):
         if not os.path.exists(feature_out_path):
             os.mkdir(feature_out_path)
 
-        pos_data = f'{RRIs_table}_pos.csv'
-        neg_data = f'{RRIs_table}_neg.csv'
-        X, y = rl.read_pos_neg_data(pos_data, neg_data)
+        pos_data_file = f'{RRIs_table}_pos.csv'
+        neg_data_file = f'{RRIs_table}_neg.csv'
+        X, y = rl.read_pos_neg_data(pos_data_file, neg_data_file)
         # X['true_label'] = y
         #äprint(X.info())
 
@@ -456,14 +463,22 @@ def main_eval(args):
         os.mkdir(eval_path)
     print('2b. Classify RRI instances\n')
 
+    # get ID_df
+    #print(pos_data_file)
+    df_ID = rl.get_ids(pos_data_file)
+    #print('***df IDS')
+    #print(df_ID)
+
     #print(X_filterd.info())
     #print(X_filterd.columns.tolist())
     eval_file = f'{eval_path}evaluation_results_{experiment_name}.csv'
 
     if hand_feat == 'off':
-        df_eval = rl.classify(X_filterd, model_file, eval_file)
+        df_eval = rl.classify(X_filterd, model_file, eval_file, df_ID)
     elif hand_feat == 'on':
-        df_eval = rl.classify(X_filterd, model_file, eval_file, True, y)
+        df_eval = rl.classify(X_filterd, model_file, eval_file, df_ID, True, y)
+
+
 
     #print(df_eval)
     print('##########################################')
@@ -494,15 +509,16 @@ def main_train(args):
     |       ├── test_train_context_50_pos_occ_neg.csv
     |       ├── test_train_context_50_pos_occ_pos.csv
     |   ├── feature_files
-    |       ├── feature_filtered_test_eval_context_150_pos.csv
-    |       ├── feature_filtered_test_eval_context_150_neg.csv
-    |       ├── training_data_test_eval_context_150.npz
+    |       ├── feature_filtered_test_train_context_150_pos.csv
+    |       ├── feature_filtered_test_train_context_150_neg.csv
+    |       ├── training_data_test_train_context_150.npz
     |   ├── model
     |       ├── features
     |           ├── test_train_context_50.npz
     |       ├── optimized
     |           ├── test_train_context_50.model
     |           ├── test_train_context_50.csv
+    |           ├── full_test_train_context_50.model
     """
 
     args = parser.parse_args()
@@ -529,6 +545,9 @@ def main_train(args):
     n_jobs = args.n_jobs
     mixed = args.mixed
     filter_hybrid = args.filter_hybrid
+    out_name = args.out_name
+    temp_dir = args.temp_dir
+
 
     methods = (f'extra_trees passive_aggressive random_forest sgd '
                f'gradient_boosting mlp')
@@ -544,7 +563,12 @@ def main_train(args):
 
     # define output folder
     timestr = time.strftime("%Y%m%d")
-    out_path =  f'{out_path}/{timestr}_Cherri_build_model/'
+
+    if out_name == 'non':
+        out_path =  f'{out_path}/{timestr}_Cherri_build_model/'
+    else:
+        out_path =  f'{out_path}/{out_name}/'
+
     #if set_path == 'off' and mixed == 'off':
     #    if not os.path.exists(out_path):
     #        os.mkdir(out_path)
@@ -642,7 +666,8 @@ def main_train(args):
         midel_name =  f'{experiment_name}_context_{str(context)}'
         X_list = []
         y_list = []
-        for data in replicates:
+        # args.list_of_replicates
+        for data in args.list_of_replicates:
             feature_path = f'{input_path_RRIs}/{data}/feature_files/'
             feature_neg = (f'{feature_path}/feature_filtered_{data}_context_'
                            f'{str(context)}_pos_occ_neg.csv')
@@ -708,10 +733,18 @@ def main_train(args):
 
     if use_structure == 'ON' or use_structure == 'on':
         loaddata = f' --infile {feat_output} '
-        opt_call = (f'python -W ignore -m biofilm.biofilm-optimize6 {loaddata} '
+        opt_call = (f'python -W ignore -m biofilm.optimize6 {loaddata} '
                     f'--memoryMBthread {memoryPerThread} --folds 0 '
                     f'--out {opt_path}{midel_name} --preprocess True '
-                    f'--n_jobs {n_jobs} --time {run_time} --methods {methods}')
+                    f'--n_jobs {n_jobs} --time {run_time} --methods {methods}'
+                    # f' --tmp_folder {opt_path}\autosklearn_temp'
+                    )
+        if temp_dir != 'off':
+            if temp_dir == 'out' or temp_dir == 'OUT':
+                opt_call = opt_call + f' --tmp_folder {opt_path}/autosklearn_temp'
+            else:
+                opt_call = opt_call + f' --tmp_folder {temp_dir}/autosklearn_temp'
+
 
         print('4a. Optimize model\n')
         #print(opt_call)
@@ -728,10 +761,17 @@ def main_train(args):
         rl.call_script(call_refit)
     elif use_structure == 'OFF' or use_structure == 'off':
         loaddata = f' --infile {feat_output}  --featurefile {out_feat}'
-        opt_call = (f'python -W ignore -m biofilm.biofilm-optimize6 {loaddata} '
+        opt_call = (f'python -W ignore -m biofilm.optimize6 {loaddata} '
                     f'--memoryMBthread {memoryPerThread} --folds 0 '
                     f'--out {opt_path}{midel_name} --preprocess True '
                     f'--n_jobs {n_jobs} --time {run_time} --methods {methods}')
+        if temp_dir != 'off':
+            if temp_dir == 'out' or temp_dir == 'OUT':
+                opt_call= f'{opt_call} --tmp_folder {opt_path}\autosklearn_temp'
+            else:
+                opt_call= f'{opt_call} --tmp_folder {temp_dir}\autosklearn_temp'
+
+
         print('4b. Optimize model\n')
         #print(opt_call)
         out = rl.call_script(opt_call, reprot_stdout=True,asset_err=False)
