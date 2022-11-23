@@ -8,11 +8,13 @@ import sys
 import rrieval.lib as rl
 from scipy.sparse import csr_matrix, vstack, hstack, load_npz, save_npz
 from ubergauss.tools import loadfile, dumpfile
+#import logging
+## DeBug, INFO
 # import subprocess
 
+#logging.basicConfing(filenema='cherri.log'level=logging.DEBUG)
 
-
-__version__ = "0.5"
+__version__ = "0.6"
 
 """
 
@@ -201,7 +203,9 @@ def setup_argument_parser():
     p_mrg.add_argument("-on", "--out_name",
                         default="non",
                         help= "Name for the output directory, default 'date_Cherri_evaluating_RRIs' ")
-
+    p_mrg.add_argument("-tp", "--temp_dir",
+                        default="off",
+                        help= "Set a temporary directory for autosklearn. Either provede a path or 'out' to set it to the output directory Defalut:off")
 
 
     return p
@@ -542,6 +546,7 @@ def main_train(args):
     mixed = args.mixed
     filter_hybrid = args.filter_hybrid
     out_name = args.out_name
+    temp_dir = args.temp_dir
 
 
     methods = (f'extra_trees passive_aggressive random_forest sgd '
@@ -728,12 +733,18 @@ def main_train(args):
 
     if use_structure == 'ON' or use_structure == 'on':
         loaddata = f' --infile {feat_output} '
-        opt_call = (f'python -W ignore -m biofilm.biofilm-optimize6 {loaddata} '
+        opt_call = (f'python -W ignore -m biofilm.optimize6 {loaddata} '
                     f'--memoryMBthread {memoryPerThread} --folds 0 '
                     f'--out {opt_path}{midel_name} --preprocess True '
                     f'--n_jobs {n_jobs} --time {run_time} --methods {methods}'
                     # f' --tmp_folder {opt_path}\autosklearn_temp'
                     )
+        if temp_dir != 'off':
+            if temp_dir == 'out' or temp_dir == 'OUT':
+                opt_call = opt_call + f' --tmp_folder {opt_path}/autosklearn_temp'
+            else:
+                opt_call = opt_call + f' --tmp_folder {temp_dir}/autosklearn_temp'
+
 
         print('4a. Optimize model\n')
         #print(opt_call)
@@ -750,10 +761,17 @@ def main_train(args):
         rl.call_script(call_refit)
     elif use_structure == 'OFF' or use_structure == 'off':
         loaddata = f' --infile {feat_output}  --featurefile {out_feat}'
-        opt_call = (f'python -W ignore -m biofilm.biofilm-optimize6 {loaddata} '
+        opt_call = (f'python -W ignore -m biofilm.optimize6 {loaddata} '
                     f'--memoryMBthread {memoryPerThread} --folds 0 '
                     f'--out {opt_path}{midel_name} --preprocess True '
                     f'--n_jobs {n_jobs} --time {run_time} --methods {methods}')
+        if temp_dir != 'off':
+            if temp_dir == 'out' or temp_dir == 'OUT':
+                opt_call= f'{opt_call} --tmp_folder {opt_path}\autosklearn_temp'
+            else:
+                opt_call= f'{opt_call} --tmp_folder {temp_dir}\autosklearn_temp'
+
+
         print('4b. Optimize model\n')
         #print(opt_call)
         out = rl.call_script(opt_call, reprot_stdout=True,asset_err=False)

@@ -214,13 +214,13 @@ Throughout the program, several output files are generated and stored in the fol
 
 
 #### Validate your model using the **eval** mode
-You can also use CheRRIs **eval** mode to create a validation result table and than use the [coupute_f1](./scripts/plots/compute_f1.py) to get the F1 score.
+You can also use CheRRIs **eval** mode to create a validation result table and than use the [compute_f1](./scripts/plots/compute_f1.py) to get the F1 score.
 
 In the following is a example call to validate a theoretical model build from DataA
 ```
 cherri eval -i1 /path/to/Model_folder/DataA/feature_files/feature_filtered_<DataA>_context_<150>_pos_occ -g human -l human -o /path/to/Model_folder -n <val_modelA> -c 150 -st on -m  /path/to/Model_folder/DataA/model/optimized/full_<DataA>_context_<150>.model -mp  /path/to/Model_folder/DataA/feature_files/training_data_<DataA>_context_<150>.npz -j 10 -on evaluation -hf on
 ```
-Than use the result file to compute the F1 score using [coupute_f1](./scripts/plots/compute_f1.py).
+Than use the result file to compute the F1 score using [compute_f1](./scripts/plots/compute_f1.py).
 
 ### Build a new CheRRI model in training mode
 
