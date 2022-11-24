@@ -209,7 +209,7 @@ def main():
 
     if len(replicates) == 1:
         print('Info: only one experiment is used to build occupied regions')
-        in_file = replicates[0]
+        in_file = input_path_RRIs + replicates[0]
         print(in_file)
         # df_replicat = rl.read_chira_data(in_file)
         sep = rl.check_file_type(in_file)
