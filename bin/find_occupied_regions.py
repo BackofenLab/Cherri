@@ -31,6 +31,7 @@ def build_interlap_occ_sites(df_interactions, flag):
     flag_name = 'crl'
     # use default dict to key by chromosome.
     inter_rep = defaultdict(InterLap)
+    df_inter = df_interactions.copy()
 
     if flag_name == 'hybrid':
         names_first = ['chrom_seq_1st_site', 'strand_seq_1st_site', 'start_seq_1st_site', 'stop_seq_1st_site']
@@ -40,12 +41,14 @@ def build_interlap_occ_sites(df_interactions, flag):
         names_second = ['chrom_2end','strand_2end','start_2end','end_2end']
 
     if flag == 'two':
-        print(df_interactions['chrom_1st'])
-        list_chrom_no_int = rl.get_list_chrom(df_interactions)
-        df_interactions[names_first[0]] = df_interactions[names_first[0]].apply(lambda x: rl.check_convert_chr_id(x))
-        df_interactions[names_second[0]] = df_interactions[names_second[0]].apply(lambda x: rl.check_convert_chr_id(x))
-        print(df_interactions['chrom_1st'])
-        for index, row in df_interactions.iterrows():
+        # print(df_interactions['chrom_1st'])
+        list_chrom_no_int = rl.get_list_chrom(df_inter)
+        # print(names_first[0])
+        #df_interactions[names_first[0]] = df_interactions[names_first[0]].apply(lambda x: rl.check_convert_chr_id(x))
+        df_inter[names_first[0]] = df_inter[names_first[0]].apply(lambda x: rl.check_convert_chr_id(x))
+        df_inter[names_second[0]] = df_inter[names_second[0]].apply(lambda x: rl.check_convert_chr_id(x))
+        # print(df_interactions['chrom_1st'])
+        for index, row in df_inter.iterrows():
             row_content = row
             if not row[names_first[0]]:
                 print(f'Chrom 1: {row[names_first[0]]}')
@@ -62,8 +65,8 @@ def build_interlap_occ_sites(df_interactions, flag):
                 both_keys2 = str(row[names_second[0]]) + ';' + row[names_second[1]]
                 inter_rep[both_keys2].add((int(row[names_second[2]]), int(row[names_second[3]]), [row]))
     elif flag == 'one':
-        list_chrom_no_int = rl.get_chrom_list_no_numbers(df_interactions, 'chrom')
-        for index, row in df_interactions.iterrows():
+        list_chrom_no_int = rl.get_chrom_list_no_numbers(df_inter, 'chrom')
+        for index, row in df_inter.iterrows():
             row_content = row
 
             both_keys = str(row['chrom']) + ';' + row['strand']
@@ -209,8 +212,8 @@ def main():
 
     if len(replicates) == 1:
         print('Info: only one experiment is used to build occupied regions')
-        in_file = input_path_RRIs + replicates[0]
-        print(in_file)
+        in_file = os.path.join(input_path_RRIs, replicates[0])
+        #print(in_file)
         # df_replicat = rl.read_chira_data(in_file)
         sep = rl.check_file_type(in_file)
         if mode == 'train':
@@ -219,7 +222,7 @@ def main():
         elif mode == 'eval':
             df_replicat = rl.read_chira_data(in_file, header='yes',
                                              separater=sep)
-        print(df_replicat)
+        #print(df_replicat)
         if score_th == 'non':
             df_rris = df_replicat
         else:

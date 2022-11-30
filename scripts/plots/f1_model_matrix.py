@@ -53,11 +53,14 @@ def calculate_diag(name, input_path):
 
 def generate_df(in_dict, feature_file_names):
     df_temp = pd.DataFrame(in_dict)
+    # sort the colums alphabeticly
     df_sorted = df_temp.reindex(sorted(df_temp.columns), axis=1)
+    # add the sorted list of dataset/model names to the datafram
     df_sorted['names']= sorted(feature_file_names)
+    # make the names as index
     df_out = df_sorted.set_index('names')
     df_out.round(2)
-    return df_out
+    return df_out, df_sorted
 
 
 
@@ -110,8 +113,8 @@ def main():
 
 
 
-    df_f1 = generate_df(f1_dict, feature_file_names)
-    df_auc = generate_df(AUC_dict, feature_file_names)
+    df_f1, df_sorted_f1 = generate_df(f1_dict, feature_file_names)
+    df_auc, df_sorted_auc = generate_df(AUC_dict, feature_file_names)
     #df_f1.to_latex(f'{input_path}/f1_talbel', float_format="{:0.2f}".format)
     print(f'{input_path}/f1_talbel')
     df_f1.style.to_latex(f'{input_path}/f1_table')
