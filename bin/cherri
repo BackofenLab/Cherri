@@ -463,20 +463,19 @@ def main_eval(args):
         os.mkdir(eval_path)
     print('2b. Classify RRI instances\n')
 
-    # get ID_df
-    #print(pos_data_file)
-    df_ID = rl.get_ids(pos_data_file)
-    #print('***df IDS')
-    #print(df_ID)
+
+
 
     #print(X_filterd.info())
     #print(X_filterd.columns.tolist())
     eval_file = f'{eval_path}evaluation_results_{experiment_name}.csv'
 
     if hand_feat == 'off':
+        # get ID_df for not full evaluation data
+        df_ID = rl.get_ids(pos_data_file)
         df_eval = rl.classify(X_filterd, model_file, eval_file, df_ID)
     elif hand_feat == 'on':
-        df_eval = rl.classify(X_filterd, model_file, eval_file, df_ID, True, y)
+        df_eval = rl.classify(X_filterd, model_file, eval_file, 'off', True, y)
 
 
 
@@ -505,7 +504,7 @@ def main_train(args):
     |   ├── date_occ_out
     |       ├── occupied_regions.obj
     |       ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.csv
-    |   ├── read_pos_neg_data
+    |   ├── pos_neg_data
     |       ├── test_train_context_50_pos_occ_neg.csv
     |       ├── test_train_context_50_pos_occ_pos.csv
     |   ├── feature_files
@@ -667,17 +666,33 @@ def main_train(args):
         X_list = []
         y_list = []
         # args.list_of_replicates
+        # save the concatinated data
+        pos_list = []
+        neg_list = []
         for data in args.list_of_replicates:
             feature_path = f'{input_path_RRIs}/{data}/feature_files/'
             feature_neg = (f'{feature_path}/feature_filtered_{data}_context_'
                            f'{str(context)}_pos_occ_neg.csv')
             feature_pos = (f'{feature_path}/feature_filtered_{data}_context_'
                            f'{str(context)}_pos_occ_pos.csv')
+
             X_sub, y_sub = rl.read_pos_neg_data(feature_pos, feature_neg)
+
             X_list.append(X_sub)
             y_list.append(y_sub)
+
+            pos_list = pos_list.append(pd.read_csv(feature_pos, sep=','))
+            neg_list = neg_list.append(pd.read_csv(feature_neg, sep=','))
+
         X = pd.concat(X_list)
         y = pd.concat(y_list)
+
+        df_pos = pd.concat(pos_list)
+        df_neg = pd.concat(neg_list)
+        df_pos.to_csv((f'{feature_out_path}/feature_filtered_{midel_name}'
+                       f'pos_occ_pos.csv'),sep=",")
+        df_neg.to_csv((f'{feature_out_path}/feature_filtered_{midel_name}'
+                       f'pos_occ_neg.csv'),sep=",")
         # save y and y
         #X.to_csv(f'{feature_out_path}X_PARIS_human', index=False, sep=',')
         #y.to_csv(f'{feature_out_path}y_PARIS_human', index=False, sep=',')
