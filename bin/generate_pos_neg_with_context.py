@@ -496,18 +496,20 @@ def decode_IntaRNA_call(call, lost_inst, row, list_rows_add, df_data, no_sub_opt
     return df_data, lost_inst, no_less_sub_opt
 
 
-def get_context_added(input_rris, output_path, genome_file, context, context_not_full,context_file,chrom_len_file):
+def get_context_added(input_rris, output_path, genome_file, context,
+                      context_not_full, context_file, chrom_len_file):
     """
-    get_context
+    get context
 
         Parameters
         ----------
-        input_rris:
-        output_path:
-        genome_file:
-        context:
-        context_not_full:
-        context_file:
+        input_rris: path to input file
+        output_path: path to output directorey
+        genome_file: paht to genome file
+        context: amount of context which should be added
+        context_not_full: counter how many instances did not lead to a result
+        context_file: context file name
+        chrom_len_file: table containing the length of each chromosome
 
         Returns
         -------
@@ -537,6 +539,7 @@ def get_context_added(input_rris, output_path, genome_file, context, context_not
                                     'end_1st', 'target')
     df_contex = get_context_pos(df_contex, context, 'start_2end',
                                     'end_2end', 'query')
+    #print(df_contex)
 
     df_contex['chrom_1st'] = df_contex['chrom_1st'].apply(lambda x: rl.check_convert_chr_id(x))
     df_contex['chrom_2end'] = df_contex['chrom_2end'].apply(lambda x: rl.check_convert_chr_id(x))
@@ -670,7 +673,7 @@ def report(context_not_full,full_seq_occ,no_neg,lost_inst_pos,lost_inst_neg,no_l
 
 def get_context_file_name(context, pos_occ, block_ends, output_path, experiment_name):
     """
-    get_context_file_name
+    get context file name
 
         Parameters
         ----------
@@ -786,7 +789,7 @@ def main():
     parser.add_argument("-b", "--block_ends",  nargs='?', type=int,
                         dest="block_ends",  default=0,
                         help= "# nts blocked at the ends of the sequence")
-    parser.add_argument("-s", "--no_sub_opt",  nargs='?', type=int,
+    parser.add_argument("-so", "--no_sub_opt",  nargs='?', type=int,
                         dest="no_sub_opt",  default=5,
                         help= "# of interactions IntraRNA will give is possible")
     parser.add_argument("-l", "--chrom_len_file",  action="store", dest="chrom_len_file",
@@ -873,7 +876,9 @@ def main():
         df_contex = pd.read_table(context_file, sep=",")
         print('used existing context file: %s'%(context_file))
     else:
-        df_contex = get_context_added(input_rris, output_path, genome_file, context, context_not_full, context_file,chrom_len_file)
+        df_contex = get_context_added(input_rris, output_path, genome_file,
+                                      context, context_not_full, context_file,
+                                      chrom_len_file)
         print('***\ncontext is append pos and negative data generation is starting:\n****')
 
 

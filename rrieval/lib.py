@@ -193,20 +193,21 @@ def set_score_if_not_defined(df_in, df_score, col, score_val=1.0):
 
     >>> df_in_1 = pd.DataFrame({'score':[0.3,0.3,1,1],'b':[1,1,1,1]})
     >>> df_score_1 = pd.DataFrame({'score':[0.3,0.3,1,1],'b':[1,1,1,1]})
-    >>> set_score_if_not_defined(df_in, df_score, 'score')
+    >>> set_score_if_not_defined(df_in_1, df_score_1, 'score')
        score  b
-    0  0.3    1
-    1  0.3    1
-    2  1.0    1
-    3  1.0    1
+    0    0.3  1
+    1    0.3  1
+    2    1.0  1
+    3    1.0  1
+
     >>> df_in_2 = pd.DataFrame({'a':['a','b','c','d'],'b':[1,1,1,1]})
     >>> df_score_2 = pd.DataFrame({'score':['NA','NA','NA','NA'],'b':[1,1,1,1]})
-    >>> set_score_if_not_defined(df_in, df_score, 'score')
-     score b
-    0   0.3 1
-    1   0.3 1
-    2   1.0 1
-    3   1.0 1
+    >>> set_score_if_not_defined(df_in_2, df_score_2, 'score')
+       score  b
+    0    1.0  1
+    1    1.0  1
+    2    1.0  1
+    3    1.0  1
         """
     if not col in list(df_in.columns):
         df_score[col] = [score_val]*len(df_in)
@@ -487,7 +488,7 @@ def calculate_overlap(s1,e1,s2,e2,len_flag=False):
         elif e2 < e1:
             e_overlap = e2
         else:
-            print('error: something is not overlapping hire')
+            print('Error: something is not overlapping hire')
     elif s2 < s1:
         s_overlap = s1
         if e1 <= e2:
@@ -495,7 +496,7 @@ def calculate_overlap(s1,e1,s2,e2,len_flag=False):
         elif e2 < e1:
             e_overlap = e2
         else:
-            print('error: something is not overlapping hire')
+            print('Error: something is not overlapping hire')
     overlap_len = e_overlap - s_overlap +1
     seq1_len = e1 - s1 + 1
     seq2_len = e2 - s2 + 1
@@ -727,11 +728,13 @@ def check_context(df, seq_tag, chrom_dict):
         -------
         df
             df with changed positions
+        count
+            countes the sequences where exculded due to false chrom name
 
     >>> chrom_dict = {'chr1':60,
     ...         'chr2':80}
     >>> datat = {'start_1st':[0, -40, 40, -2],
-    ...         'chrom_1st':['chr1', 'chr1', 'chr1', 'chr1'],
+    ...         'chrom_1st':['chr1', 'chr1', 'False', 'chr1'],
     ...         'end_1st':[30, 60, 70, 70]}
     >>> dataq = {'start_2end':[0, -40, 40, -2],
     ...         'end_2end':[30, 60, 70, 70],
@@ -739,7 +742,7 @@ def check_context(df, seq_tag, chrom_dict):
     >>> dft = pd.DataFrame(datat)
     >>> dfq = pd.DataFrame(dataq)
     >>> check_context(dft, 'target', chrom_dict)
-    Warning: added context to target is out of bourder for 4 instances
+    Warning: added context to target is out of border for 3 instances
        start_1st chrom_1st  end_1st
     0          0      chr1       30
 
@@ -762,16 +765,17 @@ def check_context(df, seq_tag, chrom_dict):
         end = 'end_2end'
         chrom = 'chrom_2end'
 
-    #print(df)
-    no_seq_out_boder += len(df[df[start] < 0])
-    no_seq_out_boder += len(df[df[end] > df[chrom].apply(lambda x: chrom_dict[x])])
+    df_copy = df.copy()
+    df_filted, count = filter_false_chr(df_copy, chrom)
+    no_seq_out_boder += len(df_filted[df_filted[start] < 0])
+    no_seq_out_boder += len(df_filted[df_filted[end] > df_filted[chrom].apply(lambda x: chrom_dict[x])])
 
         # delet data
-    df = df.loc[df[start] >= 0]
-    df = df.loc[df[end] <= df[chrom].apply(lambda x: chrom_dict[x])]
+    df_filted = df_filted.loc[df_filted[start] >= 0]
+    df_filted = df_filted.loc[df_filted[end] <= df_filted[chrom].apply(lambda x: chrom_dict[x])]
 
     print('Warning: added context to %s is out of border for %i instances'%(seq_tag,no_seq_out_boder))
-    return df
+    return df_filted, count
 
 
 ################################################################################
@@ -800,7 +804,8 @@ def filter_false_chr(df, col_name):
     0          0      chr1
     2         40      chr1, 2)
         """
-    df_filterd = df[df[col_name] != 'False']
+
+    df_filterd = df[(df[col_name] != False)&(df[col_name] != 'False')]
     no_del_entys = len(df) - len(df_filterd)
     return df_filterd, no_del_entys
 
@@ -818,6 +823,7 @@ def get_context(seq_tag, df, out_dir, in_genome_fasta, context, chrom_len_file):
         out_dir: directory where to store bed and fa file
         in_genome_fasta: genome FASTA file
         context: amount of nt that should be added on both sites
+        chrom_len_file: length of chromosomes file (Tabular)
 
 
         Returns
@@ -833,15 +839,17 @@ def get_context(seq_tag, df, out_dir, in_genome_fasta, context, chrom_len_file):
     #print(chrom_dict)
     if seq_tag == 'target':
         df_bed = df[['chrom_1st', 'start_1st', 'end_1st', 'ID1', 'interaction_no', 'strand_1st']].copy()
-        #print(df_bed.tail())
+        # print('test why False!!')
         df_bed['chrom_1st'] = df_bed['chrom_1st'].apply(lambda x: check_convert_chr_id(x))
-        #print(df_bed.tail())
+        # df_bed.to_csv(out_bed, sep="\t", index=False)
+        #df_bed_filted, count2 = filter_false_chr(df_bed, 'chrom_1st')
+        #print(len(df_bed_filted))
         df_context =  add_context(df_bed, context, 'start_1st', 'end_1st')
         #print(df_context.tail())
-        df_context = check_context(df_context, seq_tag, chrom_dict)
+        df_context, count = check_context(df_context, seq_tag, chrom_dict)
         col_name = 'con_target'
         col_id = 'ID1'
-        df_context_filted, count = filter_false_chr(df_context, 'chrom_1st')
+        # df_context_filted, count = filter_false_chr(df_context, 'chrom_1st')
         no_del_entys += count
         #df_context_filted = df_context[df_context.chrom_1st != False]
         #no_del_entys += len(df_context) - len(df_context_filted)
@@ -849,10 +857,10 @@ def get_context(seq_tag, df, out_dir, in_genome_fasta, context, chrom_len_file):
         df_bed = df[['chrom_2end', 'start_2end', 'end_2end', 'ID2', 'interaction_no', 'strand_2end']].copy()
         df_bed['chrom_2end'] = df_bed['chrom_2end'].apply(lambda x: check_convert_chr_id(x))
         df_context =  add_context(df_bed, context, 'start_2end', 'end_2end')
-        df_context = check_context(df_context, seq_tag, chrom_dict)
+        df_context, count = check_context(df_context, seq_tag, chrom_dict)
         col_name = 'con_query'
         col_id = 'ID2'
-        df_context_filted, count = filter_false_chr(df_context, 'chrom_2end')
+        # df_context_filted, count = filter_false_chr(df_context, 'chrom_2end')
         no_del_entys += count
         #df_context_filted = df_context[df_context.chrom_2end != False]
         #no_del_entys += len(df_context) - len(df_context_filted)
@@ -860,7 +868,7 @@ def get_context(seq_tag, df, out_dir, in_genome_fasta, context, chrom_len_file):
         print('error: please specify the parameter seq_tag with target or query')
     # delet all 'False' chromosomes of in the df
     print('lost %i instances because of the chromosome'%(no_del_entys))
-    df_context_filted.to_csv(out_bed, sep="\t", index=False, header=False)
+    df_context.to_csv(out_bed, sep="\t", index=False, header=False)
     #df = df_context
     seqs_dic = bed_extract_sequences_from_fasta(out_bed, out_fa, in_genome_fasta)
 

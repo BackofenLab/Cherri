@@ -206,6 +206,9 @@ def setup_argument_parser():
     p_mrg.add_argument("-tp", "--temp_dir",
                         default="off",
                         help= "Set a temporary directory for autosklearn. Either provede a path or 'out' to set it to the output directory Defalut:off")
+    p_mrg.add_argument("-so", "--no_sub_opt",  nargs='?', type=int,
+                        dest="no_sub_opt",  default=5,
+                        help= "# of interactions IntraRNA will give is possible")
 
 
     return p
@@ -402,7 +405,7 @@ def main_eval(args):
         pos_neg_param = (f' -i1 {eval_rri_file} -i2  {occupied_regions} '
                          f' -d {pos_neg_out_path} -g {genome_file} '
                          f'-n {experiment_name} -c {str(context)} --no_pos_occ '
-                         f'-s 1 -l {chrom_len_file} -p {param_file} -m eval')
+                         f'-so 1 -l {chrom_len_file} -p {param_file} -m eval')
 
         call_pos_neg = f'generate_pos_neg_with_context.py {pos_neg_param}'
         print('1. Prepare RRI instances\n')
@@ -546,6 +549,7 @@ def main_train(args):
     filter_hybrid = args.filter_hybrid
     out_name = args.out_name
     temp_dir = args.temp_dir
+    no_sub_opt = args.no_sub_opt
 
 
     methods = (f'extra_trees passive_aggressive random_forest sgd '
@@ -619,7 +623,8 @@ def main_train(args):
         pos_neg_param = (f' -i1 {trusted_rri_file} -i2 {occupied_regions_file} '
                          f'-d {pos_neg_out_path} -g {genome_file} '
                          f'-n {experiment_name} -c {str(context)} --pos_occ '
-                         f'-b 40 -l {chrom_len_file} -p {param_file} -m train')
+                         f'-b 40 -l {chrom_len_file} -p {param_file} -m train '
+                         f'-so {no_sub_opt}')
 
         call_pos_neg = f'generate_pos_neg_with_context.py {pos_neg_param}'
         print('2. Compute positive and negative instances\n')
