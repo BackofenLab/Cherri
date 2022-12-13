@@ -1,0 +1,39 @@
+#!/bin/sh
+
+### Input variabels
+OUT = "/vol/scratch/data_storage/test_cherri"
+CHERRI_PATH = "/vol/scratch/Cherri"
+
+# set up test dir
+
+
+mkdir $OUT
+
+### train
+
+# train fist test set
+cherri train -i1 ./test_data/training/Paris/ -r miRNA_human_1.tabular miRNA_human_2.tabular miRNA_human_3.tabular -g human -l human -o $OUT -n paris_human_test1 -c 50 -st on -t 600 -me 8000 -j 7 -on paris_human_test1 -tp out
+
+# train second test set
+cherri train -i1 ./test_data/training/Paris/ -r miRNA_human_1.tabular miRNA_human_2.tabular -g human -l human -o $OUT -n paris_human_test2 -c 50 -st on -t 600 -me 8000 -j 7 -on paris_human_test2 -tp out
+
+# train third test set
+cherri train -i1 ./test_data/training/Paris/ -r miRNA_human_3.tabular -g human -l human -o $OUT -n paris_human_test3 -c 50 -st on -t 600 -me 8000 -j 7 -on paris_human_test3 -tp out
+
+
+# train combinde model
+cherri train -i1 $OUT  -r paris_human_test1 paris_human_test2 paris_human_test3 -g /not/needed/ -l /not/needed/ -o $OUT -n Full_model_test -c 50 -st on -mi on -t 600 -me 8000 -j 7 
+
+
+### eval 
+
+# model evaluation - test1 with test2
+cherri eval -i1 $OUT/paris_human_test2/feature_files/feature_filtered_paris_human_test2_context_50_pos_occ -g human -l human -o $OUT -n test_cross_model -c 50 -st on -m  $OUT/Model_with_graph_features/paris_human_test1/model/optimized/full_paris_human_test1_context_50.model -mp  $OUT/paris_human_test1/feature_files/training_data_paris_human_test1_context_50.npz -j 10 -on evaluation -hf on
+
+# model cross validation for fold 3
+python -m biofilm.biofilm-cv --infile $OUT/paris_human_test1/feature_files/training_data_paris_human_test1_context_50.npz --foldselect 3 --model $OUT/paris_human_test1/model/optimized/paris_human_test1_context_150.model --out $OUT/evaluation/evaluation/paris_human_test1_paris_human_test1_fold3.csv
+
+
+# evalutation using test eval test data
+cherri eval -i1 ./test_data/evaluate/test_evaluate_rris.csv  -g human -l human -o $OUT -n test_eval -c 50 -st on -m $OUT/Model_with_graph_features/paris_human_test1/model/optimized/full_paris_human_test1_context_50.model -mp  $OUT/paris_human_test1/feature_files/training_data_paris_human_test1_context_50.npz 
+
