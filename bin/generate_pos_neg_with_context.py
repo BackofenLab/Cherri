@@ -402,7 +402,8 @@ def get_pos_occ_list(seq_s, seq_e, seed_s, seed_e, strand, converted_occ_list):
 
 
 
-def convert_occu_positons(seq_s, seq_e, occupied_regions,strand, block_ends, seed_s, seed_e):
+def convert_occu_positons(seq_s, seq_e, occupied_regions,strand, block_ends,
+                          seed_s, seed_e):
     """
     convert the list containing all occupied positions
 
@@ -575,7 +576,10 @@ def load_occupied_data(input_occupied):
     return occupied_InteLab
 
 
-def get_occ_regions(target_key, query_key, target_pos_s,target_pos_e, occupied_InteLab, query_pos_s,query_pos_e,strand_t, strand_q, block_ends, target_seed_s, target_seed_e, query_seed_s, query_seed_e):
+def get_occ_regions(target_key, query_key, target_pos_s,target_pos_e,
+                    occupied_InteLab, query_pos_s,query_pos_e,strand_t,
+                    strand_q, block_ends, target_seed_s, target_seed_e,
+                    query_seed_s, query_seed_e):
     """
     get_occ_regions
 
@@ -583,18 +587,18 @@ def get_occ_regions(target_key, query_key, target_pos_s,target_pos_e, occupied_I
         ----------
         target_key: chrom;strand as key for interlap object of target sequences
         query_key: chrom;strand as key for interlap object of query sequences
-        target_pos_s:
-        target_pos_e:
-        occupied_InteLab:
-        query_pos_s:
-        query_pos_e:
-        strand_t:
-        strand_q:
-        block_ends:
-        target_seed_s:
-        target_seed_e:
-        query_seed_s:
-        query_seed_e:
+        target_pos_s: target context start positon
+        target_pos_e: target context end postion
+        occupied_InteLab: interlap library provieded by the user or only the interactions sites
+        query_pos_s: query context start postion
+        query_pos_e: queery context end postion
+        strand_t: strand of the target sequence [+,-]
+        strand_q: strand of the query sequence [+,-]
+        block_ends: number of nucletides which should be not considered at the end
+        target_seed_s: target interaction start site
+        target_seed_e: target interaction end site
+        query_seed_s: quer interaction start site
+        query_seed_e: query interaction end site
 
 
         Returns
@@ -624,16 +628,24 @@ def get_occ_regions(target_key, query_key, target_pos_s,target_pos_e, occupied_I
                                                query_seed_s, query_seed_e)
 
     if pos_occ_list_t:
-        pos_param_t = get_neg_pos_intarna_str(pos_occ_list_t, '--tAccConstr=\"b:', target_pos_s, target_pos_e)
+        pos_param_t = get_neg_pos_intarna_str(pos_occ_list_t,
+                                              '--tAccConstr=\"b:', target_pos_s,
+                                              target_pos_e)
     else:
         pos_param_t = ''
     if pos_occ_list_q:
-        pos_param_q = get_neg_pos_intarna_str(pos_occ_list_q, '--qAccConstr=\"b:', query_pos_s, query_pos_e)
+        pos_param_q = get_neg_pos_intarna_str(pos_occ_list_q,
+                                              '--qAccConstr=\"b:', query_pos_s,
+                                              query_pos_e)
     else:
         pos_param_q= ''
 
-    neg_param_t = get_neg_pos_intarna_str(new_occupied_reg_t, '--tAccConstr=\"b:', target_pos_s, target_pos_e)
-    neg_param_q = get_neg_pos_intarna_str(new_occupied_reg_q, '--qAccConstr=\"b:', query_pos_s, query_pos_e)
+    neg_param_t = get_neg_pos_intarna_str(new_occupied_reg_t,
+                                          '--tAccConstr=\"b:', target_pos_s,
+                                          target_pos_e)
+    neg_param_q = get_neg_pos_intarna_str(new_occupied_reg_q,
+                                         '--qAccConstr=\"b:', query_pos_s,
+                                         query_pos_e)
     if neg_param_t == '' or neg_param_q == '':
         print('Warining: full sequence is occupied!')
         full_seq_occ += 1

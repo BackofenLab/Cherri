@@ -466,9 +466,6 @@ def main_eval(args):
         os.mkdir(eval_path)
     print('2b. Classify RRI instances\n')
 
-
-
-
     #print(X_filterd.info())
     #print(X_filterd.columns.tolist())
     eval_file = f'{eval_path}evaluation_results_{experiment_name}.csv'
@@ -604,7 +601,7 @@ def main_train(args):
     call_occupied_regions = f'find_occupied_regions.py {occupied_regions_param}'
     if mixed == 'off':
         print('1. Find occupied regions\n')
-        #print(call_occupied_regions)
+        print(call_occupied_regions)
         rl.call_script(call_occupied_regions,reprot_stdout=False,
                        asset_err=False)
 
