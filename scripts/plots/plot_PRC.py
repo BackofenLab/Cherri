@@ -59,11 +59,11 @@ def main():
 
 
     feature_file_names = ['PARIS_human','PARIS_mouse']
+    feature_file_names_mfe = ['PARIS_human_MFE','PARIS_mouse_MFE']
     color_list = ['#F0E442','#D55E00', '#BBBBBB','#009E73','#0072B2','#808080']
     index = 0
 
     for name in feature_file_names:
-
 
         key_diag = name + '_' + name
         df_cv = calculate_diag(name, cherri_model_path)
@@ -72,9 +72,9 @@ def main():
         precision, recall, thresholds, auc_prc = compute_prc(df_cv['true_label'].tolist(),df_cv['instance_score'].tolist())
 
         # for name finde E value!
-        feature_path = f'{input_path}/{name}/feature_files'
-        pos_feature_file = f'{feature_path}/feature_filtered_{name}_context_150_pos_occ_pos.csv'
-        neg_feature_file = f'{feature_path}/feature_filtered_{name}_context_150_pos_occ_neg.csv'
+        feature_path = f'{input_path}/{name}_MFE/feature_files'
+        pos_feature_file = f'{feature_path}/feature_filtered_{name}_MFE_context_150_pos_occ_pos.csv'
+        neg_feature_file = f'{feature_path}/feature_filtered_{name}_MFE_context_150_pos_occ_neg.csv'
         X,y = rl.read_pos_neg_data(pos_feature_file, neg_feature_file)
         precision_E, recall_E, thresholds_E, auc_prc_E = compute_prc(y.tolist(), X['E'].tolist())
 
@@ -86,7 +86,7 @@ def main():
         #label_main_seq = 'Cherri SeqStruc model AUC/F1: %.2f/%.2f' % (auc_prc_main_SeqStruc, f1_score_main_SeqStruc)
         data_name = name.split('_')[-1]
         label_Cherri = f'CheRRI {data_name} model AUC: {auc_prc.round(2)}'
-        label_E = f'MFE {data_name} AUC: {auc_prc_E.round(2)}' 
+        label_E = f'MFE {data_name} AUC: {auc_prc_E.round(2)}'
 
         #plt.plot(recall_main, precision_main, color='#009E73', label=label_main) # green
         #plt.plot(recall_main_SeqStruc, precision_main_SeqStruc, color='#0072B2', label=label_main_seq) #blue
