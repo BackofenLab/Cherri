@@ -409,7 +409,7 @@ def main_eval(args):
                          f'-so 1 -l {chrom_len_file} -p {param_file} -m eval')
 
         call_pos_neg = f'generate_pos_neg_with_context.py {pos_neg_param}'
-        print('1. Prepare RRI instances\n')
+        print('\n1. Prepare RRI instances\n')
         #print(call_pos_neg)
         rl.call_script(call_pos_neg)
 
@@ -474,9 +474,9 @@ def main_eval(args):
     if hand_feat == 'off':
         # get ID_df for not full evaluation data
         df_ID = rl.get_ids(pos_data_file)
-        df_eval = rl.classify(X_filterd, model_file, eval_file, df_ID)
+        df_eval = rl.classify(X_filterd, model_file, eval_file, df_ID, False, 'off', True)
     elif hand_feat == 'on':
-        df_eval = rl.classify(X_filterd, model_file, eval_file, 'off', True, y)
+        df_eval = rl.classify(X_filterd, model_file, eval_file, 'off', True, y, False)
 
 
 
@@ -604,7 +604,7 @@ def main_train(args):
     call_occupied_regions = f'find_occupied_regions.py {occupied_regions_param}'
     if mixed == 'off':
         print('1. Find occupied regions\n')
-        print(call_occupied_regions)
+        # print(call_occupied_regions)
         rl.call_script(call_occupied_regions,reprot_stdout=False,
                        asset_err=False)
 
@@ -686,8 +686,8 @@ def main_train(args):
             X_list.append(X_sub)
             y_list.append(y_sub)
 
-            pos_list = pos_list.append(pd.read_csv(feature_pos, sep=','))
-            neg_list = neg_list.append(pd.read_csv(feature_neg, sep=','))
+            pos_list.append( pd.read_csv(feature_pos, sep=','))
+            neg_list.append(pd.read_csv(feature_neg, sep=','))
 
         X = pd.concat(X_list)
         y = pd.concat(y_list)

@@ -1305,7 +1305,7 @@ def get_ids(pos_data):
 
 
 def classify(df_eval,in_model_filepath, output_path, df_ID='off',
-            true_lable=False, y='off'):
+            true_lable=False, y='off', ID_Label = False):
     """
     Classification of the given RRIs features using the input model
         Parameters
@@ -1315,7 +1315,8 @@ def classify(df_eval,in_model_filepath, output_path, df_ID='off',
         output_path: location where to save output
         df_ID: all ids adding to the final table off for cross evaluation
         true_lable: Boolien to set lable or not (needed for evaluation)
-        y:
+        y: list containing labes to the df_eval instaces
+        ID_Label: check if ID should be added
 
 
         Returns
@@ -1338,16 +1339,19 @@ def classify(df_eval,in_model_filepath, output_path, df_ID='off',
     xtra = pd.DataFrame({'predicted_label': y_pred})
     df_result = pd.concat([xtra, df_eval], axis=1)
     # df_eval['prediction'] = y_pred
-    #print(y_pred)
+
+
     if true_lable:
         df_result['true_label'] = y.tolist()
         # calculates prob for each label. We only returen prob for one label?
     proba = model.predict_proba(df_eval)[:,1]
     instance_score = pd.DataFrame({'instance_score': proba})
-    if df_ID == 'off':
-        df_result = pd.concat([instance_score, df_result], axis=1)
-    else:
+    #print(instance_score)
+    #print(df_result)
+    if ID_Label:
         df_result = pd.concat([df_ID, instance_score, df_result], axis=1)
+    else:
+        df_result = pd.concat([instance_score, df_result], axis=1)
 
     # reformat data structure
 

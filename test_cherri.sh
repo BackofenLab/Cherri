@@ -1,13 +1,12 @@
 #!/bin/sh
 
 ### Input variabels
-OUT = "/vol/scratch/data_storage/test_cherri"
-CHERRI_PATH = "/vol/scratch/Cherri"
+
+OUT="/vol/scratch/data_storage/test2_cherri"
 
 # set up test dir
-
-
-mkdir $OUT
+echo $OUT
+mkdir -p $OUT
 
 ### train
 
@@ -28,12 +27,12 @@ cherri train -i1 $OUT  -r paris_human_test1 paris_human_test2 paris_human_test3 
 ### eval 
 
 # model evaluation - test1 with test2
-cherri eval -i1 $OUT/paris_human_test2/feature_files/feature_filtered_paris_human_test2_context_50_pos_occ -g human -l human -o $OUT -n test_cross_model -c 50 -st on -m  $OUT/Model_with_graph_features/paris_human_test1/model/optimized/full_paris_human_test1_context_50.model -mp  $OUT/paris_human_test1/feature_files/training_data_paris_human_test1_context_50.npz -j 10 -on evaluation -hf on
+cherri eval -i1 $OUT/paris_human_test2/feature_files/feature_filtered_paris_human_test2_context_50_pos_occ -g human -l human -o $OUT -n test_cross_model -c 50 -st on -m  $OUT/paris_human_test1/model/optimized/full_paris_human_test1_context_50.model -mp  $OUT/paris_human_test1/feature_files/training_data_paris_human_test1_context_50.npz -j 10 -on evaluation -hf on
 
 # model cross validation for fold 3
-python -m biofilm.biofilm-cv --infile $OUT/paris_human_test1/feature_files/training_data_paris_human_test1_context_50.npz --foldselect 3 --model $OUT/paris_human_test1/model/optimized/paris_human_test1_context_150.model --out $OUT/evaluation/evaluation/paris_human_test1_paris_human_test1_fold3.csv
+python -m biofilm.biofilm-cv --infile $OUT/paris_human_test1/feature_files/training_data_paris_human_test1_context_50.npz --foldselect 3 --model $OUT/paris_human_test1/model/optimized/paris_human_test1_context_50.model --out $OUT/evaluation/evaluation/paris_human_test1_paris_human_test1_fold3.csv
 
 
 # evalutation using test eval test data
-cherri eval -i1 ./test_data/evaluate/test_evaluate_rris.csv  -g human -l human -o $OUT -n test_eval -c 50 -st on -m $OUT/Model_with_graph_features/paris_human_test1/model/optimized/full_paris_human_test1_context_50.model -mp  $OUT/paris_human_test1/feature_files/training_data_paris_human_test1_context_50.npz 
+cherri eval -i1 ./test_data/evaluate/test_evaluate_rris.csv  -g human -l human -o $OUT -n test_eval -c 50 -st on -m $OUT/paris_human_test1/model/optimized/full_paris_human_test1_context_50.model -mp  $OUT/paris_human_test1/feature_files/training_data_paris_human_test1_context_50.npz 
 
