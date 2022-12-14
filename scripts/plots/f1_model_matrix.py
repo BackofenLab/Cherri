@@ -118,8 +118,10 @@ def main():
     #df_f1.to_latex(f'{input_path}/f1_talbel', float_format="{:0.2f}".format)
     print(f'{input_path}/f1_talbel')
     df_f1.style.to_latex(f'{input_path}/f1_table')
+    df_f1.to_csv(f'{input_path}/f1_table',index=False)
 
     df_auc.style.to_latex(f'{input_path}/auc_table')
+    df_auc.to_csv(f'{input_path}/auc_table',index=False)
 
     #for key in measures_dict:
         #print(key)
