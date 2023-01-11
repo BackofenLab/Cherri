@@ -329,7 +329,7 @@ At the end of the run the location of the trained model is given.
 
 Throughout the program, several output files are generated inside the output folder (default: `date_Cherri_model_build`), with the following structure:
 
-    ├── date_Cherri_model_build
+    ├── date_CheRRI_model_build
     |   ├── date_occ_out
     |       ├── occupied_regions.obj
     |       ├── rri_occupied_regions_overlap_0.3
@@ -353,41 +353,41 @@ Throughout the program, several output files are generated inside the output fol
 
 #### Run train in mixed model mode
 
-CheRRI is able to build on model based on different datasets. Is the mixed parameter is set to 'on' Cherri will connect training data for different datasets. However before running the mixed mode one would create the training data for the individual datasets.
+CheRRI is able to build on model based on different datasets. Is the mixed parameter is set to 'on' CheRRI will connect training data for different datasets. However before running the mixed mode one would create the training data for the individual datasets.
 Next we have a theoretical example of DataA, DataB and DataC, which should be trained together
-Therefore best create an dedicated output folder e.g. Cherri_build_model
+Therefore best create an dedicated output folder e.g. CheRRI_build_model
 
 Than build you first model:
 ```
-cherri train -i1 /path/to/Cherri_build_model/ -r dataA_1.tabular dataA_2.tabular -g human -l human -o ./ -n Data_A -c 150 -st on -t 600 -me 8000 -j 7
+cherri train -i1 /path/to/CheRRI_build_model/ -r dataA_1.tabular dataA_2.tabular -g human -l human -o ./ -n Data_A -c 150 -st on -t 600 -me 8000 -j 7
 ```
 If you don't need the model of the individual datasets you can either set the -t very low or even interrupt the call once the model is build.
-Next rename the output folder created by Cherri to the name you gave to the Data/Model (-n Data_A)
+Next rename the output folder created by CheRRI to the name you gave to the Data/Model (-n Data_A)
 ```
-mv /path/to/Cherri_build_model/<date>_Cherri_build_model /path/to/Cherri_build_model/Data_A
+mv /path/to/CheRRI_build_model/<date>_CheRRI_build_model /path/to/CheRRI_build_model/Data_A
 ```
 
 Than run the next dataset:
 ```
-cherri train -i1 /path/to/Cherri_build_model/ -r dataB_1.tabular dataB_2.tabular -g human -l human -o ./ -n Data_B -c 150 -st on -t 600 -me 8000 -j 7
+cherri train -i1 /path/to/CheRRO_build_model/ -r dataB_1.tabular dataB_2.tabular -g human -l human -o ./ -n Data_B -c 150 -st on -t 600 -me 8000 -j 7
 ```
-Next rename the output folder created by Cherri to the name you gave to the Data/Model (-n Data_A)
+Next rename the output folder created by CheRRI to the name you gave to the Data/Model (-n Data_A)
 ```
-mv /path/to/Cherri_build_model/<date>_Cherri_build_model /path/to/Cherri_build_model/Data_B
+mv /path/to/CheRRI_build_model/<date>_CheRRI_build_model /path/to/CheRRI_build_model/Data_B
 ```
 
 Than run the last dataset:
 ```
-cherri train -i1 /path/to/Cherri_build_model/ -r dataC_1.tabular dataC_2.tabular -g mouse -l mouse -o ./ -n Data_C -c 150 -st on -t 600 -me 8000 -j 7
+cherri train -i1 /path/to/CheRRI_build_model/ -r dataC_1.tabular dataC_2.tabular -g mouse -l mouse -o ./ -n Data_C -c 150 -st on -t 600 -me 8000 -j 7
 ```
-And rename the output folder created by Cherri to the name you gave to the Data/Model (-n Data_A)
+And rename the output folder created by CheRRI to the name you gave to the Data/Model (-n Data_A)
 ```
-mv /path/to/Cherri_build_model/<date>_Cherri_build_model /path/to/Cherri_build_model/Data_C
+mv /path/to/CheRRI_build_model/<date>_CheRRI_build_model /path/to/CheRRI_build_model/Data_C
 ```
 
 Finally you can run CheRRI **train** in the mixed model mode like this:
 ```
-cherri train -i1 /path/to/Cherri_build_model/  -r Data_A Data_B Data_C  -g /not/needed/ -l /not/needed/ -o /path/to/Cherri_build_model/ -n Full 
+cherri train -i1 /path/to/CheRRI_build_model/  -r Data_A Data_B Data_C  -g /not/needed/ -l /not/needed/ -o /path/to/CheRRI_build_model/ -n Full 
 ```
 This time your replicates are the names of the training datasets you want to connect (Data_A Data_B Data_C). 
 
