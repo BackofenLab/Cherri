@@ -102,12 +102,12 @@ def setup_argument_parser():
                       type=int,
                       dest="context",
                       default=150,
-                      help= "How much context should be added at up- and downstream of the sequence")
+                      help= "How much context should be added at up- and downstream of the sequence. Default: 150")
     p_ex.add_argument("-n", "--experiment_name",
                       action="store",
                       dest="experiment_name",
                       default='eval_rri',
-                      help= "Name of the data source of the RRIs, e.g. experiment and organism")
+                      help= "Name of the data source of the RRIs, e.g. experiment and organism. Default: eval_rri")
     p_ex.add_argument("-p", "--param_file",
                        dest="param_file",
                        default="not_set",
@@ -115,10 +115,10 @@ def setup_argument_parser():
     p_ex.add_argument("-st", "--use_structure",
                        dest="use_structure",
                        default="on",
-                       help= "Set 'off' if you want to disable structure, default 'on'")
+                       help= "Set 'off' if you want to disable structure. Default 'on'")
     p_ex.add_argument("-on", "--out_name",
                       default="non",
-                      help= "Name for the output directory, default 'date_Cherri_evaluating_RRIs' ")
+                      help= "Name for the output directory. Default: 'date_Cherri_evaluating_RRIs' ")
     p_ex.add_argument("-hf", "--hand_feat",
                       default="off",
                       help= "If you want to start from hand-curated feature files. Use this for evaluating test set performance (set 'on'). Default: 'off'")
@@ -167,12 +167,12 @@ def setup_argument_parser():
                        type=int,
                        dest="context",
                        default=150,
-                       help= "How much context should be added at up- and downstream of the sequence")
+                       help= "How much context should be added at up- and downstream of the sequence. Default: 150")
     p_mrg.add_argument("-n", "--experiment_name",
                        action="store",
                        dest="experiment_name",
                        default='model_rri',
-                       help= "Name of the data source of RRIs. Will be used for the file names")
+                       help= "Name of the data source of RRIs. Will be used for the file names. Default: 'model_rri'")
     p_mrg.add_argument("-p", "--param_file",
                        dest="param_file",
                        help= "IntaRNA parameter file. Default: file in path_to_cherri_folder/Cherri/rrieval/IntaRNA_param",
@@ -180,32 +180,35 @@ def setup_argument_parser():
     p_mrg.add_argument("-st", "--use_structure",
                        dest="use_structure",
                        default="on",
-                       help= "Set 'off' if you want to disable graph-kernel features, default: 'on' (when set to 'on' the feature optimization will be performed directly and the data will be stored in feature_files and no model/feature folder will be created)")
+                       help= "Set 'off' if you want to disable graph-kernel features. Default: 'on' (when set to 'on' the feature optimization will be performed directly and the data will be stored in feature_files and no model/feature folder will be created)")
     p_mrg.add_argument("-i2", "--RBP_path",
                         help= "Path to the genomic RBP crosslink or binding site locations (in BED format)",
                         default="non")
     p_mrg.add_argument("-t", "--run_time",
-                        help= "Time used for the optimization in seconds, default: 43200 (12h)",
+                        help= "Time used for the optimization in seconds. Default: 43200 (12h)",
                         default=43200)
     p_mrg.add_argument("-me", "--memoryPerThread",
-                        help= "Memory in MB each thread can use (total ram/threads)",
+                        help= "Memory in MB each thread can use (total ram/threads). Default: 4300",
                         default=4300)
     p_mrg.add_argument("-j", "--n_jobs",
                         type=int,
                         help= "Number of jobs used for graph feature computation and model selection. Default: 1",
                         default=-1)
     p_mrg.add_argument("-mi", "--mixed",
-                        help= "Use mixed model to combine different datasets into a combined model. Default. 'off'",
+                        help= "Use mixed model to combine different datasets into a combined model. Default: 'off'",
                         default='off')
     p_mrg.add_argument("-fh", "--filter_hybrid",
                         default="off",
-                        help= "Filter the data for hybrids already detected by ChiRA (set 'on' to filter, default:'off')")
+                        help= "Filter the data for hybrids already detected by ChiRA (set 'on' to filter). Default:'off'")
     p_mrg.add_argument("-on", "--out_name",
                         default="non",
-                        help= "Name for the output directory, default 'date_Cherri_evaluating_RRIs' ")
+                        help= "Name for the output directory, default 'date_Cherri_evaluating_RRIs'. Default: 'date_cherri_train'")
     p_mrg.add_argument("-tp", "--temp_dir",
                         default="off",
-                        help= "Set a temporary directory for autosklearn. Either provede a path or 'out' to set it to the output directory Defalut:off")
+                        help= "Set a temporary directory for autosklearn. Either proved a path or 'out' to set it to the output directory. Default: 'off'")
+    p_mrg.add_argument("-so", "--no_sub_opt",  nargs='?', type=int,
+                        dest="no_sub_opt",  default=5,
+                        help= "# of interactions IntraRNA will give is possible. Default: 5")
 
 
     return p
@@ -278,16 +281,17 @@ def main_eval(args):
     Output files:
     ├── date_Cherri_evaluation_mode
     |   ├── evaluate_RRIs.csv
+    |   ├── date_occ_out
+    |       ├── occupied_regions.obj
+    |       ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.csv
     |   ├── positive_instance
-    |       ├── test_eval_context_{context}pos.csv
-    |       ├── date_occ_out
-    |           ├── occupied_regions.obj
-    |           ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.csv
+    |       ├── {name}_context_{context}pos.csv
+    |       ├── {name}_context_{context}_block_ends_0_RRI_dataset.csv
     |   ├── feature_files
-    |       ├── feature_filtered_test_eval_context_150_pos.csv
-    |       ├── training_data_test_eval_context_150.npz
+    |       ├── feature_filtered_{name}_context_{context}_pos.csv
+    |       ├── training_data_{name}_context_{context}.npz
     |   ├── evaluation
-    |       ├── evaluation_results_test_data.csv
+    |       ├── evaluation_results_{name}.csv
 
     """
 
@@ -402,10 +406,10 @@ def main_eval(args):
         pos_neg_param = (f' -i1 {eval_rri_file} -i2  {occupied_regions} '
                          f' -d {pos_neg_out_path} -g {genome_file} '
                          f'-n {experiment_name} -c {str(context)} --no_pos_occ '
-                         f'-s 1 -l {chrom_len_file} -p {param_file} -m eval')
+                         f'-so 1 -l {chrom_len_file} -p {param_file} -m eval')
 
         call_pos_neg = f'generate_pos_neg_with_context.py {pos_neg_param}'
-        print('1. Prepare RRI instances\n')
+        print('\n1. Prepare RRI instances\n')
         #print(call_pos_neg)
         rl.call_script(call_pos_neg)
 
@@ -463,20 +467,16 @@ def main_eval(args):
         os.mkdir(eval_path)
     print('2b. Classify RRI instances\n')
 
-    # get ID_df
-    #print(pos_data_file)
-    df_ID = rl.get_ids(pos_data_file)
-    #print('***df IDS')
-    #print(df_ID)
-
     #print(X_filterd.info())
     #print(X_filterd.columns.tolist())
     eval_file = f'{eval_path}evaluation_results_{experiment_name}.csv'
 
     if hand_feat == 'off':
-        df_eval = rl.classify(X_filterd, model_file, eval_file, df_ID)
+        # get ID_df for not full evaluation data
+        df_ID = rl.get_ids(pos_data_file)
+        df_eval = rl.classify(X_filterd, model_file, eval_file, df_ID, False, 'off', True)
     elif hand_feat == 'on':
-        df_eval = rl.classify(X_filterd, model_file, eval_file, df_ID, True, y)
+        df_eval = rl.classify(X_filterd, model_file, eval_file, 'off', True, y, False)
 
 
 
@@ -504,21 +504,23 @@ def main_train(args):
     ├── date_Cherri_model_build
     |   ├── date_occ_out
     |       ├── occupied_regions.obj
+    |       ├── rri_occupied_regions_overlap_0.3
     |       ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.csv
-    |   ├── read_pos_neg_data
-    |       ├── test_train_context_50_pos_occ_neg.csv
-    |       ├── test_train_context_50_pos_occ_pos.csv
+    |   ├── pos_neg_data
+    |       ├── test_train_context_XX_pos_occ__block_ends_40_RRI_dataset.csv
+    |       ├── test_train_context_XX_pos_occ_neg.csv
+    |       ├── test_train_context_XX_pos_occ_pos.csv
     |   ├── feature_files
-    |       ├── feature_filtered_test_train_context_150_pos.csv
-    |       ├── feature_filtered_test_train_context_150_neg.csv
-    |       ├── training_data_test_train_context_150.npz
+    |       ├── feature_filtered_test_train_context_XX_pos.csv
+    |       ├── feature_filtered_test_train_context_XX_neg.csv
+    |       ├── training_data_test_train_context_XX.npz
     |   ├── model
-    |       ├── features
-    |           ├── test_train_context_50.npz
+    |       ├── features (only if -st off)
+    |           ├── test_train_context_XX.npz
     |       ├── optimized
-    |           ├── test_train_context_50.model
-    |           ├── test_train_context_50.csv
-    |           ├── full_test_train_context_50.model
+    |           ├── test_train_context_XX.model
+    |           ├── test_train_context_XX.csv
+    |           ├── full_test_train_context_XX.model
     """
 
     args = parser.parse_args()
@@ -547,6 +549,7 @@ def main_train(args):
     filter_hybrid = args.filter_hybrid
     out_name = args.out_name
     temp_dir = args.temp_dir
+    no_sub_opt = args.no_sub_opt
 
 
     methods = (f'extra_trees passive_aggressive random_forest sgd '
@@ -601,7 +604,7 @@ def main_train(args):
     call_occupied_regions = f'find_occupied_regions.py {occupied_regions_param}'
     if mixed == 'off':
         print('1. Find occupied regions\n')
-        #print(call_occupied_regions)
+        # print(call_occupied_regions)
         rl.call_script(call_occupied_regions,reprot_stdout=False,
                        asset_err=False)
 
@@ -620,7 +623,8 @@ def main_train(args):
         pos_neg_param = (f' -i1 {trusted_rri_file} -i2 {occupied_regions_file} '
                          f'-d {pos_neg_out_path} -g {genome_file} '
                          f'-n {experiment_name} -c {str(context)} --pos_occ '
-                         f'-b 40 -l {chrom_len_file} -p {param_file} -m train')
+                         f'-b 40 -l {chrom_len_file} -p {param_file} -m train '
+                         f'-so {no_sub_opt}')
 
         call_pos_neg = f'generate_pos_neg_with_context.py {pos_neg_param}'
         print('2. Compute positive and negative instances\n')
@@ -667,17 +671,33 @@ def main_train(args):
         X_list = []
         y_list = []
         # args.list_of_replicates
+        # save the concatinated data
+        pos_list = []
+        neg_list = []
         for data in args.list_of_replicates:
             feature_path = f'{input_path_RRIs}/{data}/feature_files/'
             feature_neg = (f'{feature_path}/feature_filtered_{data}_context_'
                            f'{str(context)}_pos_occ_neg.csv')
             feature_pos = (f'{feature_path}/feature_filtered_{data}_context_'
                            f'{str(context)}_pos_occ_pos.csv')
+
             X_sub, y_sub = rl.read_pos_neg_data(feature_pos, feature_neg)
+
             X_list.append(X_sub)
             y_list.append(y_sub)
+
+            pos_list.append( pd.read_csv(feature_pos, sep=','))
+            neg_list.append(pd.read_csv(feature_neg, sep=','))
+
         X = pd.concat(X_list)
         y = pd.concat(y_list)
+
+        df_pos = pd.concat(pos_list)
+        df_neg = pd.concat(neg_list)
+        df_pos.to_csv((f'{feature_out_path}/feature_filtered_{midel_name}'
+                       f'pos_occ_pos.csv'),sep=",")
+        df_neg.to_csv((f'{feature_out_path}/feature_filtered_{midel_name}'
+                       f'pos_occ_neg.csv'),sep=",")
         # save y and y
         #X.to_csv(f'{feature_out_path}X_PARIS_human', index=False, sep=',')
         #y.to_csv(f'{feature_out_path}y_PARIS_human', index=False, sep=',')

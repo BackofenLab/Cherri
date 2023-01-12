@@ -208,7 +208,7 @@ def convert_positions(s_seq, e_seq, s_site, e_site, strand):
 
 def decode_Intarna_output(out):
     """
-    Intarna_call
+    Take IntaRNAs terminal output and stores it in a data frame
 
         Parameters
         ----------
@@ -224,7 +224,7 @@ def decode_Intarna_output(out):
 
     # out, err = process.communicate()
     out = out.decode('utf-8').strip().split('\n')
-    #print(out)
+    print(f'IntaRNAout:\n{out}')
     for idx, line in enumerate(out):
         #print(idx)
         line = line.strip().split(';')
@@ -402,7 +402,8 @@ def get_pos_occ_list(seq_s, seq_e, seed_s, seed_e, strand, converted_occ_list):
 
 
 
-def convert_occu_positons(seq_s, seq_e, occupied_regions,strand, block_ends, seed_s, seed_e):
+def convert_occu_positons(seq_s, seq_e, occupied_regions,strand, block_ends,
+                          seed_s, seed_e):
     """
     convert the list containing all occupied positions
 
@@ -471,6 +472,7 @@ def decode_IntaRNA_call(call, lost_inst, row, list_rows_add, df_data, no_sub_opt
         no_less_sub_opt
             no of suboptimal that could not be predicted so fare!
         """
+    print(f'####\nIntRNA call: \n{call}####\n')
     out = rl.call_script(call,reprot_stdout=True)
     #print(call)
     df = decode_Intarna_output(out)
@@ -496,18 +498,20 @@ def decode_IntaRNA_call(call, lost_inst, row, list_rows_add, df_data, no_sub_opt
     return df_data, lost_inst, no_less_sub_opt
 
 
-def get_context_added(input_rris, output_path, genome_file, context, context_not_full,context_file,chrom_len_file):
+def get_context_added(input_rris, output_path, genome_file, context,
+                      context_not_full, context_file, chrom_len_file):
     """
-    get_context
+    get context
 
         Parameters
         ----------
-        input_rris:
-        output_path:
-        genome_file:
-        context:
-        context_not_full:
-        context_file:
+        input_rris: path to input file
+        output_path: path to output directorey
+        genome_file: paht to genome file
+        context: amount of context which should be added
+        context_not_full: counter how many instances did not lead to a result
+        context_file: context file name
+        chrom_len_file: table containing the length of each chromosome
 
         Returns
         -------
@@ -537,6 +541,7 @@ def get_context_added(input_rris, output_path, genome_file, context, context_not
                                     'end_1st', 'target')
     df_contex = get_context_pos(df_contex, context, 'start_2end',
                                     'end_2end', 'query')
+    #print(df_contex)
 
     df_contex['chrom_1st'] = df_contex['chrom_1st'].apply(lambda x: rl.check_convert_chr_id(x))
     df_contex['chrom_2end'] = df_contex['chrom_2end'].apply(lambda x: rl.check_convert_chr_id(x))
@@ -572,7 +577,10 @@ def load_occupied_data(input_occupied):
     return occupied_InteLab
 
 
-def get_occ_regions(target_key, query_key, target_pos_s,target_pos_e, occupied_InteLab, query_pos_s,query_pos_e,strand_t, strand_q, block_ends, target_seed_s, target_seed_e, query_seed_s, query_seed_e):
+def get_occ_regions(target_key, query_key, target_pos_s,target_pos_e,
+                    occupied_InteLab, query_pos_s,query_pos_e,strand_t,
+                    strand_q, block_ends, target_seed_s, target_seed_e,
+                    query_seed_s, query_seed_e):
     """
     get_occ_regions
 
@@ -580,18 +588,18 @@ def get_occ_regions(target_key, query_key, target_pos_s,target_pos_e, occupied_I
         ----------
         target_key: chrom;strand as key for interlap object of target sequences
         query_key: chrom;strand as key for interlap object of query sequences
-        target_pos_s:
-        target_pos_e:
-        occupied_InteLab:
-        query_pos_s:
-        query_pos_e:
-        strand_t:
-        strand_q:
-        block_ends:
-        target_seed_s:
-        target_seed_e:
-        query_seed_s:
-        query_seed_e:
+        target_pos_s: target context start positon
+        target_pos_e: target context end postion
+        occupied_InteLab: interlap library provieded by the user or only the interactions sites
+        query_pos_s: query context start postion
+        query_pos_e: queery context end postion
+        strand_t: strand of the target sequence [+,-]
+        strand_q: strand of the query sequence [+,-]
+        block_ends: number of nucletides which should be not considered at the end
+        target_seed_s: target interaction start site
+        target_seed_e: target interaction end site
+        query_seed_s: quer interaction start site
+        query_seed_e: query interaction end site
 
 
         Returns
@@ -621,16 +629,24 @@ def get_occ_regions(target_key, query_key, target_pos_s,target_pos_e, occupied_I
                                                query_seed_s, query_seed_e)
 
     if pos_occ_list_t:
-        pos_param_t = get_neg_pos_intarna_str(pos_occ_list_t, '--tAccConstr=\"b:', target_pos_s, target_pos_e)
+        pos_param_t = get_neg_pos_intarna_str(pos_occ_list_t,
+                                              '--tAccConstr=\"b:', target_pos_s,
+                                              target_pos_e)
     else:
         pos_param_t = ''
     if pos_occ_list_q:
-        pos_param_q = get_neg_pos_intarna_str(pos_occ_list_q, '--qAccConstr=\"b:', query_pos_s, query_pos_e)
+        pos_param_q = get_neg_pos_intarna_str(pos_occ_list_q,
+                                              '--qAccConstr=\"b:', query_pos_s,
+                                              query_pos_e)
     else:
         pos_param_q= ''
 
-    neg_param_t = get_neg_pos_intarna_str(new_occupied_reg_t, '--tAccConstr=\"b:', target_pos_s, target_pos_e)
-    neg_param_q = get_neg_pos_intarna_str(new_occupied_reg_q, '--qAccConstr=\"b:', query_pos_s, query_pos_e)
+    neg_param_t = get_neg_pos_intarna_str(new_occupied_reg_t,
+                                          '--tAccConstr=\"b:', target_pos_s,
+                                          target_pos_e)
+    neg_param_q = get_neg_pos_intarna_str(new_occupied_reg_q,
+                                         '--qAccConstr=\"b:', query_pos_s,
+                                         query_pos_e)
     if neg_param_t == '' or neg_param_q == '':
         print('Warining: full sequence is occupied!')
         full_seq_occ += 1
@@ -670,7 +686,7 @@ def report(context_not_full,full_seq_occ,no_neg,lost_inst_pos,lost_inst_neg,no_l
 
 def get_context_file_name(context, pos_occ, block_ends, output_path, experiment_name):
     """
-    get_context_file_name
+    get context file name
 
         Parameters
         ----------
@@ -786,7 +802,7 @@ def main():
     parser.add_argument("-b", "--block_ends",  nargs='?', type=int,
                         dest="block_ends",  default=0,
                         help= "# nts blocked at the ends of the sequence")
-    parser.add_argument("-s", "--no_sub_opt",  nargs='?', type=int,
+    parser.add_argument("-so", "--no_sub_opt",  nargs='?', type=int,
                         dest="no_sub_opt",  default=5,
                         help= "# of interactions IntraRNA will give is possible")
     parser.add_argument("-l", "--chrom_len_file",  action="store", dest="chrom_len_file",
@@ -873,7 +889,9 @@ def main():
         df_contex = pd.read_table(context_file, sep=",")
         print('used existing context file: %s'%(context_file))
     else:
-        df_contex = get_context_added(input_rris, output_path, genome_file, context, context_not_full, context_file,chrom_len_file)
+        df_contex = get_context_added(input_rris, output_path, genome_file,
+                                      context, context_not_full, context_file,
+                                      chrom_len_file)
         print('***\ncontext is append pos and negative data generation is starting:\n****')
 
 

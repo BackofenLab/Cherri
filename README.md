@@ -181,11 +181,11 @@ Input parameters for CheRRI's **eval** mode (`cherri eval`):
 | ID | name | description |
 |---|---|-----|
 | `-i2` | `--occupied_regions` | Path to occupied regions python object file containing a dictionary |
-| `-c` | `--context` | How much context should be added at up- and downstream of the sequence |
-| `-n` | `--experiment_name` | Name of the data source of the RRIs, e.g. experiment and organism |
+| `-c` | `--context` | How much context should be added at up- and downstream of the sequence. Default: 150 |
+| `-n` | `--experiment_name` | Name of the data source of the RRIs, e.g. experiment and organism. Default: eval_rri |
 | `-p` | `--param_file` | IntaRNA parameter file. Default: file in path_to_cherri_folder/Cherri/rrieval/IntaRNA_param |
-| `-st` | `--use_structure` | Set 'off' if you want to disable structure, default 'on' |
-| `-on` | `--out_name` | Name for the output directory, default 'date_Cherri_evaluating_RRIs' |
+| `-st` | `--use_structure` | Set 'off' if you want to disable structure. Default 'on' |
+| `-on` | `--out_name` | Name for the output directory. Default: 'date_Cherri_evaluating_RRIs' |
 | `-hf` | `--hand_feat` | If you want to start from hand-curated feature files. Use this for evaluating test set performance (set 'on'). Default: 'off' |
 | `-j` | `--n_jobs` | Number of jobs used for graph feature computation. Default: 1|
 
@@ -199,18 +199,19 @@ The Ids are a summary of `chromosme;strand;start;stop` oft the first (target) an
 
 Throughout the program, several output files are generated and stored in the following structure:
 
-    ├── date_Cherri_evaluating_RRIs
-    |   ├── evaluate_RRIs.table
+    ├── date_Cherri_evaluation_mode
+    |   ├── evaluate_RRIs.csv
+    |   ├── date_occ_out
+    |       ├── occupied_regions.obj
+    |       ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.csv
     |   ├── positive_instance
-    |       ├── test_eval_context_{context}pos.csv
-    |       ├── date_occ_out
-    |           ├── occupied_regions.obj
-    |           ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.csv
+    |       ├── {name}_context_{context}pos.csv
+    |       ├── {name}_context_{context}_block_ends_0_RRI_dataset.csv
     |   ├── feature_files
-    |       ├── feature_filtered_test_eval_context_150_pos.csv
-    |       ├── training_data_test_eval_context_150.npz
+    |       ├── feature_filtered_{name}_context_{context}_pos.csv
+    |       ├── training_data_{name}_context_{context}.npz
     |   ├── evaluation
-    |       ├── evaluation_results_test_eval.csv
+    |       ├── evaluation_results_{name}.csv
 
 
 #### Validate your model using the **eval** mode
@@ -306,16 +307,19 @@ Input parameters for CheRRI's **train** mode (`cherri train`):
 ##### Optional:
 | ID | name | description |
 |---|---|-----|
-| `-c` | `--context`| How much context should be added at up- and downstream of the sequence |
-| `-n` | `--experiment_name`| Name of the data source of RRIs. Will be used for the file names |
+| `-c` | `--context`| How much context should be added at up- and downstream of the sequence. Default: 150 |
+| `-n` | `--experiment_name`| Name of the data source of RRIs. Will be used for the file names. Default: 'model_rri'|
 | `-p` | `--param_file`| IntaRNA parameter file. Default: file in path_to_cherri_folder/Cherri/rrieval/IntaRNA_param |
-| `-st` | `--use_structure`| Set 'off' if you want to disable graph-kernel features, default: 'on' (when set to 'on' the feature optimization will be performed directly and the data will be stored in feature_files and no model/feature folder will be created)|
+| `-st` | `--use_structure`| Set 'off' if you want to disable graph-kernel features. Default: 'on' (when set to 'on' the feature optimization will be performed directly and the data will be stored in feature_files and no model/feature folder will be created)|
 | `-i2` | `--RBP_path`| Path to the genomic RBP crosslink or binding site locations (in BED format) |
 | `-t` | `--run_time`| Time used for the optimization in seconds, default: 43200 (12h) |
-| `-me` | `--memoryPerThread`| Memory in MB each thread can use (total ram/threads)|
+| `-me` | `--memoryPerThread`| Memory in MB each thread can use (total ram/threads). Default: 4300|
 | `-j` | `--n_jobs`| Number of jobs used for graph feature computation and model selection. Default: 1|
-| `-mi` | `--mixed`| Use mixed model to combine different datasets into a combined model. Default. 'off' | 
-| `-fh` |`--filter_hybrid`| Filter the data for hybrids already detected by ChiRA (set 'on' to filter, default:'off') |
+| `-mi` | `--mixed`| Use mixed model to combine different datasets into a combined model. Default: 'off' | 
+| `-fh` |`--filter_hybrid`| Filter the data for hybrids already detected by ChiRA (set 'on' to filter). Default: 'off' |
+| `-on` |`--out_name`| Name for the output directory. Default 'date_Cherri_evaluating_RRIs' |
+| `-tp` |`--temp_dir`| Set a temporary directory for autosklearn. Either proved a path or 'out' to set it to the output directory. Default: 'off' |
+| `-so` |`--no_sub_opt`| # of interactions IntraRNA will give is possible. Default: 5|
 
 
 
@@ -325,63 +329,65 @@ At the end of the run the location of the trained model is given.
 
 Throughout the program, several output files are generated inside the output folder (default: `date_Cherri_model_build`), with the following structure:
 
-    ├── date_Cherri_model_build
+    ├── date_CheRRI_model_build
     |   ├── date_occ_out
     |       ├── occupied_regions.obj
+    |       ├── rri_occupied_regions_overlap_0.3
     |       ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.csv
-    |   ├── read_pos_neg_data
-    |       ├── test_train_context_50_pos_occ_neg.csv
-    |       ├── test_train_context_50_pos_occ_pos.csv
+    |   ├── pos_neg_data
+    |       ├── {name}_context_{context}_pos_occ__block_ends_40_RRI_dataset.csv
+    |       ├── {name}_context_{context}_pos_occ_neg.csv
+    |       ├── {name}_context_{context}_pos_occ_pos.csv
     |   ├── feature_files
-    |       ├── feature_filtered_test_eval_context_150_pos.csv
-    |       ├── feature_filtered_test_eval_context_150_neg.csv
-    |       ├── training_data_test_eval_context_150.npz (filtered features if use_structure==on)
+    |       ├── feature_filtered_{name}_context_{context}_pos.csv
+    |       ├── feature_filtered_{name}_context_{context}_neg.csv
+    |       ├── training_data_{name}_context_{context}.npz
     |   ├── model
-    |       ├── features
-    |           ├── test_train_context_50.npz (only present when use_structure==off)
+    |       ├── features (only if -st off)
+    |           ├── {name}_context_{context}.npz
     |       ├── optimized
-    |           ├── test_train_context_50.model
-    |           ├── test_train_context_50.csv
-
+    |           ├── {name}_context_{context}.model
+    |           ├── {name}_context_{context}.csv
+    |           ├── full_{name}_context_{context}.model
 
 
 #### Run train in mixed model mode
 
-CheRRI is able to build on model based on different datasets. Is the mixed parameter is set to 'on' Cherri will connect training data for different datasets. However before running the mixed mode one would create the training data for the individual datasets.
+CheRRI is able to build on model based on different datasets. Is the mixed parameter is set to 'on' CheRRI will connect training data for different datasets. However before running the mixed mode one would create the training data for the individual datasets.
 Next we have a theoretical example of DataA, DataB and DataC, which should be trained together
-Therefore best create an dedicated output folder e.g. Cherri_build_model
+Therefore best create an dedicated output folder e.g. CheRRI_build_model
 
 Than build you first model:
 ```
-cherri train -i1 /path/to/Cherri_build_model/ -r dataA_1.tabular dataA_2.tabular -g human -l human -o ./ -n Data_A -c 150 -st on -t 600 -me 8000 -j 7
+cherri train -i1 /path/to/CheRRI_build_model/ -r dataA_1.tabular dataA_2.tabular -g human -l human -o ./ -n Data_A -c 150 -st on -t 600 -me 8000 -j 7
 ```
 If you don't need the model of the individual datasets you can either set the -t very low or even interrupt the call once the model is build.
-Next rename the output folder created by Cherri to the name you gave to the Data/Model (-n Data_A)
+Next rename the output folder created by CheRRI to the name you gave to the Data/Model (-n Data_A)
 ```
-mv /path/to/Cherri_build_model/<date>_Cherri_build_model /path/to/Cherri_build_model/Data_A
+mv /path/to/CheRRI_build_model/<date>_CheRRI_build_model /path/to/CheRRI_build_model/Data_A
 ```
 
 Than run the next dataset:
 ```
-cherri train -i1 /path/to/Cherri_build_model/ -r dataB_1.tabular dataB_2.tabular -g human -l human -o ./ -n Data_B -c 150 -st on -t 600 -me 8000 -j 7
+cherri train -i1 /path/to/CheRRO_build_model/ -r dataB_1.tabular dataB_2.tabular -g human -l human -o ./ -n Data_B -c 150 -st on -t 600 -me 8000 -j 7
 ```
-Next rename the output folder created by Cherri to the name you gave to the Data/Model (-n Data_A)
+Next rename the output folder created by CheRRI to the name you gave to the Data/Model (-n Data_A)
 ```
-mv /path/to/Cherri_build_model/<date>_Cherri_build_model /path/to/Cherri_build_model/Data_B
+mv /path/to/CheRRI_build_model/<date>_CheRRI_build_model /path/to/CheRRI_build_model/Data_B
 ```
 
 Than run the last dataset:
 ```
-cherri train -i1 /path/to/Cherri_build_model/ -r dataC_1.tabular dataC_2.tabular -g mouse -l mouse -o ./ -n Data_C -c 150 -st on -t 600 -me 8000 -j 7
+cherri train -i1 /path/to/CheRRI_build_model/ -r dataC_1.tabular dataC_2.tabular -g mouse -l mouse -o ./ -n Data_C -c 150 -st on -t 600 -me 8000 -j 7
 ```
-And rename the output folder created by Cherri to the name you gave to the Data/Model (-n Data_A)
+And rename the output folder created by CheRRI to the name you gave to the Data/Model (-n Data_A)
 ```
-mv /path/to/Cherri_build_model/<date>_Cherri_build_model /path/to/Cherri_build_model/Data_C
+mv /path/to/CheRRI_build_model/<date>_CheRRI_build_model /path/to/CheRRI_build_model/Data_C
 ```
 
 Finally you can run CheRRI **train** in the mixed model mode like this:
 ```
-cherri train -i1 /path/to/Cherri_build_model/  -r Data_A Data_B Data_C  -g /not/needed/ -l /not/needed/ -o /path/to/Cherri_build_model/ -n Full 
+cherri train -i1 /path/to/CheRRI_build_model/  -r Data_A Data_B Data_C  -g /not/needed/ -l /not/needed/ -o /path/to/CheRRI_build_model/ -n Full 
 ```
 This time your replicates are the names of the training datasets you want to connect (Data_A Data_B Data_C). 
 
