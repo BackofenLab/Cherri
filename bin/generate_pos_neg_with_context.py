@@ -208,7 +208,7 @@ def convert_positions(s_seq, e_seq, s_site, e_site, strand):
 
 def decode_Intarna_output(out):
     """
-    Intarna_call
+    Take IntaRNAs terminal output and stores it in a data frame
 
         Parameters
         ----------
@@ -224,7 +224,7 @@ def decode_Intarna_output(out):
 
     # out, err = process.communicate()
     out = out.decode('utf-8').strip().split('\n')
-    #print(out)
+    print(f'IntaRNAout:\n{out}')
     for idx, line in enumerate(out):
         #print(idx)
         line = line.strip().split(';')
@@ -472,6 +472,7 @@ def decode_IntaRNA_call(call, lost_inst, row, list_rows_add, df_data, no_sub_opt
         no_less_sub_opt
             no of suboptimal that could not be predicted so fare!
         """
+    print(f'####\nIntRNA call: \n{call}####\n')
     out = rl.call_script(call,reprot_stdout=True)
     #print(call)
     df = decode_Intarna_output(out)
