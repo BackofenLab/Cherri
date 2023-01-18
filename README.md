@@ -387,7 +387,7 @@ mv /path/to/CheRRI_build_model/<date>_CheRRI_build_model /path/to/CheRRI_build_m
 
 Finally you can run CheRRI **train** in the mixed model mode like this:
 ```
-cherri train -i1 /path/to/CheRRI_build_model/  -r Data_A Data_B Data_C  -g /not/needed/ -l /not/needed/ -o /path/to/CheRRI_build_model/ -n Full 
+cherri train -i1 /path/to/CheRRI_build_model/  -r Data_A Data_B Data_C  -g /not/needed/ -l /not/needed/ -o /path/to/CheRRI_build_model/ -n Full -mi on
 ```
 This time your replicates are the names of the training datasets you want to connect (Data_A Data_B Data_C). 
 
