@@ -320,7 +320,7 @@ Input parameters for CheRRI's **train** mode (`cherri train`):
 | `-on` |`--out_name`| Name for the output directory. Default 'date_Cherri_evaluating_RRIs' |
 | `-tp` |`--temp_dir`| Set a temporary directory for autosklearn. Either proved a path or 'out' to set it to the output directory. Default: 'off' |
 | `-so` |`--no_sub_opt`| # of interactions IntraRNA will give is possible. Default: 5|
-
+| `-z` |`--methods`| List of methods tyed for the optimization, no restiction set all. Default: extra_trees random_forest sgd gradient_boosting mlp|
 
 
 #### Output in training mode
