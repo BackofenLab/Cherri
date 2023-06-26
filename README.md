@@ -3,6 +3,7 @@
 CheRRI detects functional RNA-RNA interaction (RRI) sites, by evaluating if an interaction site most likely occurs in nature.
 It helps to filter interaction sites generated either experimentally or by an RRI prediction algorithm, by removing false positive interactions.
 
+It is an open source project [hosted on GitHub](https://github.com/BackofenLab/Cherri).
 
 
 ## CheRRI's workflow
