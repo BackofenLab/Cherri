@@ -13,7 +13,7 @@ For the evaluation of a given set of RRI sites, a model must be specified in Che
 To train a novel model, an RNA-RNA interactome dataset specifying all RRI sites should be provided. CheRRI makes use of replicate data by checking if an RRI site can be found in all replicates within an overlap threshold. This is how CheRRI builds the set of trusted RRIs. In **eval** mode, the interaction positions are reformatted in the same way as the trusted RRIs. In both modes, CheRRI uses the same core method to generate a feature set which will be used to select a model in **train** mode, and in **eval** mode for the evaluation of the biological relevance of the submitted RRI sites.
 
 
-![<img src="./plots/CheRRI-workflow.png" width="70" />](./plots/CheRRI-workflow.png)
+[<img src="./plots/CheRRI-workflow.png" width="70" />](./plots/CheRRI-workflow.png)
 
 
 
