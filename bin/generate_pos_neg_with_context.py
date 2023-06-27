@@ -855,25 +855,35 @@ def main():
 
 ###########Not needed any more!!!!!!!###################################
     # load occupied data
-    if input_occupied == 'none':
-        # set only give out positive instances!!
-        no_neg = True
-        #occupied_InteLab = defaultdict(InterLap)
-        file = input_rris.split('/')[-1]
-        i1 = input_rris.replace(file, "")
-        occ_file = output_path +  '/occupied_regions.obj'
-        call_occ_regions = ('find_occupied_regions.py -i1 ' +
-                            i1 + ' -i2 non -r ' + file + ' -o ' + output_path +
-                            ' -s non')
+#    if input_occupied == 'none':
+#        # set only give out positive instances!!
+#        no_neg = True
+#        #occupied_InteLab = defaultdict(InterLap)
+#        file = input_rris.split('/')[-1]
+#        i1 = input_rris.replace(file, "")
+#        occ_file = output_path +  '/occupied_regions.obj'
+#        call_occ_regions = ('find_occupied_regions.py -i1 ' +
+#                            i1 + ' -i2 non -r ' + file + ' -o ' + output_path +
+#                            ' -s non')
         #print(call_occ_regions)
-        rl.call_script(call_occ_regions)
-        timestr = time.strftime("%Y%m%d")
-        out_path =  output_path + '/' + timestr + '_occ_out/'
-        input_occupied = out_path + '/occupied_regions.obj'
+#        rl.call_script(call_occ_regions)
+#        timestr = time.strftime("%Y%m%d")
+#        out_path =  output_path + '/' + timestr + '_occ_out/'
+#        input_occupied = out_path + '/occupied_regions.obj'
 
 ############################################################################
 
-    occupied_InteLab = rl.load_occupied_data(input_occupied)
+    if  input_occupied == 'non':
+        occupied_InteLab = defaultdict(InterLap)
+        emty_keys = 'chr0;+'
+        occupied_InteLab[emty_keys].add((0, 0, ['no info neded']))
+    else:
+        occupied_InteLab = rl.load_occupied_data(input_occupied)
+
+
+
+
+
 
 
     # Reporting how many instances did not lead to a result

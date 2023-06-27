@@ -14,7 +14,7 @@ from ubergauss.tools import loadfile, dumpfile
 
 #logging.basicConfing(filenema='cherri.log'level=logging.DEBUG)
 
-__version__ = "0.7"
+__version__ = "0.8"
 
 """
 
