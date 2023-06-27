@@ -2,7 +2,7 @@
 
 ### Input variabels
 
-OUT="/vol/scratch/data_storage/test2_cherri"
+OUT="/vol/scratch/data_storage/test_cherri"
 
 # set up test dir
 echo $OUT
