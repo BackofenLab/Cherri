@@ -209,8 +209,12 @@ def setup_argument_parser():
     p_mrg.add_argument("-so", "--no_sub_opt",  nargs='?', type=int,
                         dest="no_sub_opt",  default=5,
                         help= "# of interactions IntraRNA will give is possible. Default: 5")
-
-
+    p_mrg.add_argument("-z", "--methods",
+                        action="store",
+                        default='extra_trees random_forest sgd gradient_boosting mlp',
+                        nargs='+',
+                        dest="methods",
+                        help= "List of methods tyed for the optimization, no restiction set all")
     return p
 
 
@@ -550,10 +554,10 @@ def main_train(args):
     out_name = args.out_name
     temp_dir = args.temp_dir
     no_sub_opt = args.no_sub_opt
+    methods = args.methods
 
-
-    methods = (f'extra_trees passive_aggressive random_forest sgd '
-               f'gradient_boosting mlp')
+    #methods = (f'extra_trees passive_aggressive random_forest sgd '
+    #           f'gradient_boosting mlp')
     #methods = f'all'
 
 
