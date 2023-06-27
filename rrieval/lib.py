@@ -1490,7 +1490,7 @@ def get_filted_features(featurefile,csr_mat_h):
             Boolean list to filter evaluation feature data
 
     """
-    ft = np.load(featurefile)['d']
+    ft = np.load(featurefile)['arr_2']
 
     #ft_new = np.append('index', ft)
     #ft_new = np.insert(ft, 0, 'index')
