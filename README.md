@@ -150,9 +150,8 @@ X,109054541,109054590,+,9,89178539,89178562,-
 10,123136102,123136122,+,5,1245880,1245902,+
 ```
 
-If no additional occupied regions are specified (`--occupied_regions`), only the ones of the given input interactions (`--RRIs_table`) are used. However, to be consistent with the feature generation of the trained model, we recommend that the user also specifies the occupied regions used to train the model provided via `--model_file`. For example, for the PARIS_human model without graph features, the occupied regions data object is located at 
+We recommend that the user also specifies the occupied regions used to train the model provided via `--model_file`. For example, for the PARIS_human model without graph features, the occupied regions data object is located at 
 `Model_without_graph_features/PARIS_human/occupied_regions/occupied_regions.obj` (inside the mentioned zip file from [Zenodo](https://doi.org/10.5281/zenodo.6533932)).
-
 
 
 
