@@ -119,7 +119,7 @@ def setup_argument_parser():
     p_ex.add_argument("-on", "--out_name",
                       default="non",
                       help= "Name for the output directory. Default: 'date_Cherri_evaluating_RRIs' ")
-    p_ex.add_argument("-hf", "--hand_feat",
+    p_ex.add_argument("-ef", "--eval_features",
                       default="off",
                       help= "If you want to start from hand-curated feature files. Use this for evaluating test set performance (set 'on'). Default: 'off'")
     p_ex.add_argument("-j", "--n_jobs",
@@ -309,10 +309,10 @@ def main_eval(args):
     model_file = args.model_file
     model_params = args.model_params
     out_name = args.out_name
-    hand_feat = args.hand_feat
+    eval_features = args.eval_features
     n_jobs = args.n_jobs
 
-    overlap_th = 0.3
+    # overlap_th = 0.3
 
 
     if param_file == 'not_set':
@@ -332,11 +332,11 @@ def main_eval(args):
     timestr = time.strftime("%Y%m%d")
 
     if out_name == 'non':
-        out_path =  f'{out_path}/{timestr}_Cherri_evaluating_RRIs/'
+        out_path = f'{out_path}/{timestr}_Cherri_evaluating_RRIs/'
     else:
-        out_path =  f'{out_path}/{out_name}/'
+        out_path = f'{out_path}/{out_name}/'
 
-    midel_name =  f'{experiment_name}_context_{str(context)}'
+    midel_name = f'{experiment_name}_context_{str(context)}'
 
     if not os.path.exists(out_path):
         os.mkdir(out_path)
@@ -363,7 +363,7 @@ def main_eval(args):
                 'nan','nan', 'nan', 'nan','nan']
 
 
-    if hand_feat == 'off':
+    if eval_features == 'off':
     # read data
         RRI_dict = read_RRI_table(RRIs_table)
 
@@ -385,13 +385,13 @@ def main_eval(args):
         ### Call find_occupied_regions.py ######################################
         if occupied_regions == 'non':
             print('Info: only the evaluated RRIs are set to occupied regions\n')
-            occupied_regions = call_occupied_regions_eval(eval_rri_file,
-                                                          out_path)
+            #occupied_regions = call_occupied_regions_eval(eval_rri_file,
+            #                                              out_path)
         else:
             print('Info: adding your additional occupied regions objects\n')
-            occupied_regions = call_occupied_regions_eval(eval_rri_file,
-                                                          out_path,
-                                                          occupied_regions)
+            #occupied_regions = call_occupied_regions_eval(eval_rri_file,
+            #                                              out_path,
+            #                                              occupied_regions)
         ##download genomes #####################################################
         genome_file, chrom_len_file = rl.download_genome(out_path, genome,
                                                          chrom_len_file)
@@ -403,7 +403,7 @@ def main_eval(args):
         if not os.path.exists(pos_neg_out_path):
             os.mkdir(pos_neg_out_path)
 
-        pos_neg_param = (f' -i1 {eval_rri_file} -i2  {occupied_regions} '
+        pos_neg_param = (f' -i1 {eval_rri_file} -i2 {occupied_regions} '
                          f' -d {pos_neg_out_path} -g {genome_file} '
                          f'-n {experiment_name} -c {str(context)} --no_pos_occ '
                          f'-so 1 -l {chrom_len_file} -p {param_file} -m eval')
@@ -437,7 +437,7 @@ def main_eval(args):
         y = df_data.label
         X = df_data.drop(columns="label")
 
-    elif hand_feat == 'on':
+    elif eval_features == 'on':
         feature_out_path = f'{out_path}feature_files/'
         if not os.path.exists(feature_out_path):
             os.mkdir(feature_out_path)
@@ -471,11 +471,11 @@ def main_eval(args):
     #print(X_filterd.columns.tolist())
     eval_file = f'{eval_path}evaluation_results_{experiment_name}.csv'
 
-    if hand_feat == 'off':
+    if eval_features == 'off':
         # get ID_df for not full evaluation data
         df_ID = rl.get_ids(pos_data_file)
         df_eval = rl.classify(X_filterd, model_file, eval_file, df_ID, False, 'off', True)
-    elif hand_feat == 'on':
+    elif eval_features == 'on':
         df_eval = rl.classify(X_filterd, model_file, eval_file, 'off', True, y, False)
 
 
