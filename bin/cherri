@@ -384,14 +384,12 @@ def main_eval(args):
 
         ### Call find_occupied_regions.py ######################################
         if occupied_regions == 'non':
-            print('Info: only the evaluated RRIs are set to occupied regions\n')
-            #occupied_regions = call_occupied_regions_eval(eval_rri_file,
-            #                                              out_path)
+            print('Info: no occupied regions are used\n')
+            occ_param = '--no_pos_occ'
         else:
-            print('Info: adding your additional occupied regions objects\n')
-            #occupied_regions = call_occupied_regions_eval(eval_rri_file,
-            #                                              out_path,
-            #                                              occupied_regions)
+            print('Info: including given occupied regions object\n')
+            occ_param = '--pos_occ'
+            midel_name = f'{midel_name}_pos_occ_'
         ##download genomes #####################################################
         genome_file, chrom_len_file = rl.download_genome(out_path, genome,
                                                          chrom_len_file)
@@ -405,12 +403,12 @@ def main_eval(args):
 
         pos_neg_param = (f' -i1 {eval_rri_file} -i2 {occupied_regions} '
                          f' -d {pos_neg_out_path} -g {genome_file} '
-                         f'-n {experiment_name} -c {str(context)} --no_pos_occ '
+                         f'-n {experiment_name} -c {str(context)} {occ_param} '
                          f'-so 1 -l {chrom_len_file} -p {param_file} -m eval')
 
         call_pos_neg = f'generate_pos_neg_with_context.py {pos_neg_param}'
         print('\n1. Prepare RRI instances\n')
-        #print(call_pos_neg)
+        # print(call_pos_neg)
         rl.call_script(call_pos_neg)
 
         ### Call get_features.py ###############################################
@@ -421,7 +419,7 @@ def main_eval(args):
 
         pos_data_file = f'{pos_neg_out_path}{midel_name}pos.csv'
         feature_pos = f'{feature_out_path}feature_filtered_{midel_name}_pos.csv'
-
+        # print(f'pos file: {pos_data_file}')
         if not os.path.isfile(pos_data_file):
             print(f'Error: no positive IntaRNA interaction found')
             sys.exit()
