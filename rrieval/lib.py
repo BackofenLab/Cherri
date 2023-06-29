@@ -774,7 +774,8 @@ def check_context(df, seq_tag, chrom_dict):
     df_filted = df_filted.loc[df_filted[start] >= 0]
     df_filted = df_filted.loc[df_filted[end] <= df_filted[chrom].apply(lambda x: chrom_dict[x])]
 
-    print('Warning: added context to %s is out of border for %i instances'%(seq_tag,no_seq_out_boder))
+    if no_seq_out_boder > 0 :
+        print(f'Warning: added context to {seq_tag} is out of border for {no_seq_out_boder} instances')
     return df_filted, count
 
 

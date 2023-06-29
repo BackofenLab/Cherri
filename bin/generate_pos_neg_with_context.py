@@ -108,7 +108,7 @@ def extention_df(df):
     return df
 
 
-def find_occu_overlaps(dict_key,s,e, occupied_InteLab):
+def find_occu_overlaps(dict_key,s,e, occupied_InteLab, mode):
     """
     finding all interaction sites for a given sequence by genomic indexes
 
@@ -118,6 +118,7 @@ def find_occu_overlaps(dict_key,s,e, occupied_InteLab):
         s: start position of given sequence
         e: end position of given sequence
         occupied_InteLab: Interlap object having all interacting site positions
+        mode: eval or train
 
         Raises
         ------
@@ -135,7 +136,8 @@ def find_occu_overlaps(dict_key,s,e, occupied_InteLab):
     #print(dict_key)
     #print(s,e)
     #print(list(occupied_InteLab[dict_key]))
-    if len(temp_list) < 1:
+    #print(temp_list)
+    if len(temp_list) < 1 and mode == 'train':
         print('Warning: occupied list is not complete, please reproduce the occupied object again.')
         sys.exit()
     if temp_list:
@@ -143,6 +145,8 @@ def find_occu_overlaps(dict_key,s,e, occupied_InteLab):
         occupied_regions_list = temp_list
         # occupied_regions_list.append(temp_list)
         #print(occupied_regions_list)
+    else:
+        occupied_regions_list = ''
     return occupied_regions_list
 
 
@@ -224,7 +228,7 @@ def decode_Intarna_output(out):
 
     # out, err = process.communicate()
     out = out.decode('utf-8').strip().split('\n')
-    print(f'IntaRNAout:\n{out}')
+    # print(f'IntaRNAout:\n{out}')
     for idx, line in enumerate(out):
         #print(idx)
         line = line.strip().split(';')
@@ -255,10 +259,10 @@ def get_neg_pos_intarna_str(occupied_regions, neg_param, pos_s, pos_e):
 
         Parameters
         ----------
-        occupied_regions:
-        neg_param:
-        pos_s:
-        pos_e:
+        occupied_regions: list of occouped regions
+        neg_param: string with IntaRNA comandline parameter
+        pos_s: interaction start position
+        pos_e: interaction end position
 
 
         Returns
@@ -332,7 +336,7 @@ def join_result_and_infos(df, lost_inst, row, list_rows_add):
 
 def add_block_end_pos(seq_s, seq_e, block_ends,strand, new_occ_list):
     """
-    convert the list containing all occupied positions
+    Convert the list containing all occupied positions
 
         Parameters
         ----------
@@ -472,7 +476,7 @@ def decode_IntaRNA_call(call, lost_inst, row, list_rows_add, df_data, no_sub_opt
         no_less_sub_opt
             no of suboptimal that could not be predicted so fare!
         """
-    print(f'####\nIntRNA call: \n{call}####\n')
+    # print(f'####\nIntRNA call: \n{call}####\n')
     out = rl.call_script(call,reprot_stdout=True)
     #print(call)
     df = decode_Intarna_output(out)
@@ -558,29 +562,29 @@ def get_context_added(input_rris, output_path, genome_file, context,
     return df_contex
 
 
-def load_occupied_data(input_occupied):
-    """
-    load occupied data
+#def load_occupied_data(input_occupied):
+#    """#
+#    load occupied data
 
-        Parameters
-        ----------
-        input_occupied: input file path
-
-        Returns
-        -------
-        occupied_InteLab: Interlab object of occupied regions
-        """
-    overlap_handle = open(input_occupied,'rb')
-    occupied_InteLab = pickle.load(overlap_handle)
-    # print(overlap_avg_val)
-    overlap_handle.close()
-    return occupied_InteLab
+#        Parameters
+#        ----------
+#        input_occupied: file containing a occupied regeions python library
+#
+#        Returns
+#        -------
+#        occupied_InteLab: Interlab object of occupied regions
+#        """
+#    overlap_handle = open(input_occupied,'rb')
+#    occupied_InteLab = pickle.load(overlap_handle)
+#    # print(overlap_avg_val)
+#    overlap_handle.close()
+#    return occupied_InteLab
 
 
 def get_occ_regions(target_key, query_key, target_pos_s,target_pos_e,
                     occupied_InteLab, query_pos_s,query_pos_e,strand_t,
                     strand_q, block_ends, target_seed_s, target_seed_e,
-                    query_seed_s, query_seed_e):
+                    query_seed_s, query_seed_e, mode):
     """
     get_occ_regions
 
@@ -600,6 +604,7 @@ def get_occ_regions(target_key, query_key, target_pos_s,target_pos_e,
         target_seed_e: target interaction end site
         query_seed_s: quer interaction start site
         query_seed_e: query interaction end site
+        mode: eval or train
 
 
         Returns
@@ -611,10 +616,10 @@ def get_occ_regions(target_key, query_key, target_pos_s,target_pos_e,
         """
     occupied_regions_target = find_occu_overlaps(target_key,
                                                  target_pos_s,target_pos_e,
-                                                 occupied_InteLab)
+                                                 occupied_InteLab, mode)
     occupied_regions_query = find_occu_overlaps(query_key,
                                                 query_pos_s,query_pos_e,
-                                                occupied_InteLab)
+                                                occupied_InteLab, mode)
 
     # covert occupied prositons:
     new_occupied_reg_t, pos_occ_list_t = convert_occu_positons(target_pos_s,
@@ -853,27 +858,14 @@ def main():
                                                        experiment_name)
 
 
-###########Not needed any more!!!!!!!###################################
-    # load occupied data
-    if input_occupied == 'none':
-        # set only give out positive instances!!
-        no_neg = True
-        #occupied_InteLab = defaultdict(InterLap)
-        file = input_rris.split('/')[-1]
-        i1 = input_rris.replace(file, "")
-        occ_file = output_path +  '/occupied_regions.obj'
-        call_occ_regions = ('find_occupied_regions.py -i1 ' +
-                            i1 + ' -i2 non -r ' + file + ' -o ' + output_path +
-                            ' -s non')
-        #print(call_occ_regions)
-        rl.call_script(call_occ_regions)
-        timestr = time.strftime("%Y%m%d")
-        out_path =  output_path + '/' + timestr + '_occ_out/'
-        input_occupied = out_path + '/occupied_regions.obj'
+    if  input_occupied == 'non':
+        occupied_InteLab = defaultdict(InterLap)
+        emty_keys = 'chr0;+'
+        occupied_InteLab[emty_keys].add((0, 0, ['no info neded']))
+        #print(occupied_InteLab2)
+    else:
+        occupied_InteLab = rl.load_occupied_data(input_occupied)
 
-############################################################################
-
-    occupied_InteLab = rl.load_occupied_data(input_occupied)
 
 
     # Reporting how many instances did not lead to a result
@@ -892,7 +884,7 @@ def main():
         df_contex = get_context_added(input_rris, output_path, genome_file,
                                       context, context_not_full, context_file,
                                       chrom_len_file)
-        print('***\ncontext is append pos and negative data generation is starting:\n****')
+        print('***\ncontext is append data generation is starting:\n****')
 
 
     ### prepare calling ########################
@@ -954,7 +946,7 @@ def main():
 
         ##### occupied regions:
 
-        pos_param_t, pos_param_q, neg_param_t, neg_param_q = get_occ_regions(row['target_key'], row['query_key'], target_pos_s,target_pos_e, occupied_InteLab, query_pos_s,query_pos_e,strand_t, strand_q, block_ends, target_seed_s, target_seed_e, query_seed_s, query_seed_e)
+        pos_param_t, pos_param_q, neg_param_t, neg_param_q = get_occ_regions(row['target_key'], row['query_key'], target_pos_s,target_pos_e, occupied_InteLab, query_pos_s,query_pos_e,strand_t, strand_q, block_ends, target_seed_s, target_seed_e, query_seed_s, query_seed_e, mode)
         if not neg_param_t:
             # this instance will be ignored!
             continue

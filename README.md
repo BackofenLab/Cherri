@@ -150,9 +150,8 @@ X,109054541,109054590,+,9,89178539,89178562,-
 10,123136102,123136122,+,5,1245880,1245902,+
 ```
 
-If no additional occupied regions are specified (`--occupied_regions`), only the ones of the given input interactions (`--RRIs_table`) are used. However, to be consistent with the feature generation of the trained model, we recommend that the user also specifies the occupied regions used to train the model provided via `--model_file`. For example, for the PARIS_human model without graph features, the occupied regions data object is located at 
+We recommend that the user also specifies the occupied regions used to train the model provided via `--model_file`. For example, for the PARIS_human model without graph features, the occupied regions data object is located at 
 `Model_without_graph_features/PARIS_human/occupied_regions/occupied_regions.obj` (inside the mentioned zip file from [Zenodo](https://doi.org/10.5281/zenodo.6533932)).
-
 
 
 
@@ -189,14 +188,14 @@ Input parameters for CheRRI's **eval** mode (`cherri eval`):
 | `-p` | `--param_file` | IntaRNA parameter file. Default: file in path_to_cherri_folder/Cherri/rrieval/IntaRNA_param |
 | `-st` | `--use_structure` | Set 'off' if you want to disable structure. Default 'on' |
 | `-on` | `--out_name` | Name for the output directory. Default: 'date_Cherri_evaluating_RRIs' |
-| `-hf` | `--hand_feat` | If you want to start from hand-curated feature files. Use this for evaluating test set performance (set 'on'). Default: 'off' |
+| `-ef` | `--eval_features` | If you want to start from hand-curated feature files. Use this for evaluating test set performance (set 'on'). Default: 'off' |
 | `-j` | `--n_jobs` | Number of jobs used for graph feature computation. Default: 1|
 
 
 #### Output in evaluation mode
 
 At the end of the run the location of the results table is given.
-The final results table will have your the query and target ID's or your input sequences (`target_ID`,`query_ID`), the score of your instance (`instance_score`), the predicted class of each RRI (0 or 1) (`predicted_label`), if you are running the validation mode with `-hf on` the positive or negative label is given (`true_lable`), and finally all features of the instance are provided.
+The final results table will have your the query and target ID's or your input sequences (`target_ID`,`query_ID`), the score of your instance (`instance_score`), the predicted class of each RRI (0 or 1) (`predicted_label`), if you are running the validation mode with `-ef on` the positive or negative label is given (`true_lable`), and finally all features of the instance are provided.
 
 The Ids are a summary of `chromosme;strand;start;stop` oft the first (target) and the second (query) sequence.
 
@@ -222,7 +221,7 @@ You can also use CheRRIs **eval** mode to create a validation result table and t
 
 In the following is a example call to validate a theoretical model build from DataA with data form a different source e.g. DataB
 ```
-cherri eval -i1 /path/to/Model_folder/Datab/feature_files/feature_filtered_<DataB>_context_<150>_pos_occ -g human -l human -o /path/to/Model_folder -n <eval_modelA_using_DataB> -c 150 -st on -m  /path/to/Model_folder/DataA/model/optimized/full_<DataA>_context_<150>.model -mp  /path/to/Model_folder/DataA/feature_files/training_data_<DataA>_context_<150>.npz -j 10 -on evaluation -hf on
+cherri eval -i1 /path/to/Model_folder/Datab/feature_files/feature_filtered_<DataB>_context_<150>_pos_occ -g human -l human -o /path/to/Model_folder -n <eval_modelA_using_DataB> -c 150 -st on -m  /path/to/Model_folder/DataA/model/optimized/full_<DataA>_context_<150>.model -mp  /path/to/Model_folder/DataA/feature_files/training_data_<DataA>_context_<150>.npz -j 10 -on evaluation -ef on
 ```
 
 In the following is a example call to cross validate a theoretical model build from DataA. The biofilm-cv will split the data into 5 parts used 4 to retrain a model and the left out to evaluate. 
