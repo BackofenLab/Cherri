@@ -39,6 +39,8 @@ from itertools import compress
 import biofilm.algo.feature_selection as featsel
 import wget
 from Bio import SeqIO
+import json
+
 
 
 """
@@ -1298,7 +1300,7 @@ def get_ids(pos_data):
             datafram contianing IDs
 
     """
-    df_pos = df_interactions = pd.read_table(pos_data, sep=',')
+    df_pos = pd.read_table(pos_data, sep=',')
     df_ID = df_pos[['target_ID','query_ID']]
 
     return df_ID
@@ -1350,7 +1352,10 @@ def classify(df_eval,in_model_filepath, output_path, df_ID='off',
     #print(instance_score)
     #print(df_result)
     if ID_Label:
-        df_result = pd.concat([df_ID, instance_score, df_result], axis=1)
+        df_result_temp = pd.concat([df_ID, instance_score, df_result], axis=1)
+        df_result = df_result_temp.loc[df_result_temp.groupby(['target_ID', 'query_ID'])['instance_score'].idxmax()]
+        # implemnt a majorety vote
+        # df_data.groupby(['target_ID', 'query_ID']).agg({'predicted_label': lambda x: x.value_counts().index[0]}).reset_index()
     else:
         df_result = pd.concat([instance_score, df_result], axis=1)
 
@@ -1521,6 +1526,29 @@ def get_filted_features(featurefile,csr_mat_h):
 
 
 
+def write_json_index(list_dfs, file_json):
+    """
+    takes a list of dataframes concatintes them and builds a index -> ID
+    dictionary which is saved into a json file. The df's should have the same
+    clolums with one of it beeing the ID
+    (e.g. chr15;+;82519671;82519691_chrX;+;109054541;109.)
+        Parameters
+        ----------
+        list_dfs: list of dataframes e.g. [df_pos,df_neg]
+        file_json: file pathe to the output json file
+
+
+    """
+    data_df = pd.concat(list_dfs, ignore_index=True)
+    #print(data_df)
+    #print(len(data_df))
+    data_ID_dict = data_df['ID'].to_dict()
+
+    print(len(data_ID_dict))
+    with open(file_json, 'w') as file:
+        json.dump(data_ID_dict, file)
+
+
 ################################################################################
 
 
@@ -1565,6 +1593,7 @@ def convert(X, y, outname, graphfeatures, mode, feat_file='non', no_jobs=1):
             feat = get_filted_features(feat_file,header_full)
         X_csr = X_csr[:,feat]
         header = [d for d, s in zip(header_full, feat) if s]
+
         #print(header)
 
         X_np= X_csr.todense()
@@ -1574,7 +1603,8 @@ def convert(X, y, outname, graphfeatures, mode, feat_file='non', no_jobs=1):
         header = h_handcrafted_feat
 
     # saves object as 'np.savez_compressed'
-    list = [X_np, y_np, header]
+    index = X.index.tolist()
+    list = [X_np, y_np, header, index]
     tools.ndumpfile(list , outname)
     #print(f'total amount of features:\n {len(X.columns.tolist())}')
     #print()

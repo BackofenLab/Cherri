@@ -485,9 +485,8 @@ def decode_IntaRNA_call(call, lost_inst, row, list_rows_add, df_data, no_sub_opt
     df = df.reset_index(drop=True)
     #print(df)
 
-    df_result, lost_inst_new = join_result_and_infos(df,
-                                                         lost_inst,
-                                                         row, list_rows_add)
+    df_result, lost_inst_new = join_result_and_infos(df, lost_inst,
+                                                    row, list_rows_add)
     if lost_inst < lost_inst_new:
         # IntaRNA could not predict anything!
         lost_inst = lost_inst_new
@@ -555,7 +554,7 @@ def get_context_added(input_rris, output_path, genome_file, context,
 
     df_contex['target_ID'] =  df_contex['target_key'].astype(str)+ ';' + df_contex['start_1st'].astype(str) + ';' + df_contex['end_1st'].astype(str)
     df_contex['query_ID'] =  df_contex['query_key'].astype(str)+ ';' + df_contex['start_2end'].astype(str)+ ';' + df_contex['end_2end'].astype(str)
-
+    df_contex['ID'] = df_contex['target_ID'] + '_' + df_contex['query_ID']
 
     df_contex.to_csv(context_file, index=False)
     # print(df_contex.info())
@@ -776,7 +775,7 @@ def get_header():
                      'ID_1st','ID_2end','con_target','con_query',
                      'target_con_s','target_con_e','query_con_s',
                      'query_con_e', 'target_key', 'query_key',
-                     'target_ID', 'query_ID']
+                     'target_ID', 'query_ID', 'ID']
     intaRNA_col_name = 'id1,start1,end1,id2,start2,end2,subseqDP,hybridDP,E,seedStart1,seedEnd1,seedStart2,seedEnd2,seedE,E_hybrid,ED1,ED2'
     list_intaRNA_col_name = intaRNA_col_name.split(',')
     header = list_intaRNA_col_name + list_rows_add
@@ -891,6 +890,7 @@ def main():
     data_100, data_25, data_50, date_75 = get_report_steps(df_contex)
 
     header, list_rows_add = get_header()
+    #print(list_rows_add)
 
     df_pos_data = pd.DataFrame(columns=header)
     df_neg_data = pd.DataFrame(columns=header)
@@ -1034,12 +1034,15 @@ def main():
 
     #print(df_result_neg['start1'], df_result_neg['end1'])
     #print(df_pos_data['start1'],  df_result_neg['end1'])
+    json_file = f'{output_path}/index_dict.json'
     result_file = output_path + experiment_name +  context_info
     if no_neg:
         df_pos_data.to_csv(result_file + 'pos.csv', index=False)
+        rl.write_json_index([df_pos_data],json_file)
     else:
         df_neg_data.to_csv(result_file + 'neg.csv', index=False)
         df_pos_data.to_csv(result_file + 'pos.csv', index=False)
+        rl.write_json_index([df_pos_data,df_neg_data],json_file)
 
     report(context_not_full,full_seq_occ,no_neg,lost_inst_pos,lost_inst_neg,no_less_sub_opt_pos,no_less_sub_opt_neg)
 

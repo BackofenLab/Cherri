@@ -209,7 +209,12 @@ def setup_argument_parser():
     p_mrg.add_argument("-so", "--no_sub_opt",  nargs='?', type=int,
                         dest="no_sub_opt",  default=5,
                         help= "# of interactions IntraRNA will give is possible. Default: 5")
-
+    p_mrg.add_argument("-es", "--exp_score_th",
+                        help= "score threshold for the additional occupied regions [BED]. Default: 10",
+                        default="10")
+    p_mrg.add_argument("-ca", "--context_additional",
+                        help= "context to extend left and right for the BED file instances. Default: 5",
+                        default="5")
 
     return p
 
@@ -404,10 +409,11 @@ def main_eval(args):
         pos_neg_param = (f' -i1 {eval_rri_file} -i2 {occupied_regions} '
                          f' -d {pos_neg_out_path} -g {genome_file} '
                          f'-n {experiment_name} -c {str(context)} {occ_param} '
-                         f'-so 1 -l {chrom_len_file} -p {param_file} -m eval')
+                         f'-so 5 -l {chrom_len_file} -p {param_file} -m eval')
 
         call_pos_neg = f'generate_pos_neg_with_context.py {pos_neg_param}'
         print('\n1. Prepare RRI instances\n')
+
         # print(call_pos_neg)
         rl.call_script(call_pos_neg)
 
@@ -456,7 +462,9 @@ def main_eval(args):
                                  True, 'eval',model_params,n_jobs)
     elif use_structure == 'OFF' or use_structure == 'off':
         X,y = rl.convert(X, y, feat_output, False, 'eval','non', n_jobs)
-        X_filterd = rl.filter_features(X,model_params,use_structure)
+        # no feature filtering before optimization if no graph-kernel features
+        X_filterd = X
+        # X_filterd = rl.filter_features(X,model_params,use_structure)
         print('2a. Not preparing graph-kernal features\n')
 
     ### Predict ################################################################
@@ -473,6 +481,8 @@ def main_eval(args):
         # get ID_df for not full evaluation data
         df_ID = rl.get_ids(pos_data_file)
         df_eval = rl.classify(X_filterd, model_file, eval_file, df_ID, False, 'off', True)
+
+        #df_eval = df_eval_temp.groupby(['target_ID', 'query_ID']).agg({'instance_score': 'max'}).reset_index()
     elif eval_features == 'on':
         df_eval = rl.classify(X_filterd, model_file, eval_file, 'off', True, y, False)
 
@@ -548,6 +558,8 @@ def main_train(args):
     out_name = args.out_name
     temp_dir = args.temp_dir
     no_sub_opt = args.no_sub_opt
+    exp_score_th = args.exp_score_th
+    con_bed = args.context_additional
 
 
     methods = (f'extra_trees passive_aggressive random_forest sgd '
@@ -596,7 +608,8 @@ def main_train(args):
     ### Call find_occupied_regions.py ##########################################
     occupied_regions_param = (f' -i1 {input_path_RRIs}  -i2 {file_rbp_pos} '
                               f'-r {replicates} -o {out_path} '
-                              f'-t {str(overlap_th)} -s 0.5 ')
+                              f'-t {str(overlap_th)} -s 0.5 '
+                              f'-es {exp_score_th} -c {con_bed} ')
     if filter_hybrid == 'on':
         occupied_regions_param = f'{occupied_regions_param} -fh on'
     call_occupied_regions = f'find_occupied_regions.py {occupied_regions_param}'
@@ -724,17 +737,17 @@ def main_train(args):
     if not os.path.exists(out_path_model):
         os.mkdir(out_path_model)
 
-    if use_structure == 'OFF' or use_structure == 'off':
-        feat_path =  f'{out_path_model}/features/'
-        if not os.path.exists(feat_path):
-            os.mkdir(feat_path)
-        loaddata_feat = f'--infile {feat_output} --subsample 20000 '
-        out_feat = f'{feat_path}{midel_name}'
-        call_feat = (f'python -m biofilm.biofilm-features {loaddata_feat} '
-                     f'--method forest --out {out_feat}')
-        print('4a. Select features\n')
-        #print(call_feat)
-        rl.call_script(call_feat)
+    #if use_structure == 'OFF' or use_structure == 'off':
+    #    feat_path =  f'{out_path_model}/features/'
+    #    if not os.path.exists(feat_path):
+#            os.mkdir(feat_path)
+#        loaddata_feat = f'--infile {feat_output} --subsample 20000 '
+#        out_feat = f'{feat_path}{midel_name}'
+#        call_feat = (f'python -m biofilm.biofilm-features {loaddata_feat} '
+#                     f'--method forest --out {out_feat}')
+#        print('4a. Select features\n')
+#        #print(call_feat)
+#        rl.call_script(call_feat)
 
 
 
@@ -749,59 +762,63 @@ def main_train(args):
     full_model_path = f'{opt_path}full_{midel_name}'
 
 
-    if use_structure == 'ON' or use_structure == 'on':
-        loaddata = f' --infile {feat_output} '
-        opt_call = (f'python -W ignore -m biofilm.optimize6 {loaddata} '
-                    f'--memoryMBthread {memoryPerThread} --folds 0 '
-                    f'--out {opt_path}{midel_name} --preprocess True '
-                    f'--n_jobs {n_jobs} --time {run_time} --methods {methods}'
-                    # f' --tmp_folder {opt_path}\autosklearn_temp'
-                    )
-        if temp_dir != 'off':
-            if temp_dir == 'out' or temp_dir == 'OUT':
-                opt_call = opt_call + f' --tmp_folder {opt_path}/autosklearn_temp'
-            else:
-                opt_call = opt_call + f' --tmp_folder {temp_dir}/autosklearn_temp'
+    #if use_structure == 'ON' or use_structure == 'on':
+
+    opt_call = (f'python -W ignore -m biofilm.optimize6 '
+                f'--infile {feat_output} '
+                f'--memoryMBthread {memoryPerThread} --folds 0 '
+                f'--out {opt_path}{midel_name} --preprocess True '
+                f'--n_jobs {n_jobs} --time {run_time} --methods {methods} '
+                f'--instancegroups {pos_neg_out_path}/index_dict.json'
+                )
+    if temp_dir != 'off':
+        if temp_dir == 'out' or temp_dir == 'OUT':
+            opt_call= f'{opt_call} --tmp_folder {opt_path}\autosklearn_temp'
+        else:
+            opt_call= f'{opt_call} --tmp_folder {temp_dir}\autosklearn_temp'
 
 
-        print('4a. Optimize model\n')
-        #print(opt_call)
-        out = rl.call_script(opt_call, reprot_stdout=True, asset_err=False)
+    print('4a. Optimize model\n')
+    print(opt_call)
+    out = rl.call_script(opt_call, reprot_stdout=True, asset_err=False)
         #print(out.decode())
 
 
 
-        print('4b. Refit model\n')
-        call_refit = (f'$(which python) -m biofilm.biofilm-cv --infile '
-                      f'{feat_output} --folds 0 --model {model_path} '
-                      f'--out {full_model_path}')
-        #print(call_refit)
-        rl.call_script(call_refit)
-    elif use_structure == 'OFF' or use_structure == 'off':
-        loaddata = f' --infile {feat_output}  --featurefile {out_feat}'
-        opt_call = (f'python -W ignore -m biofilm.optimize6 {loaddata} '
-                    f'--memoryMBthread {memoryPerThread} --folds 0 '
-                    f'--out {opt_path}{midel_name} --preprocess True '
-                    f'--n_jobs {n_jobs} --time {run_time} --methods {methods}')
-        if temp_dir != 'off':
-            if temp_dir == 'out' or temp_dir == 'OUT':
-                opt_call= f'{opt_call} --tmp_folder {opt_path}\autosklearn_temp'
-            else:
-                opt_call= f'{opt_call} --tmp_folder {temp_dir}\autosklearn_temp'
+    print('4b. Refit model\n')
+    call_refit = (f'$(which python) -m biofilm.biofilm-cv --infile '
+                  f'{feat_output} --folds 0 --model {model_path} '
+                  f'--out {full_model_path}')
 
-
-        print('4b. Optimize model\n')
-        #print(opt_call)
-        out = rl.call_script(opt_call, reprot_stdout=True,asset_err=False)
-        #print(out.decode())
-
-        print('4c. Refit model\n')
-        call_refit = (f'$(which python) -m biofilm.biofilm-cv '
-                      f'--infile {feat_output} --folds 0 '
-                      f'--featurefile {out_feat} '
-                      f'--model {model_path} --out {full_model_path}')
-        #print(call_refit)
-        rl.call_script(call_refit)
+    #print(call_refit)
+    rl.call_script(call_refit)
+    #elif use_structure == 'OFF' or use_structure == 'off':
+        #loaddata = f' --infile {feat_output}  --featurefile {out_feat}'
+    #    opt_call = (f'python -W ignore -m biofilm.optimize6 --infile {feat_output} '
+    #                f'--memoryMBthread {memoryPerThread} --folds 0 '
+    #                f'--out {opt_path}{midel_name} --preprocess True '
+    #                f'--n_jobs {n_jobs} --time {run_time} --methods {methods} '
+                    #f'--instancegroups {pos_neg_out_path}/index_dict.json'
+    #                )
+    #    if temp_dir != 'off':
+    #        if temp_dir == 'out' or temp_dir == 'OUT':
+    #            opt_call= f'{opt_call} --tmp_folder {opt_path}\autosklearn_temp'
+    #        else:
+    #            opt_call= f'{opt_call} --tmp_folder {temp_dir}\autosklearn_temp'
+#
+#
+#        print('4b. Optimize model\n')
+#        print(opt_call)
+#        out = rl.call_script(opt_call, reprot_stdout=True,asset_err=False)
+#        #print(out.decode())
+#
+#        print('4c. Refit model\n')
+#        call_refit = (f'$(which python) -m biofilm.biofilm-cv '
+#                      f'--infile {feat_output} --folds 0 '
+#                      f'--featurefile {out_feat} '
+#                      f'--model {model_path} --out {full_model_path}')
+#        #print(call_refit)
+#        rl.call_script(call_refit)
 
     # print(out)
     model_file = f'{full_model_path}.model'
