@@ -322,6 +322,8 @@ Input parameters for CheRRI's **train** mode (`cherri train`):
 | `-on` |`--out_name`| Name for the output directory. Default 'date_Cherri_evaluating_RRIs' |
 | `-tp` |`--temp_dir`| Set a temporary directory for autosklearn. Either proved a path or 'out' to set it to the output directory. Default: 'off' |
 | `-so` |`--no_sub_opt`| # of interactions IntraRNA will give is possible. Default: 5|
+| `-es` |`--exp_score_th`|score threshold for the additional occupied regions [BED] Default: 10|
+| `-ca` |`--context_additional`| context to extend left and right for the BED file instances. Default: 5|
 
 
 
