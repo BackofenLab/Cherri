@@ -152,6 +152,9 @@ def main():
     parser.add_argument("-s", "--score_th",
                         help= "score threshold",
                         default="0.5")
+    parser.add_argument("-es", "--exp_score_th",
+                        help= "score threshold for the additional occupied regions [BED]",
+                        default="10")
     parser.add_argument("-e", "--external_object",
                         help= "external rri  overlapping object (Interlap dict)",
                         default="non")
@@ -161,6 +164,9 @@ def main():
     parser.add_argument("-mo", "--mode",
                         default="train",
                         help= "function call within which cherri mode [train/eval]")
+    parser.add_argument("-c", "--context",
+                        default="5",
+                        help= "context to extend left and right for the BED file instances")
 
 
 
@@ -174,6 +180,8 @@ def main():
     external_object = args.external_object
     filter_hybrid = args.filter_hybrid
     mode = args.mode
+    exp_score_th = args.exp_score_th
+    context = 5
 
     timestr = time.strftime("%Y%m%d")
     out_path =  out_path  + timestr + '_occ_out/'
@@ -188,8 +196,8 @@ def main():
     # RBP params
     seq_tag = '_RBP_site_'
     # context added to the T-> C site giving us the RBP interaction site
-    context = 5
-    exp_score_th = 10
+
+
     if file_rbp_pos == 'non':
         flag_prot = False
         print('No RBP occupied positions given')
