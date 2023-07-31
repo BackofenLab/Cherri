@@ -324,6 +324,7 @@ Input parameters for CheRRI's **train** mode (`cherri train`):
 | `-so` |`--no_sub_opt`| # of interactions IntraRNA will give is possible. Default: 5|
 | `-es` |`--exp_score_th`|score threshold for the additional occupied regions [BED] Default: 10|
 | `-ca` |`--context_additional`| context to extend left and right for the BED file instances. Default: 5|
+| `-cv` |`--do_cv`| 5-fold cross validated of the pipeline will be performed using the training data. Set 'off' to skip. Default: 'on'|
 
 
 
@@ -347,12 +348,9 @@ Throughout the program, several output files are generated inside the output fol
     |       ├── feature_filtered_{name}_context_{context}_neg.csv
     |       ├── training_data_{name}_context_{context}.npz
     |   ├── model
-    |       ├── features (only if -st off)
-    |           ├── {name}_context_{context}.npz
-    |       ├── optimized
-    |           ├── {name}_context_{context}.model
-    |           ├── {name}_context_{context}.csv
-    |           ├── full_{name}_context_{context}.model
+    |       ├── {name}_context_{context}_fold{0-4}.model
+    |       ├── {name}_context_{context}_fold{0-4}.csv
+    |       ├── full_{name}_context_{context}.model
 
 
 #### Run train in mixed model mode
