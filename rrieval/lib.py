@@ -24,6 +24,8 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 from sklearn.metrics import plot_confusion_matrix
+from sklearn.metrics import f1_score
+
 #from sklearn.linear_model import LogisticRegression
 #import xgboost
 import pickle

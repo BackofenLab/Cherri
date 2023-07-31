@@ -8,7 +8,6 @@ import sys
 import rrieval.lib as rl
 from scipy.sparse import csr_matrix, vstack, hstack, load_npz, save_npz
 from ubergauss.tools import loadfile, dumpfile
-from sklearn.metrics import f1_score
 #import logging
 ## DeBug, INFO
 # import subprocess
@@ -779,12 +778,12 @@ def main_train(args):
 
     if do_cv == 'on':
         # call with splited times!!!
-        print('4b. train full model\n')
+        print('4a. Cross validation\n')
         cv_runtime = round(int(run_time)/3)
         opt_call_cv = f'{opt_call} --time {cv_runtime}'
         f1 = rl.perfome_cv(folds, opt_call_cv, out_path_model, midel_name)
 
-        print((f'The F1-score of modle optimization {flolds}-fold '
+        print((f'The F1-score of modle optimization {folds}-fold '
                f'cross valiation is: {f1}'))
 
 
