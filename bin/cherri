@@ -8,6 +8,7 @@ import sys
 import rrieval.lib as rl
 from scipy.sparse import csr_matrix, vstack, hstack, load_npz, save_npz
 from ubergauss.tools import loadfile, dumpfile
+from sklearn.metrics import f1_score
 #import logging
 ## DeBug, INFO
 # import subprocess
@@ -215,6 +216,9 @@ def setup_argument_parser():
     p_mrg.add_argument("-ca", "--context_additional",
                         help= "context to extend left and right for the BED file instances. Default: 5",
                         default="5")
+    p_mrg.add_argument("-cv", "--do_cv",
+                        help= "5-fold cross validated of the pipeline will be performed using the training data. Set 'off' to skip. Default: 'on'",
+                        default="on")
 
     return p
 
@@ -523,12 +527,9 @@ def main_train(args):
     |       ├── feature_filtered_test_train_context_XX_neg.csv
     |       ├── training_data_test_train_context_XX.npz
     |   ├── model
-    |       ├── features (only if -st off)
-    |           ├── test_train_context_XX.npz
-    |       ├── optimized
-    |           ├── test_train_context_XX.model
-    |           ├── test_train_context_XX.csv
-    |           ├── full_test_train_context_XX.model
+    |       ├── {name}_context_{context}_fold{0-4}.model
+    |       ├── {name}_context_{context}_fold{0-4}.csv
+    |       ├── full_{name}_context_{context}.model
     """
 
     args = parser.parse_args()
@@ -560,6 +561,9 @@ def main_train(args):
     no_sub_opt = args.no_sub_opt
     exp_score_th = args.exp_score_th
     con_bed = args.context_additional
+    do_cv = args.do_cv
+
+    folds = 5
 
 
     methods = (f'extra_trees passive_aggressive random_forest sgd '
@@ -675,44 +679,50 @@ def main_train(args):
 
     elif mixed == 'on':
         print('\nInfo: mixed model on!!!\n')
+        midel_name =  f'{experiment_name}_context_{str(context)}'
+
+        ####### get pos neg files #########################
+
+        pos_neg_out_path = out_path + 'pos_neg_data/'
+        if not os.path.exists(pos_neg_out_path):
+            os.mkdir(pos_neg_out_path)
+
+        out_pos_neg_path = f'{pos_neg_out_path}/{midel_name}'
+        pos_neg_file_list = []
+        for data in args.list_of_replicates:
+            pos_neg_file_list.append(f'{input_path_RRIs}/{data}/pos_neg_data/'
+                                     f'{data}_context_{str(context)}_pos_occ_')
+
+        pos_file, neg_file = rl.get_files_concat(pos_neg_file_list,
+                                                 out_pos_neg_path)
+
+        json_file = f'{pos_neg_out_path}/index_dict.json'
+        df_pos = pd.read_csv(pos_file, sep=',')
+        df_neg = pd.read_csv(neg_file, sep=',')
+        rl.write_json_index([df_pos,df_neg],json_file)
+
+        ###### create feature files ##################################
         feature_out_path = out_path + 'feature_files/'
         if not os.path.exists(feature_out_path):
             os.mkdir(feature_out_path)
-        midel_name =  f'{experiment_name}_context_{str(context)}'
-        X_list = []
-        y_list = []
-        # args.list_of_replicates
-        # save the concatinated data
-        pos_list = []
-        neg_list = []
+
+
+        out_feat_path = f'{feature_out_path}/feature_filtered_{midel_name}'
+
+
+        # get feature  file names
+        feat_file_list = []
+
         for data in args.list_of_replicates:
-            feature_path = f'{input_path_RRIs}/{data}/feature_files/'
-            feature_neg = (f'{feature_path}/feature_filtered_{data}_context_'
-                           f'{str(context)}_pos_occ_neg.csv')
-            feature_pos = (f'{feature_path}/feature_filtered_{data}_context_'
-                           f'{str(context)}_pos_occ_pos.csv')
+            #print('hallo')
+            feat_file_list.append((f'{input_path_RRIs}/{data}/feature_files/'
+                                  f'feature_filtered_{data}_context_'
+                                  f'{str(context)}_pos_occ_'))
+        #print(feat_file_list)
+        feature_pos_file, feature_neg_file = rl.get_files_concat(feat_file_list,
+                                                                 out_feat_path)
 
-            X_sub, y_sub = rl.read_pos_neg_data(feature_pos, feature_neg)
-
-            X_list.append(X_sub)
-            y_list.append(y_sub)
-
-            pos_list.append( pd.read_csv(feature_pos, sep=','))
-            neg_list.append(pd.read_csv(feature_neg, sep=','))
-
-        X = pd.concat(X_list)
-        y = pd.concat(y_list)
-
-        df_pos = pd.concat(pos_list)
-        df_neg = pd.concat(neg_list)
-        df_pos.to_csv((f'{feature_out_path}/feature_filtered_{midel_name}'
-                       f'pos_occ_pos.csv'),sep=",")
-        df_neg.to_csv((f'{feature_out_path}/feature_filtered_{midel_name}'
-                       f'pos_occ_neg.csv'),sep=",")
-        # save y and y
-        #X.to_csv(f'{feature_out_path}X_PARIS_human', index=False, sep=',')
-        #y.to_csv(f'{feature_out_path}y_PARIS_human', index=False, sep=',')
-        # print(X.info())
+        X, y = rl.read_pos_neg_data(feature_pos_file, feature_neg_file)
 
 
     ### Add structure ##########################################################
@@ -737,98 +747,71 @@ def main_train(args):
     if not os.path.exists(out_path_model):
         os.mkdir(out_path_model)
 
-    #if use_structure == 'OFF' or use_structure == 'off':
-    #    feat_path =  f'{out_path_model}/features/'
-    #    if not os.path.exists(feat_path):
-#            os.mkdir(feat_path)
-#        loaddata_feat = f'--infile {feat_output} --subsample 20000 '
-#        out_feat = f'{feat_path}{midel_name}'
-#        call_feat = (f'python -m biofilm.biofilm-features {loaddata_feat} '
-#                     f'--method forest --out {out_feat}')
-#        print('4a. Select features\n')
-#        #print(call_feat)
-#        rl.call_script(call_feat)
-
 
 
     ## optimize ################################################################
 
 
-    opt_path =  f'{out_path_model}/optimized/'
-    if not os.path.exists(opt_path):
-        os.mkdir(opt_path)
+    #opt_path =  f'{out_path_model}/'
+    #if not os.path.exists(opt_path):
+    #    os.mkdir(opt_path)
 
-    model_path = f'{opt_path}{midel_name}.model'
-    full_model_path = f'{opt_path}full_{midel_name}'
+    model_path = f'{out_path_model}{midel_name}.model'
+    full_model_path = f'{out_path_model}full_{midel_name}'
 
 
     #if use_structure == 'ON' or use_structure == 'on':
 
+
     opt_call = (f'python -W ignore -m biofilm.optimize6 '
                 f'--infile {feat_output} '
-                f'--memoryMBthread {memoryPerThread} --folds 0 '
-                f'--out {opt_path}{midel_name} --preprocess True '
-                f'--n_jobs {n_jobs} --time {run_time} --methods {methods} '
+                f'--memoryMBthread {memoryPerThread}  '
+                f' --preprocess True '
+                f'--n_jobs {n_jobs}  --methods {methods} '
                 f'--instancegroups {pos_neg_out_path}/index_dict.json'
                 )
     if temp_dir != 'off':
         if temp_dir == 'out' or temp_dir == 'OUT':
-            opt_call= f'{opt_call} --tmp_folder {opt_path}\autosklearn_temp'
+            opt_call= f'{opt_call} --tmp_folder {out_path_model}\autosklearn_temp'
         else:
             opt_call= f'{opt_call} --tmp_folder {temp_dir}\autosklearn_temp'
+    # print(f'test optimize call\n{opt_call}')
+
+    if do_cv == 'on':
+        # call with splited times!!!
+        print('4b. train full model\n')
+        cv_runtime = round(int(run_time)/3)
+        opt_call_cv = f'{opt_call} --time {cv_runtime}'
+        f1 = rl.perfome_cv(folds, opt_call_cv, out_path_model, midel_name)
+
+        print((f'The F1-score of modle optimization {flolds}-fold '
+               f'cross valiation is: {f1}'))
 
 
-    print('4a. Optimize model\n')
-    print(opt_call)
-    out = rl.call_script(opt_call, reprot_stdout=True, asset_err=False)
+    print('4b. train full model\n')
+    opt_call_refit = f'{opt_call} --folds 0 --time {run_time} --out {full_model_path}'
+    print(f'refit optimize call on full data\n{opt_call}' )
+    out = rl.call_script(opt_call_refit, reprot_stdout=True, asset_err=False)
         #print(out.decode())
 
 
 
-    print('4b. Refit model\n')
-    call_refit = (f'$(which python) -m biofilm.biofilm-cv --infile '
-                  f'{feat_output} --folds 0 --model {model_path} '
-                  f'--out {full_model_path}')
+    #print('4b. Refit model\n')
+    #call_refit = (f'$(which python) -m biofilm.biofilm-cv --infile '
+    #              f'{feat_output} --folds 0 --model {model_path} '
+    #              f'--out {full_model_path}')
 
     #print(call_refit)
-    rl.call_script(call_refit)
-    #elif use_structure == 'OFF' or use_structure == 'off':
-        #loaddata = f' --infile {feat_output}  --featurefile {out_feat}'
-    #    opt_call = (f'python -W ignore -m biofilm.optimize6 --infile {feat_output} '
-    #                f'--memoryMBthread {memoryPerThread} --folds 0 '
-    #                f'--out {opt_path}{midel_name} --preprocess True '
-    #                f'--n_jobs {n_jobs} --time {run_time} --methods {methods} '
-                    #f'--instancegroups {pos_neg_out_path}/index_dict.json'
-    #                )
-    #    if temp_dir != 'off':
-    #        if temp_dir == 'out' or temp_dir == 'OUT':
-    #            opt_call= f'{opt_call} --tmp_folder {opt_path}\autosklearn_temp'
-    #        else:
-    #            opt_call= f'{opt_call} --tmp_folder {temp_dir}\autosklearn_temp'
-#
-#
-#        print('4b. Optimize model\n')
-#        print(opt_call)
-#        out = rl.call_script(opt_call, reprot_stdout=True,asset_err=False)
-#        #print(out.decode())
-#
-#        print('4c. Refit model\n')
-#        call_refit = (f'$(which python) -m biofilm.biofilm-cv '
-#                      f'--infile {feat_output} --folds 0 '
-#                      f'--featurefile {out_feat} '
-#                      f'--model {model_path} --out {full_model_path}')
-#        #print(call_refit)
-#        rl.call_script(call_refit)
+    #rl.call_script(call_refit)
 
-    # print(out)
     model_file = f'{full_model_path}.model'
 
     # extract score from out!
-    score = loadfile(model_path)['score']
+    #score = loadfile(model_path)['score']
 
     print('##########################################')
     print(f'Final model can be found here: {model_file}')
-    print(f'With training score:{score}')
+    #print(f'With training score:{score}')
     print('##########################################')
 
 

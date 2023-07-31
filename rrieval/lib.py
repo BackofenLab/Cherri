@@ -1335,8 +1335,8 @@ def classify(df_eval,in_model_filepath, output_path, df_ID='off',
     #model_handle.close()
     #params = loadfile(in_model_filepath)['params']
     #print(params)
-    #model = loadfile(in_model_filepath)['estimator']
-    model = loadfile(in_model_filepath)
+    model = loadfile(in_model_filepath)['estimator']
+    #model = loadfile(in_model_filepath)
     y_pred=model.predict(df_eval)
     #print('model predictions')
     xtra = pd.DataFrame({'predicted_label': y_pred})
@@ -1544,7 +1544,7 @@ def write_json_index(list_dfs, file_json):
     #print(len(data_df))
     data_ID_dict = data_df['ID'].to_dict()
 
-    print(len(data_ID_dict))
+    # print(len(data_ID_dict))
     with open(file_json, 'w') as file:
         json.dump(data_ID_dict, file)
 
@@ -1682,3 +1682,86 @@ def download_genome(out_path, genome, chrom_len_file):
         else:
             chrom_len_file = chrom_len_file
     return (genome_file, chrom_len_file)
+
+
+#################################################################################
+def get_files_concat(file_path,out_file_prefix):
+    """
+    From a list of files concatinate all pos/neg files given in the list, saves
+    the the cocatinated pos/neg files
+        Parameters
+        ----------
+        file_path: list containing filepathes the to be concatinated dataq
+        out_file_prefix: prefix output file path
+
+        Returns
+        -------
+        pos_file_out
+            file location of the postive data file
+        neg_file_out
+            file location of the negative data file
+
+    """
+    pos_list = []
+    neg_list = []
+
+    for file_path in file_path:
+
+            #feature_path = (f'{input_path_RRIs}/{data}/feature_files/'
+            #               f'feature_filtered_{data}_context_{str(context)}_pos_occ_')
+
+        file_neg = (f'{file_path}neg.csv')
+        file_pos = (f'{file_path}pos.csv')
+
+
+            #X_list.append(X_sub)
+            #y_list.append(y_sub)
+
+        pos_list.append(pd.read_csv(file_pos, sep=','))
+        neg_list.append(pd.read_csv(file_neg, sep=','))
+
+        #X = pd.concat(X_list)
+        #y = pd.concat(y_list)
+
+    df_pos = pd.concat(pos_list)
+    df_neg = pd.concat(neg_list)
+    pos_file_out = (f'{out_file_prefix}_pos_occ_pos.csv')
+    neg_file_out = (f'{out_file_prefix}_pos_occ_neg.csv')
+
+    df_pos.to_csv(pos_file_out,sep=",")
+    df_neg.to_csv(neg_file_out,sep=",")
+
+    return pos_file_out, neg_file_out
+
+
+def perfome_cv(folds, opt_call_cv, out_path_model, midel_name):
+    """
+    Cross validation for the model perfomance
+        Parameters
+        ----------
+        folds: number of folds that should be perfomed
+        opt_call_cv: prefix optimization calls
+        out_path_model: pefix of the output model file name
+        midel_name: exp name and context string to build file name
+
+        Returns
+        -------
+        f1
+            F1-score
+
+    """
+    for fold in range(folds):
+        cv_call = (f'{opt_call_cv} --folds {folds} --foldselected {fold}'
+                   f' --out {out_path_model}{midel_name}_fold{fold}')
+        #print(f'\n test optimize call for fold {fold}:\n{cv_call}')
+        out = call_script(cv_call, reprot_stdout=True, asset_err=False)
+    f1_df_list = []
+    for fold in range(folds):
+        filename = f'{out_path_model}{midel_name}_fold{fold}.csv'
+        df_temp = pd.read_csv(filename)
+        f1_df_list.append(df_temp)
+
+    df_f1 = pd.concat(f1_df_list, axis=0)
+    # print(len(df_f1))
+    f1 = f1_score(df_f1['true_label'].tolist(), df_f1['predicted_label'].tolist())
+    return f1
