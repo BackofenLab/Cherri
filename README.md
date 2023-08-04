@@ -6,6 +6,35 @@ It helps to filter interaction sites generated either experimentally or by an RR
 It is an open source project [hosted on GitHub](https://github.com/BackofenLab/Cherri).
 
 
+## Table of content
+1. [Installation](#Installation)
+    - [Install Conda](#Install-Conda)
+    - [Create environment manually](#Create-environment-manually)
+    - [Manual installation](#Manual-installation)
+    - [Install using pip](#Install-using-pip)
+    - [Install CheRRI Conda package](#Install-CheRRI-Conda-package
+2. [Usage](#Usage)
+    - [Evaluation of RRIs](#Evaluation-of-RRIs)
+    * [RRI input format in evaluation mode](#RRI-input-format-in-evaluation-mode)
+    * [Example call for CheRRI's evaluation mode](#Example-call-for-CheRRI's-evaluation-mode)
+    * [Input parameters in evaluation mode](#Input-parameters-in-evaluation-mode)
+    * [Output in evaluation mode](#Output-in-evaluation-mode)
+    * [Validate your model using the **eval** mode](#Validate-your-model-using-the-**eval**-mode)
+    - [Build a new CheRRI model in training mode](#Build-a-new-CheRRI-model-in-training-mode)
+    * [Retrieve RNA-RNA interactome files using ChiRA](#Retrieve-RNA-RNA-interactome-files-using-ChiRA)
+    * [Build RRI interactome file as input for CheRRI](#Build-RRI-interactome-file-as-input-for-CheRRI)
+    * [Example call for CheRRI's training mode](#Example-call-for-CheRRI's-training-mode)
+    * [Input parameters in training mode](#Input-parameters-in-training-mode)
+    * [Run train in mixed model mode](#Run-train-in-mixed-model-mode)
+3. [CheRRI's core method scripts](#CheRRI's-core-method-scripts)
+    - [RRI detection with find_trusted_RRI.py](#RRI-detection-with-find_trusted_RRI.py)
+    - [Compute occupied regions with find_occupied_regions.py](#Compute-occupied-regions-with find_occupied_regions.py)
+    - [Interaction predictions with generate_pos_neg_with_context.py](#Interaction-predictions with-generate_pos_neg_with_context.py)
+    * [IntaRNA parameters used within CheRRI](#IntaRNA-parameters-used-within-CheRRI)
+    - [Feature extraction with get_features.py](#Feature-extraction-with-get_features.py)
+    - [Feature selection and optimization](#Feature-selection-and-optimization)
+    
+
 ## CheRRI's workflow
 
 CheRRI can be run in two modes, the model generation or **train** mode, or the RRI evaluation or **eval** mode. 
@@ -82,7 +111,7 @@ conda deactivate
 conda activate cherri
 ```
 
-#### Manual installation
+### Manual installation
 
 To install the tool itself, simply clone the repository and execute the installation script inside the cloned folder:
 
@@ -166,7 +195,7 @@ cherri eval -i1 test_data/evaluate/test_evaluate_rris.csv -g human -l human -o .
 
 
 
-#### Input Parameters in evaluation mode
+#### Input parameters in evaluation mode
 
 Input parameters for CheRRI's **eval** mode (`cherri eval`):
 
@@ -253,7 +282,7 @@ Than use the result file to compute the F1 score using [compute_f1](./scripts/pl
 Within CheRRI's **train** mode you can train your own model. 
 The input data are the RRIs found by Direct Duplex Detection (DDD) methods or other interactome HTS protocols. In theory it can be any RRI which is enough to build a solid model training dataset. If the interactions are from different organisms CheRRI needs to be called in a mixed_model 'on' training mode (will be explained later).
 
-#### Retrieve RNA-RNA interactome files Using ChiRA
+#### Retrieve RNA-RNA interactome files using ChiRA
 
 To extract RRI interactions from DDD methods, a tool named [ChiRA](https://github.com/pavanvidem/chira) is used to generate the 'ChiRA interaction summary' table. CheRRI expects as input the 'ChiRA interaction summary' file.
 
