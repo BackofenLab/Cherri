@@ -2,7 +2,7 @@
 set -x
 
 sudo apt-get update
-sudo apt-get -y install git python3-sphinx
+sudo apt-get -y install git python3-sphinx rsync
 
 pip install myst-parser
 pip install sphinx_rtd_theme
@@ -26,7 +26,7 @@ git config --global user.name "${GITHUB_ACTOR}"
 git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
 
 mkdir -p "docs/"
-mv "_build/html/"* "docs/"
+rsync -av --delete "_build/html/"* "docs/"
 
 git add docs/
 
