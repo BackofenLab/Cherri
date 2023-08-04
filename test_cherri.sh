@@ -13,17 +13,17 @@ mkdir -p $OUT
 ### train
 
 # train fist test set
-cherri train -i1 ./test_data/training/Paris/ -r miRNA_human_1.tabular miRNA_human_2.tabular miRNA_human_3.tabular -g human -l human -o $OUT -n paris_human_test1 -c 50 -st on -t 600 -me 8000 -j 7 -on paris_human_test1 -tp out
+cherri train -i1 ./test_data/training/Paris/ -r miRNA_human_1.tabular miRNA_human_2.tabular miRNA_human_3.tabular -g human -l human -o $OUT -n paris_human_test1 -c 50 -st on -t 600 -me 8000 -j 7 -on paris_human_test1 -tp out -fo 3
 
 # train second test set
-cherri train -i1 ./test_data/training/Paris/ -r miRNA_human_1.tabular miRNA_human_2.tabular -g $OUT$GENOMEFA -l $OUT$GENOMETABLE -o $OUT -n paris_human_test2 -c 50 -st on -t 600 -me 8000 -j 7 -on paris_human_test2 -tp out
+cherri train -i1 ./test_data/training/Paris/ -r miRNA_human_1.tabular miRNA_human_2.tabular -g $OUT$GENOMEFA -l $OUT$GENOMETABLE -o $OUT -n paris_human_test2 -c 50 -st on -t 500 -me 8000 -j 7 -on paris_human_test2 -tp out -cv off
 
 # train third test set
-cherri train -i1 ./test_data/training/Paris/ -r miRNA_human_3.tabular -g $OUT$GENOMEFA -l $OUT$GENOMETABLE -o $OUT -n paris_human_test3 -c 50 -st on -t 600 -me 8000 -j 7 -on paris_human_test3 -tp out
+cherri train -i1 ./test_data/training/Paris/ -r miRNA_human_3.tabular -g $OUT$GENOMEFA -l $OUT$GENOMETABLE -o $OUT -n paris_human_test3 -c 50 -st on -t 500 -me 8000 -j 7 -on paris_human_test3 -tp out -cv off
 
 
 # train combinde model
-cherri train -i1 $OUT  -r paris_human_test1 paris_human_test2 paris_human_test3 -g /not/needed/ -l /not/needed/ -o $OUT -n Full_model_test -c 50 -st on -mi on -t 600 -me 8000 -j 7 
+cherri train -i1 $OUT  -r paris_human_test1 paris_human_test2 paris_human_test3 -g /not/needed/ -l /not/needed/ -o $OUT -n Full_model_test -c 50 -st on -mi on -t 500 -me 8000 -j 7 
 
 
 ### eval 
