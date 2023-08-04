@@ -1,2 +1,6 @@
 # sphinx build folder
 _build
+# test files
+test_cherri.sh
+test_cherri_st_off.sh
+
