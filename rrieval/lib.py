@@ -1337,8 +1337,8 @@ def classify(df_eval,in_model_filepath, output_path, df_ID='off',
     #model_handle.close()
     #params = loadfile(in_model_filepath)['params']
     #print(params)
-    model = loadfile(in_model_filepath)['estimator']
-    #model = loadfile(in_model_filepath)
+    #model = loadfile(in_model_filepath)['estimator']
+    model = loadfile(in_model_filepath)
     y_pred=model.predict(df_eval)
     #print('model predictions')
     xtra = pd.DataFrame({'predicted_label': y_pred})
@@ -1755,7 +1755,7 @@ def perfome_cv(folds, opt_call_cv, out_path_model, midel_name):
     for fold in range(folds):
         cv_call = (f'{opt_call_cv} --folds {folds} --foldselected {fold}'
                    f' --out {out_path_model}{midel_name}_fold{fold}')
-        #print(f'\n test optimize call for fold {fold}:\n{cv_call}')
+        print(f'\n run optimize call for fold {fold}')
         out = call_script(cv_call, reprot_stdout=True, asset_err=False)
     f1_df_list = []
     for fold in range(folds):
