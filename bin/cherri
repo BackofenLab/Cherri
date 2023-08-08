@@ -570,9 +570,9 @@ def main_train(args):
     # folds = 5
 
 
-    methods = (f'extra_trees passive_aggressive random_forest sgd '
-               f'gradient_boosting mlp')
-    #methods = f'all'
+    #methods = (f'extra_trees passive_aggressive random_forest sgd '
+    #           f'gradient_boosting mlp')
+    methods = f'all'
 
 
     # if no user provided IntaRNA paramter fiel use the default of cherri
