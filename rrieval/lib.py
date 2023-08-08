@@ -1337,8 +1337,8 @@ def classify(df_eval,in_model_filepath, output_path, df_ID='off',
     #model_handle.close()
     #params = loadfile(in_model_filepath)['params']
     #print(params)
-    #model = loadfile(in_model_filepath)['estimator']
-    model = loadfile(in_model_filepath)
+    model = loadfile(in_model_filepath)['estimator']
+    #model = loadfile(in_model_filepath)
     y_pred=model.predict(df_eval)
     #print('model predictions')
     xtra = pd.DataFrame({'predicted_label': y_pred})
