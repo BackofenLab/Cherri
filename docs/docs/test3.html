@@ -20,7 +20,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="Setup" href="test2.html" /> 
+    <link rel="prev" title="Usage" href="test2.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -45,15 +45,42 @@
               <p class="caption" role="heading"><span class="caption-text">Welcome</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="test1.html">Welcome</a></li>
+<li class="toctree-l1"><a class="reference internal" href="test1.html#installation">Installation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Setup</span></p>
+<p class="caption" role="heading"><span class="caption-text">Usage</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="test2.html">Setup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="test2.html#heading-1">Heading 1</a></li>
+<li class="toctree-l1"><a class="reference internal" href="test2.html">Usage</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Documentation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#cherri-s-core-method-scripts">CheRRI’s core method scripts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rri-detection-with-find-trusted-rri-py">RRI detection with find_trusted_RRI.py</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#input-parameters-for-find-trusted-rri-py">Input parameters for find_trusted_RRI.py</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#output-of-find-trusted-rri-py">Output of find_trusted_RRI.py</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#compute-occupied-regions-with-find-occupied-regions-py">Compute occupied regions with find_occupied_regions.py</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#input-parameters-for-find-occupied-regions-py">Input parameters for find_occupied_regions.py</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#output-of-find-occupied-regions-py">Output of find_occupied_regions.py</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#interaction-predictions-with-generate-pos-neg-with-context-py">Interaction predictions with generate_pos_neg_with_context.py</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#input-parameters-for-generate-pos-neg-with-context-py">Input parameters for generate_pos_neg_with_context.py</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#intarna-parameters-used-within-cherri">IntaRNA parameters used within CheRRI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#output-of-generate-pos-neg-with-context-py">Output of generate_pos_neg_with_context.py</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#feature-extraction-with-get-features-py">Feature extraction with get_features.py</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#input-parameters-for-get-features-py">Input parameters for get_features.py</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#output-of-get-features-py">Output of get_features.py</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#feature-selection-and-optimization">Feature selection and optimization</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
         </div>
@@ -82,13 +109,301 @@
              
   <section id="documentation">
 <h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this heading"></a></h1>
+<section id="cherri-s-core-method-scripts">
+<h2>CheRRI’s core method scripts<a class="headerlink" href="#cherri-s-core-method-scripts" title="Permalink to this heading"></a></h2>
+<p>CheRRI is built as a modular tool calling individual scripts accomplishing the various tasks of CheRRI’s core methods. If you would like to perform only one step of the CheRRI pipeline, you can do this by calling the individual scripts. A short description of this scripts is given in the following.</p>
+<section id="rri-detection-with-find-trusted-rri-py">
+<h3>RRI detection with find_trusted_RRI.py<a class="headerlink" href="#rri-detection-with-find-trusted-rri-py" title="Permalink to this heading"></a></h3>
+<p>Here we search for trusted RRIs, so RRIs which can be found in all replicates. In a first filter step only uniquely mapped RRIs are taken. Than RRI sequence partners in all replicates are found, using a overlap threshold. Output are the ChiRA input tables, now containing only the trusted RRIs. Out of all RRI pairs of the replicates only the one with the highest overlap to all others is added to the trusted_RRI data set.</p>
+<section id="input-parameters-for-find-trusted-rri-py">
+<h4>Input parameters for find_trusted_RRI.py<a class="headerlink" href="#input-parameters-for-find-trusted-rri-py" title="Permalink to this heading"></a></h4>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>ID</p></th>
+<th class="head"><p>name</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-i</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--input_path</span></code></p></td>
+<td><p>Path to folder storing input data (containing all replicates)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-r</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--list_of_replicats</span></code></p></td>
+<td><p>List of file names for all replicates</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-o</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--overlap_th</span></code></p></td>
+<td><p>Overlap threshold to find trusted RRIs</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-d</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--output_path</span></code></p></td>
+<td><p>Path where output folder should be stored</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-n</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--experiment_name</span></code></p></td>
+<td><p>Name of the data source of positive trusted RRIs</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-s</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--score_th</span></code></p></td>
+<td><p>Threshold for EM score from ChiRA</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-fh</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--filter_hybrid</span></code></p></td>
+<td><p>Filter the data for hyprids alrady detected by ChiRA</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="output-of-find-trusted-rri-py">
+<h4>Output of find_trusted_RRI.py<a class="headerlink" href="#output-of-find-trusted-rri-py" title="Permalink to this heading"></a></h4>
+<p>The filtered set of trusted RRI sites in tabular format.</p>
+</section>
+</section>
+<section id="compute-occupied-regions-with-find-occupied-regions-py">
+<h3>Compute occupied regions with find_occupied_regions.py<a class="headerlink" href="#compute-occupied-regions-with-find-occupied-regions-py" title="Permalink to this heading"></a></h3>
+<p>Given the RRI information tables from ChiRA and RNA-protein binding positions, an InterLab object is build. The occupied information can be used to mask parts of the genome and therefore enable to select negative interaction regions.</p>
+<section id="input-parameters-for-find-occupied-regions-py">
+<h4>Input parameters for find_occupied_regions.py<a class="headerlink" href="#input-parameters-for-find-occupied-regions-py" title="Permalink to this heading"></a></h4>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>ID</p></th>
+<th class="head"><p>name</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-i1</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--RRI_path</span></code></p></td>
+<td><p>Path to folder storing all RRI data (table)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-i2</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--rbp_path</span></code></p></td>
+<td><p>Path to RBP site data file (BED format)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-r</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--list_of_replicates</span></code></p></td>
+<td><p>List of file names for all replicates</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-o</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--out_path</span></code></p></td>
+<td><p>Path where output folder should be stored</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-t</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--overlap_th</span></code></p></td>
+<td><p>Overlap threshold</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-s</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--score_th</span></code></p></td>
+<td><p>Score threshold</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-e</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--external_object</span></code></p></td>
+<td><p>External RRI overlapping object (InterLap dict)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-fh</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--filter_hybrind</span></code></p></td>
+<td><p>Filter the data for hybrids already detected by ChiRA</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-mo</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--mode</span></code></p></td>
+<td><p>Function call within which CheRRI mode (train/eval)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="output-of-find-occupied-regions-py">
+<h4>Output of find_occupied_regions.py<a class="headerlink" href="#output-of-find-occupied-regions-py" title="Permalink to this heading"></a></h4>
+<p>A python pickle file object storing occupied regions in an InterLap dictionary.</p>
+</section>
+</section>
+<section id="interaction-predictions-with-generate-pos-neg-with-context-py">
+<h3>Interaction predictions with generate_pos_neg_with_context.py<a class="headerlink" href="#interaction-predictions-with-generate-pos-neg-with-context-py" title="Permalink to this heading"></a></h3>
+<p>Given a set of trusted RRI sites and occupied regions, a given context is appended. Then positive interactions are computed by calling IntaRNA, specifying the trusted RRI sites as seed regions. The negative interactions are computed by calling IntaRNA on regions outside the RRI sites / occupied regions.</p>
+<section id="input-parameters-for-generate-pos-neg-with-context-py">
+<h4>Input parameters for generate_pos_neg_with_context.py<a class="headerlink" href="#input-parameters-for-generate-pos-neg-with-context-py" title="Permalink to this heading"></a></h4>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>ID</p></th>
+<th class="head"><p>name</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-i1</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--input_rris</span></code></p></td>
+<td><p>Path to file storing all trusted RRIs</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-i2</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--input_occupied</span></code></p></td>
+<td><p>Path to occupied regions file</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-d</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--output_path</span></code></p></td>
+<td><p>Path where output folder should be stored</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-n</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--experiment_name</span></code></p></td>
+<td><p>Name of the data source of positive trusted RRIs</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-g</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--genome_file</span></code></p></td>
+<td><p>Path to genome FASTA file</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-c</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--context</span></code></p></td>
+<td><p>How much context should be added up- and downstream</p></td>
+</tr>
+<tr class="row-even"><td><p></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--pos_occ</span></code></p></td>
+<td><p>Occupied regions are set (default)</p></td>
+</tr>
+<tr class="row-odd"><td><p></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--no_pos_occ</span></code></p></td>
+<td><p>Set if no occupied regions should be used</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-b</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--block_ends</span></code></p></td>
+<td><p># nucleotides blocked at the ends of each extended RRI site</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-s</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--no_sub_opt</span></code></p></td>
+<td><p># of interactions IntraRNA will give if possible</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-l</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--chrom_len_file</span></code></p></td>
+<td><p>Tabular file containing chrom name \t chrom length for each chromosome</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-p</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--param_file</span></code></p></td>
+<td><p>IntaRNA parameter file</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-m</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--mode</span></code></p></td>
+<td><p>Which CheRRI mode is running (train/eval)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="intarna-parameters-used-within-cherri">
+<h4>IntaRNA parameters used within CheRRI<a class="headerlink" href="#intarna-parameters-used-within-cherri" title="Permalink to this heading"></a></h4>
+<p>To generate the current features IntaRNA parameters by default are set to:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>parameters</p></th>
+<th class="head"><p>value</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>outMode</p></td>
+<td><p>C</p></td>
+<td><p>Output style (C=tabluar format)</p></td>
+</tr>
+<tr class="row-odd"><td><p>seedBP</p></td>
+<td><p>5</p></td>
+<td><p>the number of base pairs within the seed</p></td>
+</tr>
+<tr class="row-even"><td><p>seedMinPu</p></td>
+<td><p>0</p></td>
+<td><p>the minimal unpaired probability of each seed region in query and target</p></td>
+</tr>
+<tr class="row-odd"><td><p>accW</p></td>
+<td><p>150</p></td>
+<td><p>sliding window length (0=global folding)</p></td>
+</tr>
+<tr class="row-even"><td><p>acc</p></td>
+<td><p>N/C</p></td>
+<td><p>To globally turn off accessibility consideration: turn off/on</p></td>
+</tr>
+<tr class="row-odd"><td><p>outMaxE</p></td>
+<td><p>-5</p></td>
+<td><p>maximal energy for any interaction reported</p></td>
+</tr>
+<tr class="row-even"><td><p>outOverlap</p></td>
+<td><p>B</p></td>
+<td><p>overlapping of interaction sites of suboptimal allowed (B:both)</p></td>
+</tr>
+<tr class="row-odd"><td><p>outNumber</p></td>
+<td><p>5</p></td>
+<td><p>generate up to N interactions for each query-target pair</p></td>
+</tr>
+<tr class="row-even"><td><p>seedT/QRange</p></td>
+<td><p>positive interaction</p></td>
+<td><p>genomic positions of the trusted RRI</p></td>
+</tr>
+<tr class="row-odd"><td><p>q/tAccConstr</p></td>
+<td><p>negative interaction</p></td>
+<td><p>genomic positions of the occupied regions</p></td>
+</tr>
+<tr class="row-even"><td><p>intLenMax</p></td>
+<td><p>50</p></td>
+<td><p>restrict the overall length an interaction</p></td>
+</tr>
+<tr class="row-odd"><td><p>temperature</p></td>
+<td><p>37</p></td>
+<td><p>experimental temperature</p></td>
+</tr>
+<tr class="row-even"><td><p>intLoopMax</p></td>
+<td><p>3</p></td>
+<td><p>number of unpaired bases between inter molecular base pairs</p></td>
+</tr>
+</tbody>
+</table>
+<p>IntaRNA parameters can be changed by specifying a custom IntaRNA parameter file.</p>
+</section>
+<section id="output-of-generate-pos-neg-with-context-py">
+<h4>Output of generate_pos_neg_with_context.py<a class="headerlink" href="#output-of-generate-pos-neg-with-context-py" title="Permalink to this heading"></a></h4>
+<p>Positive and negative datasets stored in tabular format.</p>
+</section>
+</section>
+<section id="feature-extraction-with-get-features-py">
+<h3>Feature extraction with get_features.py<a class="headerlink" href="#feature-extraction-with-get-features-py" title="Permalink to this heading"></a></h3>
+<p>Here additional sequence features are computed and the output is filtered for the final or a given feature set. The features are stored in tabular format.
+Note that the graph-kernel features are computed directly in CheRRI’s main functions and do not have a separate file.</p>
+<section id="input-parameters-for-get-features-py">
+<h4>Input parameters for get_features.py<a class="headerlink" href="#input-parameters-for-get-features-py" title="Permalink to this heading"></a></h4>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>ID</p></th>
+<th class="head"><p>name</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-i</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--input</span></code></p></td>
+<td><p>Path to input file</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-f</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--feature_set_list</span></code></p></td>
+<td><p>Set of features the script will output</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-o</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--output_file</span></code></p></td>
+<td><p>Output file path including the file name</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="output-of-get-features-py">
+<h4>Output of get_features.py<a class="headerlink" href="#output-of-get-features-py" title="Permalink to this heading"></a></h4>
+<p>Tabular file having all features given via <code class="docutils literal notranslate"><span class="pre">--feature_set_list</span></code>.</p>
+</section>
+</section>
+<section id="feature-selection-and-optimization">
+<h3>Feature selection and optimization<a class="headerlink" href="#feature-selection-and-optimization" title="Permalink to this heading"></a></h3>
+<p>If you would only like to run the feature selection or optimization, please check out <a class="reference external" href="https://github.com/smautner/biofilm">biofilm</a>.</p>
+</section>
+</section>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="test2.html" class="btn btn-neutral float-left" title="Setup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="test2.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
