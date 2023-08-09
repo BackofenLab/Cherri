@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Setup &mdash; CheRRI 2023 documentation</title>
+  <title>Usage &mdash; CheRRI 2023 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -46,17 +46,38 @@
               <p class="caption" role="heading"><span class="caption-text">Welcome</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="test1.html">Welcome</a></li>
+<li class="toctree-l1"><a class="reference internal" href="test1.html#installation">Installation</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Setup</span></p>
+<p class="caption" role="heading"><span class="caption-text">Usage</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Setup</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#heading-2">Heading 2</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#heading-3">Heading 3</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#evaluation-of-rris">Evaluation of RRIs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rri-input-format-in-evaluation-mode">RRI input format in evaluation mode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-call-for-cherri-s-evaluation-mode">Example call for CheRRI’s evaluation mode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#input-parameters-in-evaluation-mode">Input parameters in evaluation mode</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#required">Required:</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#optional">Optional:</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#output-in-evaluation-mode">Output in evaluation mode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#validate-your-model-using-the-eval-mode">Validate your model using the <strong>eval</strong> mode</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#build-a-new-cherri-model-in-training-mode">Build a new CheRRI model in training mode</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#retrieve-rna-rna-interactome-files-using-chira">Retrieve RNA-RNA interactome files using ChiRA</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#build-rri-interactome-file-as-input-for-cherri">Build RRI interactome file as input for CheRRI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-call-for-cherri-s-training-mode">Example call for CheRRI’s training mode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#input-parameters-in-training-mode">Input parameters in training mode</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Required:</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Optional:</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#output-in-training-mode">Output in training mode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run-train-in-mixed-model-mode">Run train in mixed model mode</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#heading-1">Heading 1</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
 <ul>
@@ -77,7 +98,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Setup</li>
+      <li class="breadcrumb-item active">Usage</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/docs/test2.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -87,17 +108,391 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="setup">
-<h1>Setup<a class="headerlink" href="#setup" title="Permalink to this heading"></a></h1>
-<section id="heading-2">
-<h2>Heading 2<a class="headerlink" href="#heading-2" title="Permalink to this heading"></a></h2>
-<section id="heading-3">
-<h3>Heading 3<a class="headerlink" href="#heading-3" title="Permalink to this heading"></a></h3>
+  <section id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this heading"></a></h1>
+<p>You can use CheRRI in two modes. The <strong>eval</strong> mode predicts whether an RRI site of interest is biologically relevant. Pre-computed human and mouse models exist and can be downloaded from <a class="reference external" href="https://doi.org/10.5281/zenodo.6533932">Zenodo</a>. If you would like to build a model based on novel RRI interactome data, you can use the <strong>train</strong> mode.</p>
+<section id="evaluation-of-rris">
+<h2>Evaluation of RRIs<a class="headerlink" href="#evaluation-of-rris" title="Permalink to this heading"></a></h2>
+<p>Based on a tabular file containing chromosomal position data of the RRIs, CheRRI classifies if the interaction region is likely to be a biologically relevant one.</p>
+<p>For the <strong>eval</strong> mode, a model and the filtered feature set have to be specified.
+CheRRI has pre-trained models for human and mouse, which can be downloaded from <a class="reference external" href="https://doi.org/10.5281/zenodo.6533932">Zenodo</a> (see <code class="docutils literal notranslate"><span class="pre">content.txt</span></code> inside the zip folder for details).
+If there exists an RNA-RNA-interactome dataset for your preferred organism, we recommend to train your own organism-specific model using CheRRI’s <strong>train</strong> mode. After training, the model can be than used in <strong>eval</strong> mode for the classification of your predicted RRI positions.</p>
+<section id="rri-input-format-in-evaluation-mode">
+<h3>RRI input format in evaluation mode<a class="headerlink" href="#rri-input-format-in-evaluation-mode" title="Permalink to this heading"></a></h3>
+<p>The RRI instances to be evaluated need to be given in tabular format (parameter <code class="docutils literal notranslate"><span class="pre">--RRIs_table</span></code>). The table needs the following header line:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">chrom1</span><span class="p">,</span><span class="n">start1</span><span class="p">,</span><span class="n">stop1</span><span class="p">,</span><span class="n">strand1</span><span class="p">,</span><span class="n">chrom2</span><span class="p">,</span><span class="n">start2</span><span class="p">,</span><span class="n">stop2</span><span class="p">,</span><span class="n">strand2</span>
+</pre></div>
+</div>
+<p>Following the header line, each subsequent line represents an RRI, with chromosome ID (format: 1,2,3 …), interaction start, interaction end, and strand (“+” or “-”) of the two interacting partners. For example, you might want to evaluate the following three RRI sites:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">19</span><span class="p">,</span><span class="mi">18307518</span><span class="p">,</span><span class="mi">18307539</span><span class="p">,</span><span class="o">-</span><span class="p">,</span><span class="mi">14</span><span class="p">,</span><span class="mi">90454500</span><span class="p">,</span><span class="mi">90454521</span><span class="p">,</span><span class="o">+</span>
+<span class="n">X</span><span class="p">,</span><span class="mi">109054541</span><span class="p">,</span><span class="mi">109054590</span><span class="p">,</span><span class="o">+</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">89178539</span><span class="p">,</span><span class="mi">89178562</span><span class="p">,</span><span class="o">-</span>
+<span class="mi">10</span><span class="p">,</span><span class="mi">123136102</span><span class="p">,</span><span class="mi">123136122</span><span class="p">,</span><span class="o">+</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">1245880</span><span class="p">,</span><span class="mi">1245902</span><span class="p">,</span><span class="o">+</span>
+</pre></div>
+</div>
+<p>We recommend that the user also specifies the occupied regions used to train the model provided via <code class="docutils literal notranslate"><span class="pre">--model_file</span></code>. For example, for the PARIS_human model without graph features, the occupied regions data object is located at
+<code class="docutils literal notranslate"><span class="pre">Model_without_graph_features/PARIS_human/occupied_regions/occupied_regions.obj</span></code> (inside the mentioned zip file from <a class="reference external" href="https://doi.org/10.5281/zenodo.6533932">Zenodo</a>).</p>
+</section>
+<section id="example-call-for-cherri-s-evaluation-mode">
+<h3>Example call for CheRRI’s evaluation mode<a class="headerlink" href="#example-call-for-cherri-s-evaluation-mode" title="Permalink to this heading"></a></h3>
+<p>For the test call please download the <a class="reference external" href="https://doi.org/10.5281/zenodo.6533932">Cherri_models_data</a> zip folder. The PARIS_human model is needed to execute the call. Be sure to provide the correct location for the model and its feature set (<code class="docutils literal notranslate"><span class="pre">-m</span></code>, <code class="docutils literal notranslate"><span class="pre">-mp</span></code>). For example, assuming the data (zip folder extracted to folder <code class="docutils literal notranslate"><span class="pre">Cherri_models_data</span></code>) is stored inside the CheRRI folder:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cherri</span> <span class="nb">eval</span> <span class="o">-</span><span class="n">i1</span> <span class="n">test_data</span><span class="o">/</span><span class="n">evaluate</span><span class="o">/</span><span class="n">test_evaluate_rris</span><span class="o">.</span><span class="n">csv</span> <span class="o">-</span><span class="n">g</span> <span class="n">human</span> <span class="o">-</span><span class="n">l</span> <span class="n">human</span> <span class="o">-</span><span class="n">o</span> <span class="o">./</span> <span class="o">-</span><span class="n">n</span> <span class="n">test_eval</span> <span class="o">-</span><span class="n">c</span> <span class="mi">150</span> <span class="o">-</span><span class="n">st</span> <span class="n">on</span> <span class="o">-</span><span class="n">m</span> <span class="n">Cherri_models_data</span><span class="o">/</span><span class="n">Model_with_graph_features</span><span class="o">/</span><span class="n">PARIS_human</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">full_PARIS_human_context_150</span><span class="o">.</span><span class="n">model</span> <span class="o">-</span><span class="n">mp</span> <span class="n">Cherri_models_data</span><span class="o">/</span><span class="n">Model_with_graph_features</span><span class="o">/</span><span class="n">PARIS_human</span><span class="o">/</span><span class="n">feature_files</span><span class="o">/</span><span class="n">training_data_PARIS_human_context_150</span><span class="o">.</span><span class="n">npz</span> <span class="o">-</span><span class="n">i2</span> <span class="n">Cherri_models_data</span><span class="o">/</span><span class="n">Model_with_graph_features</span><span class="o">/</span><span class="n">PARIS_human</span><span class="o">/</span><span class="n">occupied_regions</span><span class="o">/</span><span class="n">occupied_regions</span><span class="o">.</span><span class="n">obj</span>
+</pre></div>
+</div>
+</section>
+<section id="input-parameters-in-evaluation-mode">
+<h3>Input parameters in evaluation mode<a class="headerlink" href="#input-parameters-in-evaluation-mode" title="Permalink to this heading"></a></h3>
+<p>Input parameters for CheRRI’s <strong>eval</strong> mode (<code class="docutils literal notranslate"><span class="pre">cherri</span> <span class="pre">eval</span></code>):</p>
+<section id="required">
+<h4>Required:<a class="headerlink" href="#required" title="Permalink to this heading"></a></h4>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>ID</p></th>
+<th class="head"><p>name</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-i1</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--RRIs_table</span></code></p></td>
+<td><p>Table containing all RRIs that should be evaluated in the correct format</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-g</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--genome_file</span></code></p></td>
+<td><p>Path to genome FASTA file, or use the built-in download function if you want the human or mouse genome</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-o</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--out_path</span></code></p></td>
+<td><p>Path to output directory where the output folder will be stored. It will contain separate output folders for each step of the data and feature preparation as well as the evaluated instances</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-l</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--chrom_len_file</span></code></p></td>
+<td><p>Tabular file containing data in two-column format for each chromosome: ‘chrom name’ \t ‘chrom length’. You can directly specify ‘human’ or ‘mouse’</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-m</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--model_file</span></code></p></td>
+<td><p>Set path to the model which should be used for evaluation</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-mp</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--model_params</span></code></p></td>
+<td><p>Set path to the feature file of the given model</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="optional">
+<h4>Optional:<a class="headerlink" href="#optional" title="Permalink to this heading"></a></h4>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>ID</p></th>
+<th class="head"><p>name</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-i2</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--occupied_regions</span></code></p></td>
+<td><p>Path to occupied regions python object file containing a dictionary</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-c</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--context</span></code></p></td>
+<td><p>How much context should be added at up- and downstream of the sequence. Default: 150</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-n</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--experiment_name</span></code></p></td>
+<td><p>Name of the data source of the RRIs, e.g. experiment and organism. Default: eval_rri</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-p</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--param_file</span></code></p></td>
+<td><p>IntaRNA parameter file. Default: file in path_to_cherri_folder/Cherri/rrieval/IntaRNA_param</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-st</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--use_structure</span></code></p></td>
+<td><p>Set ‘off’ if you want to disable structure. Default ‘on’</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-on</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--out_name</span></code></p></td>
+<td><p>Name for the output directory. Default: ‘date_Cherri_evaluating_RRIs’</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-ef</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--eval_features</span></code></p></td>
+<td><p>If you want to start from hand-curated feature files. Use this for evaluating test set performance (set ‘on’). Default: ‘off’</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-j</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--n_jobs</span></code></p></td>
+<td><p>Number of jobs used for graph feature computation. Default: 1</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 </section>
+<section id="output-in-evaluation-mode">
+<h3>Output in evaluation mode<a class="headerlink" href="#output-in-evaluation-mode" title="Permalink to this heading"></a></h3>
+<p>At the end of the run the location of the results table is given.
+The final results table will have your the query and target ID’s or your input sequences (<code class="docutils literal notranslate"><span class="pre">target_ID</span></code>,<code class="docutils literal notranslate"><span class="pre">query_ID</span></code>), the score of your instance (<code class="docutils literal notranslate"><span class="pre">instance_score</span></code>), the predicted class of each RRI (0 or 1) (<code class="docutils literal notranslate"><span class="pre">predicted_label</span></code>), if you are running the validation mode with <code class="docutils literal notranslate"><span class="pre">-ef</span> <span class="pre">on</span></code> the positive or negative label is given (<code class="docutils literal notranslate"><span class="pre">true_lable</span></code>), and finally all features of the instance are provided.</p>
+<p>The Ids are a summary of <code class="docutils literal notranslate"><span class="pre">chromosme;strand;start;stop</span></code> oft the first (target) and the second (query) sequence.</p>
+<p>Throughout the program, several output files are generated and stored in the following structure:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>├── date_Cherri_evaluation_mode
+|   ├── evaluate_RRIs.csv
+|   ├── date_occ_out
+|       ├── occupied_regions.obj
+|       ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.csv
+|   ├── positive_instance
+|       ├── {name}_context_{context}pos.csv
+|       ├── {name}_context_{context}_block_ends_0_RRI_dataset.csv
+|   ├── feature_files
+|       ├── feature_filtered_{name}_context_{context}_pos.csv
+|       ├── training_data_{name}_context_{context}.npz
+|   ├── evaluation
+|       ├── evaluation_results_{name}.csv
+</pre></div>
+</div>
 </section>
-<section id="heading-1">
-<h1>Heading 1<a class="headerlink" href="#heading-1" title="Permalink to this heading"></a></h1>
+<section id="validate-your-model-using-the-eval-mode">
+<h3>Validate your model using the <strong>eval</strong> mode<a class="headerlink" href="#validate-your-model-using-the-eval-mode" title="Permalink to this heading"></a></h3>
+<p>You can also use CheRRIs <strong>eval</strong> mode to create a validation result table and than use the <a class="reference internal" href="#./scripts/plots/compute_f1.py"><span class="xref myst">compute_f1</span></a> to get the F1 score.</p>
+<p>In the following is a example call to validate a theoretical model build from DataA with data form a different source e.g. DataB</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cherri</span> <span class="nb">eval</span> <span class="o">-</span><span class="n">i1</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">Model_folder</span><span class="o">/</span><span class="n">Datab</span><span class="o">/</span><span class="n">feature_files</span><span class="o">/</span><span class="n">feature_filtered_</span><span class="o">&lt;</span><span class="n">DataB</span><span class="o">&gt;</span><span class="n">_context_</span><span class="o">&lt;</span><span class="mi">150</span><span class="o">&gt;</span><span class="n">_pos_occ</span> <span class="o">-</span><span class="n">g</span> <span class="n">human</span> <span class="o">-</span><span class="n">l</span> <span class="n">human</span> <span class="o">-</span><span class="n">o</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">Model_folder</span> <span class="o">-</span><span class="n">n</span> <span class="o">&lt;</span><span class="n">eval_modelA_using_DataB</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">c</span> <span class="mi">150</span> <span class="o">-</span><span class="n">st</span> <span class="n">on</span> <span class="o">-</span><span class="n">m</span>  <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">Model_folder</span><span class="o">/</span><span class="n">DataA</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">optimized</span><span class="o">/</span><span class="n">full_</span><span class="o">&lt;</span><span class="n">DataA</span><span class="o">&gt;</span><span class="n">_context_</span><span class="o">&lt;</span><span class="mi">150</span><span class="o">&gt;.</span><span class="n">model</span> <span class="o">-</span><span class="n">mp</span>  <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">Model_folder</span><span class="o">/</span><span class="n">DataA</span><span class="o">/</span><span class="n">feature_files</span><span class="o">/</span><span class="n">training_data_</span><span class="o">&lt;</span><span class="n">DataA</span><span class="o">&gt;</span><span class="n">_context_</span><span class="o">&lt;</span><span class="mi">150</span><span class="o">&gt;.</span><span class="n">npz</span> <span class="o">-</span><span class="n">j</span> <span class="mi">10</span> <span class="o">-</span><span class="n">on</span> <span class="n">evaluation</span> <span class="o">-</span><span class="n">ef</span> <span class="n">on</span>
+</pre></div>
+</div>
+<p>In the following is a example call to cross validate a theoretical model build from DataA. The biofilm-cv will split the data into 5 parts used 4 to retrain a model and the left out to evaluate.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">biofilm</span><span class="o">.</span><span class="n">biofilm</span><span class="o">-</span><span class="n">cv</span> <span class="o">--</span><span class="n">infile</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">Model_folder</span><span class="o">/</span><span class="n">DataA</span><span class="o">/</span><span class="n">feature_files</span><span class="o">/</span><span class="n">training_data_</span><span class="o">&lt;</span><span class="n">DataA</span><span class="o">&gt;</span><span class="n">_context_</span><span class="o">&lt;</span><span class="mi">150</span><span class="o">&gt;.</span><span class="n">npz</span> <span class="o">--</span><span class="n">foldselect</span> <span class="mi">0</span> <span class="o">--</span><span class="n">model</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">Model_folder</span><span class="o">/</span><span class="n">DataA</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">optimized</span><span class="o">/</span><span class="n">full_</span><span class="o">&lt;</span><span class="n">DataA</span><span class="o">&gt;</span><span class="n">_context_</span><span class="o">&lt;</span><span class="mi">150</span><span class="o">&gt;.</span><span class="n">model</span> <span class="o">--</span><span class="n">out</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">Model_folder</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">biofilm</span><span class="o">.</span><span class="n">biofilm</span><span class="o">-</span><span class="n">cv</span> <span class="o">--</span><span class="n">infile</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">Model_folder</span><span class="o">/</span><span class="n">DataA</span><span class="o">/</span><span class="n">feature_files</span><span class="o">/</span><span class="n">training_data_</span><span class="o">&lt;</span><span class="n">DataA</span><span class="o">&gt;</span><span class="n">_context_</span><span class="o">&lt;</span><span class="mi">150</span><span class="o">&gt;.</span><span class="n">npz</span> <span class="o">--</span><span class="n">foldselect</span> <span class="mi">1</span> <span class="o">--</span><span class="n">model</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">Model_folder</span><span class="o">/</span><span class="n">DataA</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">optimized</span><span class="o">/</span><span class="n">full_</span><span class="o">&lt;</span><span class="n">DataA</span><span class="o">&gt;</span><span class="n">_context_</span><span class="o">&lt;</span><span class="mi">150</span><span class="o">&gt;.</span><span class="n">model</span> <span class="o">--</span><span class="n">out</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">Model_folder</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">biofilm</span><span class="o">.</span><span class="n">biofilm</span><span class="o">-</span><span class="n">cv</span> <span class="o">--</span><span class="n">infile</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">Model_folder</span><span class="o">/</span><span class="n">DataA</span><span class="o">/</span><span class="n">feature_files</span><span class="o">/</span><span class="n">training_data_</span><span class="o">&lt;</span><span class="n">DataA</span><span class="o">&gt;</span><span class="n">_context_</span><span class="o">&lt;</span><span class="mi">150</span><span class="o">&gt;.</span><span class="n">npz</span> <span class="o">--</span><span class="n">foldselect</span> <span class="mi">2</span> <span class="o">--</span><span class="n">model</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">Model_folder</span><span class="o">/</span><span class="n">DataA</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">optimized</span><span class="o">/</span><span class="n">full_</span><span class="o">&lt;</span><span class="n">DataA</span><span class="o">&gt;</span><span class="n">_context_</span><span class="o">&lt;</span><span class="mi">150</span><span class="o">&gt;.</span><span class="n">model</span> <span class="o">--</span><span class="n">out</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">Model_folder</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">biofilm</span><span class="o">.</span><span class="n">biofilm</span><span class="o">-</span><span class="n">cv</span> <span class="o">--</span><span class="n">infile</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">Model_folder</span><span class="o">/</span><span class="n">DataA</span><span class="o">/</span><span class="n">feature_files</span><span class="o">/</span><span class="n">training_data_</span><span class="o">&lt;</span><span class="n">DataA</span><span class="o">&gt;</span><span class="n">_context_</span><span class="o">&lt;</span><span class="mi">150</span><span class="o">&gt;.</span><span class="n">npz</span> <span class="o">--</span><span class="n">foldselect</span> <span class="mi">3</span> <span class="o">--</span><span class="n">model</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">Model_folder</span><span class="o">/</span><span class="n">DataA</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">optimized</span><span class="o">/</span><span class="n">full_</span><span class="o">&lt;</span><span class="n">DataA</span><span class="o">&gt;</span><span class="n">_context_</span><span class="o">&lt;</span><span class="mi">150</span><span class="o">&gt;.</span><span class="n">model</span> <span class="o">--</span><span class="n">out</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">Model_folder</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">biofilm</span><span class="o">.</span><span class="n">biofilm</span><span class="o">-</span><span class="n">cv</span> <span class="o">--</span><span class="n">infile</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">Model_folder</span><span class="o">/</span><span class="n">DataA</span><span class="o">/</span><span class="n">feature_files</span><span class="o">/</span><span class="n">training_data_</span><span class="o">&lt;</span><span class="n">DataA</span><span class="o">&gt;</span><span class="n">_context_</span><span class="o">&lt;</span><span class="mi">150</span><span class="o">&gt;.</span><span class="n">npz</span> <span class="o">--</span><span class="n">foldselect</span> <span class="mi">4</span> <span class="o">--</span><span class="n">model</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">Model_folder</span><span class="o">/</span><span class="n">DataA</span><span class="o">/</span><span class="n">model</span><span class="o">/</span><span class="n">optimized</span><span class="o">/</span><span class="n">full_</span><span class="o">&lt;</span><span class="n">DataA</span><span class="o">&gt;</span><span class="n">_context_</span><span class="o">&lt;</span><span class="mi">150</span><span class="o">&gt;.</span><span class="n">model</span> <span class="o">--</span><span class="n">out</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">Model_folder</span>
+</pre></div>
+</div>
+<p>Than use the result file to compute the F1 score using <a class="reference internal" href="#./scripts/plots/compute_f1.py"><span class="xref myst">compute_f1</span></a>.</p>
+</section>
+</section>
+<section id="build-a-new-cherri-model-in-training-mode">
+<h2>Build a new CheRRI model in training mode<a class="headerlink" href="#build-a-new-cherri-model-in-training-mode" title="Permalink to this heading"></a></h2>
+<p>Within CheRRI’s <strong>train</strong> mode you can train your own model.
+The input data are the RRIs found by Direct Duplex Detection (DDD) methods or other interactome HTS protocols. In theory it can be any RRI which is enough to build a solid model training dataset. If the interactions are from different organisms CheRRI needs to be called in a mixed_model ‘on’ training mode (will be explained later).</p>
+<section id="retrieve-rna-rna-interactome-files-using-chira">
+<h3>Retrieve RNA-RNA interactome files using ChiRA<a class="headerlink" href="#retrieve-rna-rna-interactome-files-using-chira" title="Permalink to this heading"></a></h3>
+<p>To extract RRI interactions from DDD methods, a tool named <a class="reference external" href="https://github.com/pavanvidem/chira">ChiRA</a> is used to generate the ‘ChiRA interaction summary’ table. CheRRI expects as input the ‘ChiRA interaction summary’ file.</p>
+<p>If you want to prepare a ‘ChiRA interaction summary’ table file, please follow this <a class="reference external" href="https://training.galaxyproject.org/training-material//topics/transcriptomics/tutorials/rna-interactome/tutorial.html">tutorial</a>. You should prepare one ChiRA interaction summary file per replicate.</p>
+<p>Starting from the RRI site information, CheRRI will build a model based on features generated from the DDD method interactions site data.</p>
+<p>ChiRA RRI output files are needed as input for CheRRI <strong>train</strong> mode. <code class="docutils literal notranslate"><span class="pre">--RRI_path</span></code> (<code class="docutils literal notranslate"><span class="pre">-i1</span></code>) demands the path to the the ChiRA interaction summary files, and <code class="docutils literal notranslate"><span class="pre">--list_of_replicates</span></code> (<code class="docutils literal notranslate"><span class="pre">-r</span></code>) demands the ChiRA interaction summary file names of the replicates used by CheRRI inside the <code class="docutils literal notranslate"><span class="pre">-i1</span></code> folder.</p>
+</section>
+<section id="build-rri-interactome-file-as-input-for-cherri">
+<h3>Build RRI interactome file as input for CheRRI<a class="headerlink" href="#build-rri-interactome-file-as-input-for-cherri" title="Permalink to this heading"></a></h3>
+<p>You can add your own interaction data in a tabular of csv format. Please follow the specific guides given below to build the table.
+You would need to provide the position information on an interaction using the following header line:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;chrom_1st&#39;</span><span class="p">,</span><span class="s1">&#39;start_1st&#39;</span><span class="p">,</span><span class="s1">&#39;end_1st&#39;</span><span class="p">,</span><span class="s1">&#39;strand_1st&#39;</span><span class="p">,</span><span class="s1">&#39;chrom_2end&#39;</span><span class="p">,</span><span class="s1">&#39;start_2end&#39;</span><span class="p">,</span><span class="s1">&#39;end_2end&#39;</span><span class="p">,</span><span class="s1">&#39;strand_2end&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>If you want to add the result of an interaction you should set all interaction position by using the following header names:
+predicted interaction positions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;chrom_seq_1st_site&#39;</span><span class="p">,</span> <span class="s1">&#39;start_seq_1st_site&#39;</span><span class="p">,</span><span class="s1">&#39;stop_seq_1st_site&#39;</span><span class="p">,</span><span class="s1">&#39;strand_seq_1st_site&#39;</span><span class="p">,</span><span class="s1">&#39;chrom_seq_2end_site&#39;</span><span class="p">,</span> <span class="s1">&#39;start_seq_2end_site&#39;</span><span class="p">,</span> <span class="s1">&#39;stop_seq_2end_site&#39;</span><span class="p">,</span><span class="s1">&#39;strand_seq_2end_site&#39;</span>
+</pre></div>
+</div>
+<p>This information of the interaction need to be complete or not provided at all. If they are not provided the RRI position information from above are used as score for finding overlaps between replicates.</p>
+<p>If you have a score for the interactions you can also provide it in the following columns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;score_seq_1st_site&#39;</span><span class="p">,</span> <span class="s1">&#39;score_seq_2end_site&#39;</span>
+</pre></div>
+</div>
+<p>You can check the <a class="reference internal" href="#./test_data/training/user_defined.csv"><span class="xref myst">example file</span></a> to get a impression how it could look.</p>
+</section>
+<section id="example-call-for-cherri-s-training-mode">
+<h3>Example call for CheRRI’s training mode<a class="headerlink" href="#example-call-for-cherri-s-training-mode" title="Permalink to this heading"></a></h3>
+<p>This is an example call to evoke CheRRI’s model training mode inside the CheRRI folder:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cherri</span> <span class="n">train</span> <span class="o">-</span><span class="n">i1</span> <span class="n">test_data</span><span class="o">/</span><span class="n">training</span><span class="o">/</span><span class="n">Paris</span><span class="o">/</span> <span class="o">-</span><span class="n">r</span> <span class="n">miRNA_human_1</span><span class="o">.</span><span class="n">tabular</span> <span class="n">miRNA_human_2</span><span class="o">.</span><span class="n">tabular</span> <span class="n">miRNA_human_3</span><span class="o">.</span><span class="n">tabular</span> <span class="o">-</span><span class="n">g</span> <span class="n">human</span> <span class="o">-</span><span class="n">l</span> <span class="n">human</span> <span class="o">-</span><span class="n">o</span> <span class="o">./</span> <span class="o">-</span><span class="n">n</span> <span class="n">paris_human_test</span> <span class="o">-</span><span class="n">c</span> <span class="mi">50</span> <span class="o">-</span><span class="n">st</span> <span class="n">on</span> <span class="o">-</span><span class="n">t</span> <span class="mi">600</span> <span class="o">-</span><span class="n">me</span> <span class="mi">8000</span> <span class="o">-</span><span class="n">j</span> <span class="mi">7</span>
+</pre></div>
+</div>
+</section>
+<section id="input-parameters-in-training-mode">
+<h3>Input parameters in training mode<a class="headerlink" href="#input-parameters-in-training-mode" title="Permalink to this heading"></a></h3>
+<p>Input parameters for CheRRI’s <strong>train</strong> mode (<code class="docutils literal notranslate"><span class="pre">cherri</span> <span class="pre">train</span></code>):</p>
+<section id="id1">
+<h4>Required:<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h4>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>ID</p></th>
+<th class="head"><p>name</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-i1</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--RRI_path</span></code></p></td>
+<td><p>Path to folder storing the ChiRA interaction summary files</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-o</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--out_path</span></code></p></td>
+<td><p>Path to output directory where the output folder will be stored. It will contain separate output folders for each step of the data, feature and model preparation</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-r</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--list_of_replicates</span></code></p></td>
+<td><p>List the ChiRA interaction summary file for each replicate</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-l</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--chrom_len_file</span></code></p></td>
+<td><p>Tabular file containing data in two-column format for each chromosome: ‘chrom name’ \t ‘chrom length’. You can directly specify ‘human’ or ‘mouse’</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-g</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--genome</span></code></p></td>
+<td><p>Path to genome FASTA file, or use the built-in download function if you want the human or mouse genome</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id2">
+<h4>Optional:<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h4>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>ID</p></th>
+<th class="head"><p>name</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-c</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--context</span></code></p></td>
+<td><p>How much context should be added at up- and downstream of the sequence. Default: 150</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-n</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--experiment_name</span></code></p></td>
+<td><p>Name of the data source of RRIs. Will be used for the file names. Default: ‘model_rri’</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-p</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--param_file</span></code></p></td>
+<td><p>IntaRNA parameter file. Default: file in path_to_cherri_folder/Cherri/rrieval/IntaRNA_param</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-st</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--use_structure</span></code></p></td>
+<td><p>Set ‘off’ if you want to disable graph-kernel features. Default: ‘on’ (when set to ‘on’ the feature optimization will be performed directly and the data will be stored in feature_files and no model/feature folder will be created)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-i2</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--RBP_path</span></code></p></td>
+<td><p>Path to the genomic RBP crosslink or binding site locations (in BED format)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-t</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--run_time</span></code></p></td>
+<td><p>Time used for the optimization in seconds, default: 43200 (12h)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-me</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--memoryPerThread</span></code></p></td>
+<td><p>Memory in MB each thread can use (total ram/threads). Default: 4300</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-j</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--n_jobs</span></code></p></td>
+<td><p>Number of jobs used for graph feature computation and model selection. Default: 1</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-mi</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--mixed</span></code></p></td>
+<td><p>Use mixed model to combine different datasets into a combined model. Default: ‘off’</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-fh</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--filter_hybrid</span></code></p></td>
+<td><p>Filter the data for hybrids already detected by ChiRA (set ‘on’ to filter). Default: ‘off’</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-on</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--out_name</span></code></p></td>
+<td><p>Name for the output directory. Default ‘date_Cherri_evaluating_RRIs’</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-tp</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--temp_dir</span></code></p></td>
+<td><p>Set a temporary directory for autosklearn. Either proved a path or ‘out’ to set it to the output directory. Default: ‘off’</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-so</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--no_sub_opt</span></code></p></td>
+<td><p># of interactions IntraRNA will give is possible. Default: 5</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-es</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--exp_score_th</span></code></p></td>
+<td><p>score threshold for the additional occupied regions [BED] Default: 10</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-ca</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--context_additional</span></code></p></td>
+<td><p>context to extend left and right for the BED file instances. Default: 5</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-cv</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--do_cv</span></code></p></td>
+<td><p>5-fold cross validated of the pipeline will be performed using the training data. Set ‘off’ to skip. Default: ‘on’</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-fo</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--folds</span></code></p></td>
+<td><p>number of folds for the cross validation. Default: 5</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-mt</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--methods</span></code></p></td>
+<td><p>Methods used for model selection. Set to any if you would like to all methods</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="output-in-training-mode">
+<h3>Output in training mode<a class="headerlink" href="#output-in-training-mode" title="Permalink to this heading"></a></h3>
+<p>At the end of the run the location of the trained model is given.</p>
+<p>Throughout the program, several output files are generated inside the output folder (default: <code class="docutils literal notranslate"><span class="pre">date_Cherri_model_build</span></code>), with the following structure:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>├── date_CheRRI_model_build
+|   ├── date_occ_out
+|       ├── occupied_regions.obj
+|       ├── rri_occupied_regions_overlap_0.3
+|       ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.csv
+|   ├── pos_neg_data
+|       ├── {name}_context_{context}_pos_occ__block_ends_40_RRI_dataset.csv
+|       ├── {name}_context_{context}_pos_occ_neg.csv
+|       ├── {name}_context_{context}_pos_occ_pos.csv
+|   ├── feature_files
+|       ├── feature_filtered_{name}_context_{context}_pos.csv
+|       ├── feature_filtered_{name}_context_{context}_neg.csv
+|       ├── training_data_{name}_context_{context}.npz
+|   ├── model
+|       ├── {name}_context_{context}_fold{0-4}.model
+|       ├── {name}_context_{context}_fold{0-4}.csv
+|       ├── full_{name}_context_{context}.model
+</pre></div>
+</div>
+</section>
+<section id="run-train-in-mixed-model-mode">
+<h3>Run train in mixed model mode<a class="headerlink" href="#run-train-in-mixed-model-mode" title="Permalink to this heading"></a></h3>
+<p>CheRRI is able to build on model based on different datasets. Is the mixed parameter is set to ‘on’ CheRRI will connect training data for different datasets. However before running the mixed mode one would create the training data for the individual datasets.
+Next we have a theoretical example of DataA, DataB and DataC, which should be trained together
+Therefore best create an dedicated output folder e.g. CheRRI_build_model</p>
+<p>Than build you first model:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cherri</span> <span class="n">train</span> <span class="o">-</span><span class="n">i1</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">CheRRI_build_model</span><span class="o">/</span> <span class="o">-</span><span class="n">r</span> <span class="n">dataA_1</span><span class="o">.</span><span class="n">tabular</span> <span class="n">dataA_2</span><span class="o">.</span><span class="n">tabular</span> <span class="o">-</span><span class="n">g</span> <span class="n">human</span> <span class="o">-</span><span class="n">l</span> <span class="n">human</span> <span class="o">-</span><span class="n">o</span> <span class="o">./</span> <span class="o">-</span><span class="n">n</span> <span class="n">Data_A</span> <span class="o">-</span><span class="n">c</span> <span class="mi">150</span> <span class="o">-</span><span class="n">st</span> <span class="n">on</span> <span class="o">-</span><span class="n">t</span> <span class="mi">600</span> <span class="o">-</span><span class="n">me</span> <span class="mi">8000</span> <span class="o">-</span><span class="n">j</span> <span class="mi">7</span>
+</pre></div>
+</div>
+<p>If you don’t need the model of the individual datasets you can either set the -t very low or even interrupt the call once the model is build.
+Next rename the output folder created by CheRRI to the name you gave to the Data/Model (-n Data_A)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mv</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">CheRRI_build_model</span><span class="o">/&lt;</span><span class="n">date</span><span class="o">&gt;</span><span class="n">_CheRRI_build_model</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">CheRRI_build_model</span><span class="o">/</span><span class="n">Data_A</span>
+</pre></div>
+</div>
+<p>Than run the next dataset:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cherri</span> <span class="n">train</span> <span class="o">-</span><span class="n">i1</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">CheRRO_build_model</span><span class="o">/</span> <span class="o">-</span><span class="n">r</span> <span class="n">dataB_1</span><span class="o">.</span><span class="n">tabular</span> <span class="n">dataB_2</span><span class="o">.</span><span class="n">tabular</span> <span class="o">-</span><span class="n">g</span> <span class="n">human</span> <span class="o">-</span><span class="n">l</span> <span class="n">human</span> <span class="o">-</span><span class="n">o</span> <span class="o">./</span> <span class="o">-</span><span class="n">n</span> <span class="n">Data_B</span> <span class="o">-</span><span class="n">c</span> <span class="mi">150</span> <span class="o">-</span><span class="n">st</span> <span class="n">on</span> <span class="o">-</span><span class="n">t</span> <span class="mi">600</span> <span class="o">-</span><span class="n">me</span> <span class="mi">8000</span> <span class="o">-</span><span class="n">j</span> <span class="mi">7</span>
+</pre></div>
+</div>
+<p>Next rename the output folder created by CheRRI to the name you gave to the Data/Model (-n Data_A)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mv</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">CheRRI_build_model</span><span class="o">/&lt;</span><span class="n">date</span><span class="o">&gt;</span><span class="n">_CheRRI_build_model</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">CheRRI_build_model</span><span class="o">/</span><span class="n">Data_B</span>
+</pre></div>
+</div>
+<p>Than run the last dataset:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cherri</span> <span class="n">train</span> <span class="o">-</span><span class="n">i1</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">CheRRI_build_model</span><span class="o">/</span> <span class="o">-</span><span class="n">r</span> <span class="n">dataC_1</span><span class="o">.</span><span class="n">tabular</span> <span class="n">dataC_2</span><span class="o">.</span><span class="n">tabular</span> <span class="o">-</span><span class="n">g</span> <span class="n">mouse</span> <span class="o">-</span><span class="n">l</span> <span class="n">mouse</span> <span class="o">-</span><span class="n">o</span> <span class="o">./</span> <span class="o">-</span><span class="n">n</span> <span class="n">Data_C</span> <span class="o">-</span><span class="n">c</span> <span class="mi">150</span> <span class="o">-</span><span class="n">st</span> <span class="n">on</span> <span class="o">-</span><span class="n">t</span> <span class="mi">600</span> <span class="o">-</span><span class="n">me</span> <span class="mi">8000</span> <span class="o">-</span><span class="n">j</span> <span class="mi">7</span>
+</pre></div>
+</div>
+<p>And rename the output folder created by CheRRI to the name you gave to the Data/Model (-n Data_A)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mv</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">CheRRI_build_model</span><span class="o">/&lt;</span><span class="n">date</span><span class="o">&gt;</span><span class="n">_CheRRI_build_model</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">CheRRI_build_model</span><span class="o">/</span><span class="n">Data_C</span>
+</pre></div>
+</div>
+<p>Finally you can run CheRRI <strong>train</strong> in the mixed model mode like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cherri</span> <span class="n">train</span> <span class="o">-</span><span class="n">i1</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">CheRRI_build_model</span><span class="o">/</span>  <span class="o">-</span><span class="n">r</span> <span class="n">Data_A</span> <span class="n">Data_B</span> <span class="n">Data_C</span>  <span class="o">-</span><span class="n">g</span> <span class="o">/</span><span class="ow">not</span><span class="o">/</span><span class="n">needed</span><span class="o">/</span> <span class="o">-</span><span class="n">l</span> <span class="o">/</span><span class="ow">not</span><span class="o">/</span><span class="n">needed</span><span class="o">/</span> <span class="o">-</span><span class="n">o</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">CheRRI_build_model</span><span class="o">/</span> <span class="o">-</span><span class="n">n</span> <span class="n">Full</span> 
+</pre></div>
+</div>
+<p>This time your replicates are the names of the training datasets you want to connect (Data_A Data_B Data_C).</p>
+</section>
+</section>
 </section>
 
 
