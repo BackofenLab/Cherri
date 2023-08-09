@@ -219,10 +219,13 @@ def setup_argument_parser():
                         help= "5-fold cross validated of the pipeline will be performed using the training data. Set 'off' to skip. Default: 'on'",
                         default="on")
     p_mrg.add_argument("-fo", "--folds",
-                        help= "number of folds for the cross validation Default: 5",
+                        help= "number of folds for the cross validation. Default: 5",
                         type=int,
                         default=5)
-
+    p_mrg.add_argument("-mt", "--methods",
+                        help= "Methods used for model selection. Set to any if you would like to all methods",
+                        type=str,
+                        default='extra_trees passive_aggressive random_forest sgd')
     return p
 
 
@@ -566,13 +569,14 @@ def main_train(args):
     con_bed = args.context_additional
     do_cv = args.do_cv
     folds = args.folds
+    methods = args.methods
 
     # folds = 5
 
 
     #methods = (f'extra_trees passive_aggressive random_forest sgd '
     #           f'gradient_boosting mlp')
-    methods = f'all'
+    # methods = f'all'
 
 
     # if no user provided IntaRNA paramter fiel use the default of cherri
