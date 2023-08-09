@@ -22,7 +22,7 @@ To train a novel model, an RNA-RNA interactome dataset specifying all RRI sites 
 CheRRI was developed in Linux and tested on Ubuntu (18.04 LTS). Conda is required to install CheRRI.
 
 
-### Install Conda
+## Install Conda
 
 If you do not have Conda yet, you can e.g. install miniconda, a free + lightweight Conda installer. Get miniconda [here](https://docs.conda.io/en/latest/miniconda.html), choose the newest Python 3 Miniconda3 Linux 64-bit installer and follow the installation instructions. In the end, Conda should be accessed on the command line via (note that your version can be different):
 
@@ -33,7 +33,7 @@ conda 4.10.3
 
 
 
-### Create environment manually
+## Create environment manually
 
 To manually install CheRRI, first create a Conda environment:
 
@@ -82,7 +82,7 @@ conda deactivate
 conda activate cherri
 ```
 
-### Manual installation
+## Manual installation
 
 To install the tool itself, simply clone the repository and execute the installation script inside the cloned folder:
 
@@ -110,13 +110,13 @@ Now you can run CheRRI from any given folder:
 cherri -h
 ```
 
-### Install using pip
+## Install using pip
 If you don't want to download the CheRRI's git folder you can also use the pipy package. 
 ```
 pip install cherri
 ```
 
-### Install CheRRI Conda package
+## Install CheRRI Conda package
 
 ```
 conda install -c bioconda cherri

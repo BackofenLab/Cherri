@@ -2,7 +2,7 @@
 
 You can use CheRRI in two modes. The **eval** mode predicts whether an RRI site of interest is biologically relevant. Pre-computed human and mouse models exist and can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.6533932). If you would like to build a model based on novel RRI interactome data, you can use the **train** mode.
 
-### Evaluation of RRIs
+## Evaluation of RRIs
 
 Based on a tabular file containing chromosomal position data of the RRIs, CheRRI classifies if the interaction region is likely to be a biologically relevant one.
 
@@ -11,7 +11,7 @@ CheRRI has pre-trained models for human and mouse, which can be downloaded from 
 If there exists an RNA-RNA-interactome dataset for your preferred organism, we recommend to train your own organism-specific model using CheRRI's **train** mode. After training, the model can be than used in **eval** mode for the classification of your predicted RRI positions.
 
 
-#### RRI input format in evaluation mode
+### RRI input format in evaluation mode
 
 The RRI instances to be evaluated need to be given in tabular format (parameter `--RRIs_table`). The table needs the following header line:
 
@@ -33,7 +33,7 @@ We recommend that the user also specifies the occupied regions used to train the
 
 
 
-#### Example call for CheRRI's evaluation mode
+### Example call for CheRRI's evaluation mode
 
 For the test call please download the [Cherri_models_data](https://doi.org/10.5281/zenodo.6533932) zip folder. The PARIS_human model is needed to execute the call. Be sure to provide the correct location for the model and its feature set (`-m`, `-mp`). For example, assuming the data (zip folder extracted to folder `Cherri_models_data`) is stored inside the CheRRI folder:
 
@@ -43,11 +43,11 @@ cherri eval -i1 test_data/evaluate/test_evaluate_rris.csv -g human -l human -o .
 
 
 
-#### Input parameters in evaluation mode
+### Input parameters in evaluation mode
 
 Input parameters for CheRRI's **eval** mode (`cherri eval`):
 
-##### Required:
+#### Required:
 | ID | name | description |
 |---|---|-----|
 | `-i1` |`--RRIs_table` | Table containing all RRIs that should be evaluated in the correct format|
@@ -56,7 +56,7 @@ Input parameters for CheRRI's **eval** mode (`cherri eval`):
 | `-l` | `--chrom_len_file` | Tabular file containing data in two-column format for each chromosome: 'chrom name' \t 'chrom length'. You can directly specify 'human' or 'mouse' |
 | `-m` | `--model_file` | Set path to the model which should be used for evaluation |
 | `-mp` | `--model_params` | Set path to the feature file of the given model |
-##### Optional:
+#### Optional:
 | ID | name | description |
 |---|---|-----|
 | `-i2` | `--occupied_regions` | Path to occupied regions python object file containing a dictionary |
@@ -69,7 +69,7 @@ Input parameters for CheRRI's **eval** mode (`cherri eval`):
 | `-j` | `--n_jobs` | Number of jobs used for graph feature computation. Default: 1|
 
 
-#### Output in evaluation mode
+### Output in evaluation mode
 
 At the end of the run the location of the results table is given.
 The final results table will have your the query and target ID's or your input sequences (`target_ID`,`query_ID`), the score of your instance (`instance_score`), the predicted class of each RRI (0 or 1) (`predicted_label`), if you are running the validation mode with `-ef on` the positive or negative label is given (`true_lable`), and finally all features of the instance are provided.
@@ -93,7 +93,7 @@ Throughout the program, several output files are generated and stored in the fol
     |       ├── evaluation_results_{name}.csv
 
 
-#### Validate your model using the **eval** mode
+### Validate your model using the **eval** mode
 You can also use CheRRIs **eval** mode to create a validation result table and than use the [compute_f1](./scripts/plots/compute_f1.py) to get the F1 score.
 
 In the following is a example call to validate a theoretical model build from DataA with data form a different source e.g. DataB
@@ -125,12 +125,12 @@ python -m biofilm.biofilm-cv --infile /path/to/Model_folder/DataA/feature_files/
 
 Than use the result file to compute the F1 score using [compute_f1](./scripts/plots/compute_f1.py).
 
-### Build a new CheRRI model in training mode
+## Build a new CheRRI model in training mode
 
 Within CheRRI's **train** mode you can train your own model. 
 The input data are the RRIs found by Direct Duplex Detection (DDD) methods or other interactome HTS protocols. In theory it can be any RRI which is enough to build a solid model training dataset. If the interactions are from different organisms CheRRI needs to be called in a mixed_model 'on' training mode (will be explained later).
 
-#### Retrieve RNA-RNA interactome files using ChiRA
+### Retrieve RNA-RNA interactome files using ChiRA
 
 To extract RRI interactions from DDD methods, a tool named [ChiRA](https://github.com/pavanvidem/chira) is used to generate the 'ChiRA interaction summary' table. CheRRI expects as input the 'ChiRA interaction summary' file.
 
@@ -140,7 +140,7 @@ Starting from the RRI site information, CheRRI will build a model based on featu
 
 ChiRA RRI output files are needed as input for CheRRI **train** mode. `--RRI_path` (`-i1`) demands the path to the the ChiRA interaction summary files, and `--list_of_replicates` (`-r`) demands the ChiRA interaction summary file names of the replicates used by CheRRI inside the `-i1` folder.
 
-#### Build RRI interactome file as input for CheRRI
+### Build RRI interactome file as input for CheRRI
 You can add your own interaction data in a tabular of csv format. Please follow the specific guides given below to build the table. 
 You would need to provide the position information on an interaction using the following header line:
 ```
@@ -161,7 +161,7 @@ If you have a score for the interactions you can also provide it in the followin
 
 You can check the [example file](./test_data/training/user_defined.csv) to get a impression how it could look.
 
-#### Example call for CheRRI's training mode
+### Example call for CheRRI's training mode
 
 This is an example call to evoke CheRRI's model training mode inside the CheRRI folder:
 
@@ -170,12 +170,12 @@ cherri train -i1 test_data/training/Paris/ -r miRNA_human_1.tabular miRNA_human_
 ```
 
 
-#### Input parameters in training mode 
+### Input parameters in training mode 
 
 
 Input parameters for CheRRI's **train** mode (`cherri train`):
 
-##### Required:
+#### Required:
 | ID | name | description |
 |---|---|-----|
 | `-i1` | `--RRI_path`| Path to folder storing the ChiRA interaction summary files|
@@ -183,7 +183,7 @@ Input parameters for CheRRI's **train** mode (`cherri train`):
 | `-r` | `--list_of_replicates`| List the ChiRA interaction summary file for each replicate |
 | `-l` | `--chrom_len_file`| Tabular file containing data in two-column format for each chromosome: 'chrom name' \t 'chrom length'. You can directly specify 'human' or 'mouse' |
 | `-g` | `--genome`| Path to genome FASTA file, or use the built-in download function if you want the human or mouse genome |
-##### Optional:
+#### Optional:
 | ID | name | description |
 |---|---|-----|
 | `-c` | `--context`| How much context should be added at up- and downstream of the sequence. Default: 150 |
@@ -207,7 +207,7 @@ Input parameters for CheRRI's **train** mode (`cherri train`):
 
 
 
-#### Output in training mode
+### Output in training mode
 
 At the end of the run the location of the trained model is given.
 
@@ -232,7 +232,7 @@ Throughout the program, several output files are generated inside the output fol
     |       ├── full_{name}_context_{context}.model
 
 
-#### Run train in mixed model mode
+### Run train in mixed model mode
 
 CheRRI is able to build on model based on different datasets. Is the mixed parameter is set to 'on' CheRRI will connect training data for different datasets. However before running the mixed mode one would create the training data for the individual datasets.
 Next we have a theoretical example of DataA, DataB and DataC, which should be trained together
