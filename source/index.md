@@ -6,7 +6,7 @@ docs/test1.md
 ```
 
 ```{toctree}
-:caption: Setup
+:caption: Usage
 docs/test2.md
 ```
 
