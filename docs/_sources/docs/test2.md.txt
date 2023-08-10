@@ -94,7 +94,7 @@ Throughout the program, several output files are generated and stored in the fol
 
 
 ### Validate your model using the **eval** mode
-You can also use CheRRIs **eval** mode to create a validation result table and than use the [compute_f1](./scripts/plots/compute_f1.py) to get the F1 score.
+You can also use CheRRIs **eval** mode to create a validation result table and than use the [compute_f1](https://github.com/BackofenLab/Cherri/blob/master/scripts/plots/compute_f1.py) to get the F1 score.
 
 In the following is a example call to validate a theoretical model build from DataA with data form a different source e.g. DataB
 ```
@@ -123,7 +123,7 @@ python -m biofilm.biofilm-cv --infile /path/to/Model_folder/DataA/feature_files/
 
 
 
-Than use the result file to compute the F1 score using [compute_f1](./scripts/plots/compute_f1.py).
+Than use the result file to compute the F1 score using [compute_f1](https://github.com/BackofenLab/Cherri/blob/master/scripts/plots/compute_f1.py).
 
 ## Build a new CheRRI model in training mode
 
@@ -159,7 +159,7 @@ If you have a score for the interactions you can also provide it in the followin
 'score_seq_1st_site', 'score_seq_2end_site'
 ```
 
-You can check the [example file](./test_data/training/user_defined.csv) to get a impression how it could look.
+You can check the [example file](https://github.com/BackofenLab/Cherri/blob/master/test_data/training/user_defined.csv) to get a impression how it could look.
 
 ### Example call for CheRRI's training mode
 
