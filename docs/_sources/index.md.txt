@@ -2,15 +2,15 @@
 
 ```{toctree}
 :caption: Welcome
-docs/test1.md
+docs/welcome.md
 ```
 
 ```{toctree}
-:caption: Setup
-docs/test2.md
+:caption: Usage
+docs/usage.md
 ```
 
 ```{toctree}
 :caption: Documentation
-docs/test3.md
+docs/documentation.md
 ```
