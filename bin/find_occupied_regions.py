@@ -154,7 +154,8 @@ def main():
                         default="0.5")
     parser.add_argument("-es", "--exp_score_th",
                         help= "score threshold for the additional occupied regions [BED]",
-                        default="10")
+                        type=int,
+                        default=10)
     parser.add_argument("-e", "--external_object",
                         help= "external rri  overlapping object (Interlap dict)",
                         default="non")
