@@ -12,11 +12,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=a4664895"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -92,12 +92,12 @@
            <div itemprop="articleBody">
              
   <section id="welcome">
-<h1>Welcome<a class="headerlink" href="#welcome" title="Permalink to this heading"></a></h1>
+<h1>Welcome<a class="headerlink" href="#welcome" title="Link to this heading"></a></h1>
 <p>CheRRI detects functional RNA-RNA interaction (RRI) sites, by evaluating if an interaction site most likely occurs in nature.
 It helps to filter interaction sites generated either experimentally or by an RRI prediction algorithm by removing false positive interactions.</p>
 <p>It is an open source project <a class="reference external" href="https://github.com/BackofenLab/Cherri">hosted on GitHub</a>.</p>
 <section id="cherri-s-workflow">
-<h2>CheRRI’s workflow<a class="headerlink" href="#cherri-s-workflow" title="Permalink to this heading"></a></h2>
+<h2>CheRRI’s workflow<a class="headerlink" href="#cherri-s-workflow" title="Link to this heading"></a></h2>
 <p>CheRRI can be run in two modes, the model generation or <strong>train</strong> mode, or the RRI evaluation or <strong>eval</strong> mode.
 For the evaluation of a given set of RRI sites, a model must be specified in CheRRI’s <strong>eval</strong> mode. Here pre-trained models can be applied or the user trains a model using CheRRI’s <strong>train</strong> mode.
 To train a novel model, an RNA-RNA interactome dataset specifying all RRI sites should be provided. CheRRI makes use of replicate data by checking if an RRI site can be found in all replicates within an overlap threshold. This is how CheRRI builds the set of trusted RRIs. In <strong>eval</strong> mode, the interaction positions are reformatted in the same way as the trusted RRIs. In both modes, CheRRI uses the same core method to generate a feature set which will be used to select a model in <strong>train</strong> mode, and in <strong>eval</strong> mode for the evaluation of the biological relevance of the submitted RRI sites.</p>
@@ -105,10 +105,10 @@ To train a novel model, an RNA-RNA interactome dataset specifying all RRI sites 
 </section>
 </section>
 <section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h1>
+<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
 <p>CheRRI was developed in Linux and tested on Ubuntu (18.04 LTS). Conda is required to install CheRRI.</p>
 <section id="install-conda">
-<h2>Install Conda<a class="headerlink" href="#install-conda" title="Permalink to this heading"></a></h2>
+<h2>Install Conda<a class="headerlink" href="#install-conda" title="Link to this heading"></a></h2>
 <p>If you do not have Conda yet, you can e.g. install miniconda, a free + lightweight Conda installer. Get miniconda <a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html">here</a>, choose the newest Python 3 Miniconda3 Linux 64-bit installer and follow the installation instructions. In the end, Conda should be accessed on the command line via (note that your version can be different):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ conda --version
 conda 4.10.3
@@ -116,7 +116,7 @@ conda 4.10.3
 </div>
 </section>
 <section id="create-environment-manually">
-<h2>Create environment manually<a class="headerlink" href="#create-environment-manually" title="Permalink to this heading"></a></h2>
+<h2>Create environment manually<a class="headerlink" href="#create-environment-manually" title="Link to this heading"></a></h2>
 <p>To manually install CheRRI, first create a Conda environment:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">cherri</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.8</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">bioconda</span>
 <span class="n">conda</span> <span class="n">activate</span> <span class="n">cherri</span>
@@ -156,7 +156,7 @@ conda 4.10.3
 </div>
 </section>
 <section id="manual-installation">
-<h2>Manual installation<a class="headerlink" href="#manual-installation" title="Permalink to this heading"></a></h2>
+<h2>Manual installation<a class="headerlink" href="#manual-installation" title="Link to this heading"></a></h2>
 <p>To install the tool itself, simply clone the repository and execute the installation script inside the cloned folder:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">BackofenLab</span><span class="o">/</span><span class="n">Cherri</span><span class="o">.</span><span class="n">git</span> 
 </pre></div>
@@ -176,14 +176,14 @@ conda 4.10.3
 </div>
 </section>
 <section id="install-using-pip">
-<h2>Install using pip<a class="headerlink" href="#install-using-pip" title="Permalink to this heading"></a></h2>
+<h2>Install using pip<a class="headerlink" href="#install-using-pip" title="Link to this heading"></a></h2>
 <p>If you don’t want to download the CheRRI’s git folder you can also use the pipy package.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">cherri</span>
 </pre></div>
 </div>
 </section>
 <section id="install-cherri-conda-package">
-<h2>Install CheRRI Conda package<a class="headerlink" href="#install-cherri-conda-package" title="Permalink to this heading"></a></h2>
+<h2>Install CheRRI Conda package<a class="headerlink" href="#install-cherri-conda-package" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">bioconda</span> <span class="n">cherri</span>
 
 </pre></div>

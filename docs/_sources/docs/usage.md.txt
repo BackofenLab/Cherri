@@ -98,7 +98,7 @@ You can also use CheRRIs **eval** mode to create a validation result table and t
 
 In the following is a example call to validate a theoretical model build from DataA with data form a different source e.g. DataB
 ```
-cherri eval -i1 /path/to/Model_folder/Datab/feature_files/feature_filtered_<DataB>_context_<150>_pos_occ -g human -l human -o /path/to/Model_folder -n <eval_modelA_using_DataB> -c 150 -st on -m  /path/to/Model_folder/DataA/model/optimized/full_<DataA>_context_<150>.model -mp  /path/to/Model_folder/DataA/feature_files/training_data_<DataA>_context_<150>.npz -j 10 -on evaluation -ef on
+cherri eval -i1 /path/to/Model_folder/<DataB>/feature_files/feature_filtered_<DataB>_context_<150>_pos_occ -g human -l human -o /path/to/Model_folder -n <eval_modelA_using_DataB> -c 150 -st on -m  /path/to/Model_folder/DataA/model/full_<DataA>_context_<150>.model -mp  /path/to/Model_folder/DataA/feature_files/training_data_<DataA>_context_<150>.npz -j 10 -on evaluation -ef on
 ```
 
 In the following is a example call to cross validate a theoretical model build from DataA. The biofilm-cv will split the data into 5 parts used 4 to retrain a model and the left out to evaluate. 

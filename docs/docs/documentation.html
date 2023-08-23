@@ -12,11 +12,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=a4664895"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -108,15 +108,15 @@
            <div itemprop="articleBody">
              
   <section id="documentation">
-<h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this heading"></a></h1>
+<h1>Documentation<a class="headerlink" href="#documentation" title="Link to this heading"></a></h1>
 <section id="cherri-s-core-method-scripts">
-<h2>CheRRI’s core method scripts<a class="headerlink" href="#cherri-s-core-method-scripts" title="Permalink to this heading"></a></h2>
+<h2>CheRRI’s core method scripts<a class="headerlink" href="#cherri-s-core-method-scripts" title="Link to this heading"></a></h2>
 <p>CheRRI is built as a modular tool calling individual scripts accomplishing the various tasks of CheRRI’s core methods. If you would like to perform only one step of the CheRRI pipeline, you can do this by calling the individual scripts. A short description of this scripts is given in the following.</p>
 <section id="rri-detection-with-find-trusted-rri-py">
-<h3>RRI detection with find_trusted_RRI.py<a class="headerlink" href="#rri-detection-with-find-trusted-rri-py" title="Permalink to this heading"></a></h3>
+<h3>RRI detection with find_trusted_RRI.py<a class="headerlink" href="#rri-detection-with-find-trusted-rri-py" title="Link to this heading"></a></h3>
 <p>Here we search for trusted RRIs, so RRIs which can be found in all replicates. In a first filter step only uniquely mapped RRIs are taken. Than RRI sequence partners in all replicates are found, using a overlap threshold. Output are the ChiRA input tables, now containing only the trusted RRIs. Out of all RRI pairs of the replicates only the one with the highest overlap to all others is added to the trusted_RRI data set.</p>
 <section id="input-parameters-for-find-trusted-rri-py">
-<h4>Input parameters for find_trusted_RRI.py<a class="headerlink" href="#input-parameters-for-find-trusted-rri-py" title="Permalink to this heading"></a></h4>
+<h4>Input parameters for find_trusted_RRI.py<a class="headerlink" href="#input-parameters-for-find-trusted-rri-py" title="Link to this heading"></a></h4>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>ID</p></th>
@@ -157,15 +157,15 @@
 </table>
 </section>
 <section id="output-of-find-trusted-rri-py">
-<h4>Output of find_trusted_RRI.py<a class="headerlink" href="#output-of-find-trusted-rri-py" title="Permalink to this heading"></a></h4>
+<h4>Output of find_trusted_RRI.py<a class="headerlink" href="#output-of-find-trusted-rri-py" title="Link to this heading"></a></h4>
 <p>The filtered set of trusted RRI sites in tabular format.</p>
 </section>
 </section>
 <section id="compute-occupied-regions-with-find-occupied-regions-py">
-<h3>Compute occupied regions with find_occupied_regions.py<a class="headerlink" href="#compute-occupied-regions-with-find-occupied-regions-py" title="Permalink to this heading"></a></h3>
+<h3>Compute occupied regions with find_occupied_regions.py<a class="headerlink" href="#compute-occupied-regions-with-find-occupied-regions-py" title="Link to this heading"></a></h3>
 <p>Given the RRI information tables from ChiRA and RNA-protein binding positions, an InterLab object is build. The occupied information can be used to mask parts of the genome and therefore enable to select negative interaction regions.</p>
 <section id="input-parameters-for-find-occupied-regions-py">
-<h4>Input parameters for find_occupied_regions.py<a class="headerlink" href="#input-parameters-for-find-occupied-regions-py" title="Permalink to this heading"></a></h4>
+<h4>Input parameters for find_occupied_regions.py<a class="headerlink" href="#input-parameters-for-find-occupied-regions-py" title="Link to this heading"></a></h4>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>ID</p></th>
@@ -214,15 +214,15 @@
 </table>
 </section>
 <section id="output-of-find-occupied-regions-py">
-<h4>Output of find_occupied_regions.py<a class="headerlink" href="#output-of-find-occupied-regions-py" title="Permalink to this heading"></a></h4>
+<h4>Output of find_occupied_regions.py<a class="headerlink" href="#output-of-find-occupied-regions-py" title="Link to this heading"></a></h4>
 <p>A python pickle file object storing occupied regions in an InterLap dictionary.</p>
 </section>
 </section>
 <section id="interaction-predictions-with-generate-pos-neg-with-context-py">
-<h3>Interaction predictions with generate_pos_neg_with_context.py<a class="headerlink" href="#interaction-predictions-with-generate-pos-neg-with-context-py" title="Permalink to this heading"></a></h3>
+<h3>Interaction predictions with generate_pos_neg_with_context.py<a class="headerlink" href="#interaction-predictions-with-generate-pos-neg-with-context-py" title="Link to this heading"></a></h3>
 <p>Given a set of trusted RRI sites and occupied regions, a given context is appended. Then positive interactions are computed by calling IntaRNA, specifying the trusted RRI sites as seed regions. The negative interactions are computed by calling IntaRNA on regions outside the RRI sites / occupied regions.</p>
 <section id="input-parameters-for-generate-pos-neg-with-context-py">
-<h4>Input parameters for generate_pos_neg_with_context.py<a class="headerlink" href="#input-parameters-for-generate-pos-neg-with-context-py" title="Permalink to this heading"></a></h4>
+<h4>Input parameters for generate_pos_neg_with_context.py<a class="headerlink" href="#input-parameters-for-generate-pos-neg-with-context-py" title="Link to this heading"></a></h4>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>ID</p></th>
@@ -287,7 +287,7 @@
 </table>
 </section>
 <section id="intarna-parameters-used-within-cherri">
-<h4>IntaRNA parameters used within CheRRI<a class="headerlink" href="#intarna-parameters-used-within-cherri" title="Permalink to this heading"></a></h4>
+<h4>IntaRNA parameters used within CheRRI<a class="headerlink" href="#intarna-parameters-used-within-cherri" title="Link to this heading"></a></h4>
 <p>To generate the current features IntaRNA parameters by default are set to:</p>
 <table class="docutils align-default">
 <thead>
@@ -354,16 +354,16 @@
 <p>IntaRNA parameters can be changed by specifying a custom IntaRNA parameter file.</p>
 </section>
 <section id="output-of-generate-pos-neg-with-context-py">
-<h4>Output of generate_pos_neg_with_context.py<a class="headerlink" href="#output-of-generate-pos-neg-with-context-py" title="Permalink to this heading"></a></h4>
+<h4>Output of generate_pos_neg_with_context.py<a class="headerlink" href="#output-of-generate-pos-neg-with-context-py" title="Link to this heading"></a></h4>
 <p>Positive and negative datasets stored in tabular format.</p>
 </section>
 </section>
 <section id="feature-extraction-with-get-features-py">
-<h3>Feature extraction with get_features.py<a class="headerlink" href="#feature-extraction-with-get-features-py" title="Permalink to this heading"></a></h3>
+<h3>Feature extraction with get_features.py<a class="headerlink" href="#feature-extraction-with-get-features-py" title="Link to this heading"></a></h3>
 <p>Here additional sequence features are computed and the output is filtered for the final or a given feature set. The features are stored in tabular format.
 Note that the graph-kernel features are computed directly in CheRRI’s main functions and do not have a separate file.</p>
 <section id="input-parameters-for-get-features-py">
-<h4>Input parameters for get_features.py<a class="headerlink" href="#input-parameters-for-get-features-py" title="Permalink to this heading"></a></h4>
+<h4>Input parameters for get_features.py<a class="headerlink" href="#input-parameters-for-get-features-py" title="Link to this heading"></a></h4>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>ID</p></th>
@@ -388,12 +388,12 @@ Note that the graph-kernel features are computed directly in CheRRI’s main fun
 </table>
 </section>
 <section id="output-of-get-features-py">
-<h4>Output of get_features.py<a class="headerlink" href="#output-of-get-features-py" title="Permalink to this heading"></a></h4>
+<h4>Output of get_features.py<a class="headerlink" href="#output-of-get-features-py" title="Link to this heading"></a></h4>
 <p>Tabular file having all features given via <code class="docutils literal notranslate"><span class="pre">--feature_set_list</span></code>.</p>
 </section>
 </section>
 <section id="feature-selection-and-optimization">
-<h3>Feature selection and optimization<a class="headerlink" href="#feature-selection-and-optimization" title="Permalink to this heading"></a></h3>
+<h3>Feature selection and optimization<a class="headerlink" href="#feature-selection-and-optimization" title="Link to this heading"></a></h3>
 <p>If you would only like to run the feature selection or optimization, please check out <a class="reference external" href="https://github.com/smautner/biofilm">biofilm</a>.</p>
 </section>
 </section>
