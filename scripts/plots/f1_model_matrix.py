@@ -7,7 +7,7 @@ from sklearn.metrics import plot_roc_curve
 from sklearn import metrics
 from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import f1_score
-
+import rrieval.lib as rl
 
 def compute_prc(labels, scores):
     precision, recall, thresholds = metrics.precision_recall_curve(
@@ -62,7 +62,19 @@ def generate_df(in_dict, feature_file_names):
     df_out.round(2)
     return df_out, df_sorted
 
+def construct_cross_validation_call(name1,name2,file,context=150,st='on'):
 
+    test_data = f'{file}/{name1}/feature_files/feature_filtered_{name1}_context_{context}_pos_occ'
+    out = f'{file}'
+    model_file = f'{file}/{name2}/model/full_{name2}_context_{context}.model'
+    feat_file = f'{file}/{name2}/feature_files/training_data_{name2}_context_{context}.npz'
+
+
+    call = (f'cherri eval -i1 {test_data} -g not_needed -l not_needed '
+            f'-o {file} -n eval_{name2}_using_{name1} -c {context} -st {st} '
+            f'-m {model_file} -mp {feat_file} -j 7 -on evaluation -ef on')
+
+    return call
 
 
 def main():
@@ -73,10 +85,26 @@ def main():
     # model type:
     input_path = args.input_path
 
-
-    feature_file_names = ['PARIS_human','PARIS_mouse', 'PARIS_human_RBP','Full']
+    feature_file_names = ['human','mouse', 'human_rbp']
 
     #feature_file_names = ['PARIS_human','PARIS_human_RBP','PARIS_mouse','SPLASH_human','Full_human_RRIs']
+
+
+
+
+#### compute the cross model evaluation!
+    for name_model in feature_file_names:
+        print(f'evaluation calls for {name_model}')
+        for name_test in feature_file_names:
+            if name_model != name_test:
+                call = construct_cross_validation_call(name_test,name_model,
+                                                       input_path)
+                print(f'call for {name_model} model on {name_test} data:')
+                print(call)
+                rl.call_script(call)
+
+            if name_model == name_test:
+                print('implement cross validation calls later')
 
 
 
@@ -84,6 +112,7 @@ def main():
     # model -> [f1 socres of all datasets]
     f1_dict = {}
     AUC_dict = {}
+    eval_path = f'{input_path}/evaluation/evaluation/'
 
     for name in feature_file_names:
         print(f'investation {name}')
@@ -94,38 +123,42 @@ def main():
                 print(f'\n******combined with {name2}')
                 key = name + '$' + name2
                 # file example: evaluation_results_PARIS_mouse_PARIS_human_RBP.cvs
-                file_name = f'{input_path}evaluation_results_{name}_{name2}.csv'
+
+                file_name = f'{eval_path}evaluation_results_eval_{name}_using_{name2}.csv'
+                print(f'eval file\n{file_name}')
                 f1_cross_model, auc_prc_model = calculate_measures(file_name)
                 print(f'**done**\n')
+
+                print(f'F1 for {name}_using_{name2}: {f1_cross_model}')
 
                 #print(key, val[0])
                 temp_dict_f1[name2]= f1_cross_model
                 temp_dict_auc[name2]= auc_prc_model
-        key_diag = name + '$' + name
-        print(f'\n******combined with {name}')
-        f1, auc = calculate_diag(name, input_path)
-        print(f'**done**\n')
-        temp_dict_f1[name]= f1
-        temp_dict_auc[name]= auc
-        print(key_diag, f1)
-        f1_dict[name]=[temp_dict_f1[i] for i in sorted(temp_dict_f1.keys())]
-        AUC_dict[name]=[temp_dict_auc[i] for i in sorted(temp_dict_auc.keys())]
+        #key_diag = name + '$' + name
+        #print(f'\n******combined with {name}')
+        #f1, auc = calculate_diag(name, input_path)
+        #print(f'**done**\n')
+        #temp_dict_f1[name]= f1
+        #temp_dict_auc[name]= auc
+        #print(key_diag, f1)
+        #f1_dict[name]=[temp_dict_f1[i] for i in sorted(temp_dict_f1.keys())]
+        #AUC_dict[name]=[temp_dict_auc[i] for i in sorted(temp_dict_auc.keys())]
 
 
 
-    df_f1, df_sorted_f1 = generate_df(f1_dict, feature_file_names)
-    df_auc, df_sorted_auc = generate_df(AUC_dict, feature_file_names)
-    #df_f1.to_latex(f'{input_path}/f1_talbel', float_format="{:0.2f}".format)
-    print(f'{input_path}/f1_talbel')
-    df_f1.style.to_latex(f'{input_path}/f1_table')
-    df_f1.to_csv(f'{input_path}/f1_table',index=False)
+    #df_f1, df_sorted_f1 = generate_df(f1_dict, feature_file_names)
+    #df_auc, df_sorted_auc = generate_df(AUC_dict, feature_file_names)
+    ##df_f1.to_latex(f'{input_path}/f1_talbel', float_format="{:0.2f}".format)
+    #print(f'{input_path}/f1_talbel')
+    #df_f1.style.to_latex(f'{input_path}/f1_table')
+    #df_f1.to_csv(f'{input_path}/f1_table',index=False)
 
-    df_auc.style.to_latex(f'{input_path}/auc_table')
-    df_auc.to_csv(f'{input_path}/auc_table',index=False)
+    #df_auc.style.to_latex(f'{input_path}/auc_table')
+    #df_auc.to_csv(f'{input_path}/auc_table',index=False)
 
-    #for key in measures_dict:
-        #print(key)
-        #print(measures_dict[key][0])
+    ##for key in measures_dict:
+    #    #print(key)
+    #    #print(measures_dict[key][0])
 
 
 
