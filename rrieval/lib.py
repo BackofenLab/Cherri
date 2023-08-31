@@ -43,6 +43,9 @@ import wget
 from Bio import SeqIO
 import json
 
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 
 
 """
