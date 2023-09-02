@@ -1761,6 +1761,7 @@ def perfome_cv(folds, opt_call_cv, out_path_model, midel_name):
                    f'--autosk_debugfile {out_path_model}{midel_name}_'
                    f'fold{fold}_autosklearn.log')
         print(f'\n run optimize call for fold {fold}')
+        print(cv_call)
         out = call_script(cv_call, reprot_stdout=True, asset_err=False)
     f1_df_list = []
     for fold in range(folds):

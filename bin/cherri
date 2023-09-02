@@ -781,9 +781,9 @@ def main_train(args):
                 )
     if temp_dir != 'off':
         if temp_dir == 'out' or temp_dir == 'OUT':
-            opt_call= f'{opt_call} --tmp_folder {out_path_model}/\autosklearn_temp'
+            opt_call= f'{opt_call} --tmp_folder {out_path_model}/autosklearn_temp'
         else:
-            opt_call= f'{opt_call} --tmp_folder {temp_dir}/\autosklearn_temp'
+            opt_call= f'{opt_call} --tmp_folder {temp_dir}/autosklearn_temp'
     # print(f'test optimize call\n{opt_call}')
 
     if do_cv == 'on':
