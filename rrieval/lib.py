@@ -1733,8 +1733,8 @@ def get_files_concat(file_path,out_file_prefix):
     pos_file_out = (f'{out_file_prefix}_pos_occ_pos.csv')
     neg_file_out = (f'{out_file_prefix}_pos_occ_neg.csv')
 
-    df_pos.to_csv(pos_file_out,sep=",")
-    df_neg.to_csv(neg_file_out,sep=",")
+    df_pos.to_csv(pos_file_out,sep=",", index=False)
+    df_neg.to_csv(neg_file_out,sep=",", index=False)
 
     return pos_file_out, neg_file_out
 

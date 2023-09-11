@@ -31,20 +31,20 @@ def calculate_measures(data, read=True):
     #print(f'AUC_PCR: {auc_prc}')
     return f1, auc_prc
 
-def calculate_diag(name, input_path):
-    df_val0 = pd.read_csv((input_path + name +'_'  + name + '_fold0.csv'))
-    df_val1 = pd.read_csv((input_path + name +'_' + name + '_fold1.csv'))
-    df_val2 = pd.read_csv((input_path + name +'_'  + name + '_fold2.csv'))
-    df_val3 = pd.read_csv((input_path + name +'_'  + name + '_fold3.csv'))
-    df_val4 = pd.read_csv((input_path + name +'_' + name + '_fold4.csv'))
-    print(df_val0.columns)
+def calculate_diag(name, input_path, context=150):
+    df_val0 = pd.read_csv((f'{input_path}/{name}/model/{name}_context_{context}_fold0.csv'))
+    df_val1 = pd.read_csv(( f'{input_path}/{name}/model/{name}_context_{context}_fold1.csv'))
+    df_val2 = pd.read_csv(( f'{input_path}/{name}/model/{name}_context_{context}_fold2.csv'))
+    df_val3 = pd.read_csv(( f'{input_path}/{name}/model/{name}_context_{context}_fold3.csv'))
+    df_val4 = pd.read_csv(( f'{input_path}/{name}/model/{name}_context_{context}_fold4.csv'))
+    # print(df_val0.columns)
     #print(df_val0['true_label'])
     #print(df_val1['true_label'])
     #print(df_val2['true_label'])
     #print(df_val3['true_label'])
     #print(df_val4['true_label'])
     df_cv = pd.concat([df_val0, df_val1, df_val2, df_val3, df_val4], ignore_index=True)
-    print(df_cv)
+    # print(df_cv)
 
     f1, auc_prc = calculate_measures(df_cv, read=False)
 
@@ -80,12 +80,15 @@ def construct_cross_validation_call(name1,name2,file,context=150,st='on'):
 def main():
     parser = argparse.ArgumentParser(description='Trains models for RRIeval')
     parser.add_argument("-i", "--input_path", required=True, help= "Path to data files")
+    parser.add_argument("-st", "--structure", required=True, help= "set to on or off")
     args = parser.parse_args()
 
     # model type:
     input_path = args.input_path
 
     feature_file_names = ['human','mouse', 'human_rbp']
+    context = 150
+    st = args.structure
 
     #feature_file_names = ['PARIS_human','PARIS_human_RBP','PARIS_mouse','SPLASH_human','Full_human_RRIs']
 
@@ -94,13 +97,13 @@ def main():
 
 #### compute the cross model evaluation!
     for name_model in feature_file_names:
-        print(f'evaluation calls for {name_model}')
+        #print(f'evaluation calls for {name_model}')
         for name_test in feature_file_names:
             if name_model != name_test:
                 call = construct_cross_validation_call(name_test,name_model,
-                                                       input_path)
+                                                       input_path, context, st)
                 print(f'call for {name_model} model on {name_test} data:')
-                print(call)
+                #print(call)
                 rl.call_script(call)
 
             if name_model == name_test:
@@ -120,38 +123,43 @@ def main():
         temp_dict_auc = {}
         for name2 in feature_file_names:
             if name != name2:
-                print(f'\n******combined with {name2}')
-                key = name + '$' + name2
+                # print(f'\n******combined with {name2}')
+                key = name2 + '$' + name
                 # file example: evaluation_results_PARIS_mouse_PARIS_human_RBP.cvs
 
                 file_name = f'{eval_path}evaluation_results_eval_{name}_using_{name2}.csv'
-                print(f'eval file\n{file_name}')
+                # print(f'eval file\n{file_name}')
                 f1_cross_model, auc_prc_model = calculate_measures(file_name)
-                print(f'**done**\n')
+                # print(f'**done**\n')
 
                 print(f'F1 for {name}_using_{name2}: {f1_cross_model}')
 
                 #print(key, val[0])
-                temp_dict_f1[name2]= f1_cross_model
-                temp_dict_auc[name2]= auc_prc_model
-        #key_diag = name + '$' + name
+                temp_dict_f1[key]= f1_cross_model
+                temp_dict_auc[key]= auc_prc_model
+        key_diag = name + '$' + name
         #print(f'\n******combined with {name}')
-        #f1, auc = calculate_diag(name, input_path)
-        #print(f'**done**\n')
-        #temp_dict_f1[name]= f1
-        #temp_dict_auc[name]= auc
-        #print(key_diag, f1)
-        #f1_dict[name]=[temp_dict_f1[i] for i in sorted(temp_dict_f1.keys())]
+        f1, auc = calculate_diag(name, input_path, context)
+        print(f'F1 for {name}: {f1}')
+        #temp_dict_f1[key_diag]= f1_cross_model
+        #temp_dict_auc[key_diag]= auc_prc_model
+        # print(f'**done**\n')
+        temp_dict_f1[key_diag]= f1
+        temp_dict_auc[key_diag]= auc
+        print(sorted(temp_dict_f1.keys()))
+        f1_dict[name]=[temp_dict_f1[i] for i in sorted(temp_dict_f1.keys())]
         #AUC_dict[name]=[temp_dict_auc[i] for i in sorted(temp_dict_auc.keys())]
 
 
-
-    #df_f1, df_sorted_f1 = generate_df(f1_dict, feature_file_names)
+    print(f1_dict)
+    df_f1, df_sorted_f1 = generate_df(f1_dict, feature_file_names)
+    print(df_sorted_f1)
+    # print(df_f1)
     #df_auc, df_sorted_auc = generate_df(AUC_dict, feature_file_names)
     ##df_f1.to_latex(f'{input_path}/f1_talbel', float_format="{:0.2f}".format)
-    #print(f'{input_path}/f1_talbel')
-    #df_f1.style.to_latex(f'{input_path}/f1_table')
-    #df_f1.to_csv(f'{input_path}/f1_table',index=False)
+    print(f'{input_path}/f1_talbel')
+    df_f1.style.to_latex(f'{input_path}/f1_table')
+    df_f1.to_csv(f'{input_path}/f1_table.csv',index=False)
 
     #df_auc.style.to_latex(f'{input_path}/auc_table')
     #df_auc.to_csv(f'{input_path}/auc_table',index=False)
