@@ -203,7 +203,7 @@ Input parameters for CheRRI's **train** mode (`cherri train`):
 | `-ca` |`--context_additional`| context to extend left and right for the BED file instances. Default: 5|
 | `-cv` |`--do_cv`| 5-fold cross validated of the pipeline will be performed using the training data. Set 'off' to skip. Default: 'on'|
 | `-fo` |`--folds`| number of folds for the cross validation. Default: 5|
-| `-mt` |`--methods`| Methods used for model selection. Set to any if you would like to all methods|
+| `-mt` |`--methods`| Methods used for model selection. Default: any|
 
 
 
