@@ -223,9 +223,9 @@ def setup_argument_parser():
                         type=int,
                         default=5)
     p_mrg.add_argument("-mt", "--methods",
-                        help= "Methods used for model selection. Set to any if you would like to all methods",
+                        help= "Methods used for model selection. Default: any",
                         type=str,
-                        default='extra_trees passive_aggressive random_forest sgd')
+                        default='any')
     return p
 
 
