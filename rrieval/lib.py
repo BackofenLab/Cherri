@@ -1759,7 +1759,8 @@ def perfome_cv(folds, opt_call_cv, out_path_model, midel_name):
         cv_call = (f'{opt_call_cv} --folds {folds} --foldselected {fold}'
                    f' --out {out_path_model}{midel_name}_fold{fold} '
                    f'--autosk_debugfile {out_path_model}{midel_name}_'
-                   f'fold{fold}_autosklearn.log')
+                   f'fold{fold}_autosklearn.log '
+                   f'--autosk_debug True')
         print(f'\n run optimize call for fold {fold}')
         print(cv_call)
         out = call_script(cv_call, reprot_stdout=True, asset_err=False)

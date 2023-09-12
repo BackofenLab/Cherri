@@ -800,7 +800,8 @@ def main_train(args):
     print('4b. train full model\n')
     opt_call_refit = (f'{opt_call} --folds 0 --time {run_time} '
                       f'--out {full_model_path} '
-                      f'--autosk_debugfile {full_debug_file}')
+                      f'--autosk_debugfile {full_debug_file} '
+                      f'--autosk_debug True')
     print(f'refit optimize call on full data\n{opt_call_refit}' )
     out = rl.call_script(opt_call_refit, reprot_stdout=True, asset_err=False)
         #print(out.decode())
