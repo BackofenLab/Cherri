@@ -24,24 +24,43 @@ def delete_spaces_in_df(df):
     df_space_free.columns = df_space_free.columns.str.strip()
     return df_space_free
 
-def calculate_diag(name, input_path):
-    df_val0_temp = pd.read_csv((input_path + name +'_'  + name + '_fold0.csv'))
-    df_val0 = delete_spaces_in_df(df_val0_temp)
-    df_val1_temp = pd.read_csv((input_path + name +'_' + name + '_fold1.csv'))
-    df_val1 = delete_spaces_in_df(df_val1_temp)
-    df_val2_temp = pd.read_csv((input_path + name +'_'  + name + '_fold2.csv'))
-    df_val2 = delete_spaces_in_df(df_val2_temp)
-    df_val3_temp = pd.read_csv((input_path + name +'_'  + name + '_fold3.csv'))
-    df_val3 = delete_spaces_in_df(df_val3_temp)
-    df_val4_temp = pd.read_csv((input_path + name +'_' + name + '_fold4.csv'))
-    df_val4 = delete_spaces_in_df(df_val4_temp)
-    #print(df_val0.columns)
+#def calculate_diag(name, input_path):
+#    df_val0_temp = pd.read_csv((input_path + name +'_'  + name + '_fold0.csv'))
+#    df_val0 = delete_spaces_in_df(df_val0_temp)
+#    df_val1_temp = pd.read_csv((input_path + name +'_' + name + '_fold1.csv'))
+#    df_val1 = delete_spaces_in_df(df_val1_temp)
+#    df_val2_temp = pd.read_csv((input_path + name +'_'  + name + '_fold2.csv'))
+#    df_val2 = delete_spaces_in_df(df_val2_temp)
+#    df_val3_temp = pd.read_csv((input_path + name +'_'  + name + '_fold3.csv'))
+#    df_val3 = delete_spaces_in_df(df_val3_temp)
+#    df_val4_temp = pd.read_csv((input_path + name +'_' + name + '_fold4.csv'))
+#    df_val4 = delete_spaces_in_df(df_val4_temp)
+#    #print(df_val0.columns)
+#    #print(df_val0['true_label'])
+#    #print(df_val1['true_label'])
+#    #print(df_val2['true_label'])
+#    #print(df_val3['true_label'])
+#    #print(df_val4['true_label'])
+#    df_cv = pd.concat([df_val0, df_val1, df_val2, df_val3, df_val4], ignore_index=True)
+#    return df_cv
+
+
+
+def calculate_diag(name, input_path, context=150):
+    df_val0 = pd.read_csv((f'{input_path}/{name}/model/{name}_context_{context}_fold0.csv'))
+    df_val1 = pd.read_csv(( f'{input_path}/{name}/model/{name}_context_{context}_fold1.csv'))
+    df_val2 = pd.read_csv(( f'{input_path}/{name}/model/{name}_context_{context}_fold2.csv'))
+    df_val3 = pd.read_csv(( f'{input_path}/{name}/model/{name}_context_{context}_fold3.csv'))
+    df_val4 = pd.read_csv(( f'{input_path}/{name}/model/{name}_context_{context}_fold4.csv'))
+    # print(df_val0.columns)
     #print(df_val0['true_label'])
     #print(df_val1['true_label'])
     #print(df_val2['true_label'])
     #print(df_val3['true_label'])
     #print(df_val4['true_label'])
     df_cv = pd.concat([df_val0, df_val1, df_val2, df_val3, df_val4], ignore_index=True)
+    # print(df_cv)
+
     return df_cv
 
 
@@ -58,15 +77,15 @@ def main():
     cherri_model_path = f'{input_path}/evaluation/evaluation/'
 
 
-    feature_file_names = ['PARIS_human','PARIS_mouse']
-    feature_file_names_mfe = ['PARIS_human_MFE','PARIS_mouse_MFE']
+    feature_file_names = ['human','mouse']
+    feature_file_names_mfe = ['human_MFE','mouse_MFE']
     color_list = ['#F0E442','#D55E00', '#BBBBBB','#009E73','#0072B2','#808080']
     index = 0
 
     for name in feature_file_names:
 
         key_diag = name + '_' + name
-        df_cv = calculate_diag(name, cherri_model_path)
+        df_cv = calculate_diag(name, input_path)
         #print(df_cv.info())
         #print(df_cv['true_label'])
         precision, recall, thresholds, auc_prc = compute_prc(df_cv['true_label'].tolist(),df_cv['instance_score'].tolist())

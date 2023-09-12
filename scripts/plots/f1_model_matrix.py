@@ -37,12 +37,7 @@ def calculate_diag(name, input_path, context=150):
     df_val2 = pd.read_csv(( f'{input_path}/{name}/model/{name}_context_{context}_fold2.csv'))
     df_val3 = pd.read_csv(( f'{input_path}/{name}/model/{name}_context_{context}_fold3.csv'))
     df_val4 = pd.read_csv(( f'{input_path}/{name}/model/{name}_context_{context}_fold4.csv'))
-    # print(df_val0.columns)
-    #print(df_val0['true_label'])
-    #print(df_val1['true_label'])
-    #print(df_val2['true_label'])
-    #print(df_val3['true_label'])
-    #print(df_val4['true_label'])
+
     df_cv = pd.concat([df_val0, df_val1, df_val2, df_val3, df_val4], ignore_index=True)
     # print(df_cv)
 
@@ -141,14 +136,13 @@ def main():
         #print(f'\n******combined with {name}')
         f1, auc = calculate_diag(name, input_path, context)
         print(f'F1 for {name}: {f1}')
-        #temp_dict_f1[key_diag]= f1_cross_model
-        #temp_dict_auc[key_diag]= auc_prc_model
+
         # print(f'**done**\n')
         temp_dict_f1[key_diag]= f1
         temp_dict_auc[key_diag]= auc
         print(sorted(temp_dict_f1.keys()))
         f1_dict[name]=[temp_dict_f1[i] for i in sorted(temp_dict_f1.keys())]
-        #AUC_dict[name]=[temp_dict_auc[i] for i in sorted(temp_dict_auc.keys())]
+        AUC_dict[name]=[temp_dict_auc[i] for i in sorted(temp_dict_auc.keys())]
 
 
     print(f1_dict)
@@ -161,8 +155,8 @@ def main():
     df_f1.style.to_latex(f'{input_path}/f1_table')
     df_f1.to_csv(f'{input_path}/f1_table.csv',index=False)
 
-    #df_auc.style.to_latex(f'{input_path}/auc_table')
-    #df_auc.to_csv(f'{input_path}/auc_table',index=False)
+    df_auc.style.to_latex(f'{input_path}/auc_table')
+    df_auc.to_csv(f'{input_path}/auc_table.csv',index=False)
 
     ##for key in measures_dict:
     #    #print(key)
