@@ -81,7 +81,7 @@ def main():
     # model type:
     input_path = args.input_path
 
-    feature_file_names = ['human','mouse', 'human_rbp']
+    feature_file_names = ['human','mouse', 'human_rbp' , 'Full']
     context = 150
     st = args.structure
 
@@ -149,7 +149,7 @@ def main():
     df_f1, df_sorted_f1 = generate_df(f1_dict, feature_file_names)
     print(df_sorted_f1)
     # print(df_f1)
-    #df_auc, df_sorted_auc = generate_df(AUC_dict, feature_file_names)
+    df_auc, df_sorted_auc = generate_df(AUC_dict, feature_file_names)
     ##df_f1.to_latex(f'{input_path}/f1_talbel', float_format="{:0.2f}".format)
     print(f'{input_path}/f1_talbel')
     df_f1.style.to_latex(f'{input_path}/f1_table')
