@@ -15,4 +15,13 @@ To benchmark CheRRI, we did the following for each pair of RNAs:
 2. extract the interaction site: if the site shows an overlap of at least 5 nt with the support information rate it a "correct prediction", otherwise "wrong". this defines the *gold standard*.
 3. run CheRRI on the extracted interaction site: compare CheRRI's rating with the gold standard to assess whether CheRRI's prediction is correct (TRUE POS|NEG) or wrong (FALSE POS|NEG).
 
+
+We did this for the following tools
+
+- IntaRNA version ...
+- RIblast version ...
+- RIsearch2 version ...
+
+The interaction predictions, their correctness assignments and resp. CheRRI evaluations are provided in [...].
+
 Given this, we provide some statistics on the correctness of CheRRI's predictions.
