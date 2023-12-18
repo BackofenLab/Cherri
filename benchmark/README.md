@@ -1,6 +1,6 @@
 # Benchmarking CheRRI
 
-We compiled a data set of of experimentally verified RNA-RNA interactions for humans.
+We compiled a [data set of of experimentally verified RNA-RNA interactions for humans](benchmark-data.xlsx).
 In the following, we list the publications and the respective ids within the benchmark data set.
 
 | ids | doi of publication |
