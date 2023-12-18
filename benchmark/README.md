@@ -5,7 +5,7 @@ In the following, we list the publications and the respective ids within the ben
 
 | ids | doi of publication |
 | --- | ---- |
-| um.1-38 | (Umu & Gardener, 2017)[https://doi.org/10.1093/bioinformatics/btw728] |
+| um.1-38 | [Umu & Gardener, 2017](https://doi.org/10.1093/bioinformatics/btw728) |
 
 Each RNA pair comes with support from experiments where the interaction is formed.
 
