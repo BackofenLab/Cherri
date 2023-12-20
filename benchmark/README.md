@@ -18,10 +18,12 @@ To benchmark CheRRI, we did the following for each pair of RNAs:
 
 We did this for the following tools
 
-- IntaRNA version ...
-- RIblast version ...
-- RIsearch2 version ...
+- IntaRNA version 3.3.2 (2022-09-13) [intaRNA-3.3.2.tar.gz](intaRNA-3.3.2.tar.gz)
+- RIblast version 1.2.0 (2019-11-02) [RIblast-1.2.0.zip](RIblast-1.2.0.zip)
+- RIsearch2 version 1.2 (2021-06-16) [RIsearch-1.2.tar.gz](RIsearch-1.2.tar.gz)
 
-The interaction predictions, their correctness assignments and resp. CheRRI evaluations are provided in [...].
+The interaction predictions, their correctness assignments and resp. CheRRI evaluations are provided in [overlap.csv](overlap.csv).
+
+Based on this, we mapped the interacting regions to respective genomic positions (hg38) to generate the [cherri_input.csv](cherri_input.csv) file, which holds both each region of interest as well as its correctness and source annotation.
 
 Given this, we provide some statistics on the correctness of CheRRI's predictions.
