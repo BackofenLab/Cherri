@@ -26,13 +26,13 @@ It is an open source project [hosted on GitHub](https://github.com/BackofenLab/C
     * [Example call for CheRRI's training mode](#Example-call-for-CheRRI's-training-mode)
     * [Input parameters in training mode](#Input-parameters-in-training-mode)
     * [Run train in mixed model mode](#Run-train-in-mixed-model-mode)
-3. [CheRRI's core method scripts](#CheRRI's-core-method-scripts)
-    - [RRI detection with find_trusted_RRI.py](#RRI-detection-with-find_trusted_RRI.py)
-    - [Compute occupied regions with find_occupied_regions.py](#Compute-occupied-regions-with find_occupied_regions.py)
-    - [Interaction predictions with generate_pos_neg_with_context.py](#Interaction-predictions with-generate_pos_neg_with_context.py)
-    * [IntaRNA parameters used within CheRRI](#IntaRNA-parameters-used-within-CheRRI)
-    - [Feature extraction with get_features.py](#Feature-extraction-with-get_features.py)
-    - [Feature selection and optimization](#Feature-selection-and-optimization)
+3. [CheRRI's core method scripts](https://github.com/BackofenLab/Cherri/tree/master#cherris-core-method-scripts))
+    - [RRI detection with find_trusted_RRI.py](#rri-detection-with-find_trusted_rripy))
+    - [Compute occupied regions with find_occupied_regions.py](#compute-occupied-regions-with-find_occupied_regionspy))
+    - [Interaction predictions with generate_pos_neg_with_context.py](#interaction-predictions-with-generate_pos_neg_with_contextpy))
+    * [IntaRNA parameters used within CheRRI](#intarna-parameters-used-within-cherri))
+    - [Feature extraction with get_features.py](#feature-extraction-with-get_featurespy))
+    - [Feature selection and optimization](#feature-selection-and-optimization)
     
 
 ## CheRRI's workflow
