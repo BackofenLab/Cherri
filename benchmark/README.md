@@ -23,7 +23,7 @@ We did this for the following tools
 
 The correctness of the interaction predictions, i.e. if they overlap with the known interaction site, are provided in [overlap.csv](overlap.csv) and aggregated in the following plot.
 
-![overlap per tool](overlap.png)
+[<img src="overlap.png" width="500px" />](overlap.png)
 
 Based on this, we mapped the interacting regions to respective genomic positions (hg38) to generate the [cherri_input.csv](cherri_input.csv) file, which holds both each region of interest as well as its correctness and source annotation.
 
