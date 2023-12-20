@@ -1,0 +1,16 @@
+
+
+./IntaRNA --personality=IntaRNAhelix --outPairwise -q query.fa -t target.fa --outMode=C --out=IntaRNAhelix.csv
+
+./IntaRNA --outPairwise -q query.fa -t target.fa --outMode=C --out=IntaRNA.csv
+
+
+./RIblast db -i target.fa -o RIblast_target_db
+./RIblast ris -i query.fa -o RIblast.out -d RIblast_target_db
+
+
+./risearch2.x -c target.fa -o RIsearch2_target.suf
+./risearch2.x -q query.fa -i RIsearch2_target.suf
+zcat risearch_*.out.gz > RIsearch2.out
+rm -f risearch_*.out.gz
+
