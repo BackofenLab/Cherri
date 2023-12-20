@@ -22,7 +22,7 @@ results[["RIblast"]] <-
   filter( str_extract(id1,"\\d+") == str_extract(id2,"\\d+")) |> 
   # reduce to mfe prediction
   group_by(id1,id2) |> 
-  slice_min(`Hybridization Energy`) |> 
+  slice_min(`Hybridization Energy`, with_ties=F) |> 
   ungroup() |> 
   select( -Id, -ends_with("Length"), -ends_with("Energy")) |> 
   mutate( 
@@ -41,7 +41,7 @@ results[["RIsearch2"]] <-
           strand == "+") |> 
   # keep only mfe entry
   group_by(id1,id2) |> 
-  slice_min(energy,n=1) |> 
+  slice_min(energy,n=1, with_ties = F) |> 
   ungroup()
   
 
@@ -58,8 +58,9 @@ overlap <-
     | (tStart <= start1 & start1 <= tEnd),
     overlap = (is.na(qOverlap | qOverlap) & (is.na(tOverlap)|tOverlap))
   ) |> 
-  # view() |> 
-  select( tool, id, starts_with("start"), starts_with("end"), ends_with("verlap"), qType)
+   # view() |> 
+  select( tool, id, starts_with("start"), starts_with("end"), ends_with("verlap"), qType) |> 
+  distinct()
 
 write_csv(overlap, "overlap.csv")
 
@@ -76,6 +77,39 @@ overlap |>
     TP.rate = sum(overlap)/n(),
     FP.rate = (n()-sum(overlap))/n()
   ) 
+
+overlap |> 
+  group_by(tool, overlap) |> 
+  count() |> 
+  ungroup() |> 
+  group_by(tool) |> 
+  mutate(nTool = sum(n), a = ifelse(overlap,0.4,0.2)) |> 
+  unite(t, tool, overlap, remove = F) |> 
+  ungroup() |> 
+  arrange(overlap,tool) |> 
+  mutate(t=fct_inorder(t,ordered=T), height=cumsum(n)) -> tmp
+  
+library(ggnewscale)
+tmp |> 
+  ggplot(aes(x="", y=n, group=overlap))+
+  theme_light()+
+  # geom_bar(aes(fill=overlap, group=overlap),alpha=1,width = 1, stat = "identity", col="white",size=4) +
+  # geom_bar(aes(fill=tool,group=overlap, col=overlap),
+  #          width = 1, stat = "identity", alpha=0.7) +
+  geom_col(mapping=aes(fill=overlap))+
+  scale_fill_manual(values = c("red","lightblue"))+
+  labs(
+    fill="correct\nprediction"
+  ) +
+  new_scale("fill") + 
+  geom_col(alpha=0.5, mapping=aes(fill=tool))+
+  scale_fill_grey(start = 0.2, end = .8)+
+  geom_text(aes(label = n),
+            position = position_stack(vjust = 0.5), col="black") +
+  scale_y_continuous(breaks=cumsum(tmp$n) - tmp$n / 2, labels= tmp$tool) +
+  coord_polar("y", start=0) 
+
+ggsave("overlap.png",width=5,height=5)
 
 #######################################################
 # get genome positions
