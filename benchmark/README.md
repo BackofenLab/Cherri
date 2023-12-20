@@ -11,10 +11,9 @@ Each RNA pair comes with support from experiments where the interaction is forme
 
 To benchmark CheRRI, we did the following for each pair of RNAs:
 
-1. run prediction tool XYZ to identify a putative interaction site
-2. extract the interaction site: if the site shows an overlap of at least 5 nt with the support information rate it a "correct prediction", otherwise "wrong". this defines the *gold standard*.
+1. run prediction tool XYZ to identify a putative interaction site (see [benchmark-calls.txt](benchmark-calls.txt))
+2. extract the interaction site: if the site shows an overlap of at least 5 nt with the support information rate it a "correct prediction", otherwise "wrong". this defines the *gold standard*. (see [benchmark-stats.R](benchmark-stats.R))
 3. run CheRRI on the extracted interaction site: compare CheRRI's rating with the gold standard to assess whether CheRRI's prediction is correct (TRUE POS|NEG) or wrong (FALSE POS|NEG).
-
 
 We did this for the following tools
 
