@@ -12,7 +12,7 @@ It is an open source project [hosted on GitHub](https://github.com/BackofenLab/C
     - [Create environment manually](#Create-environment-manually)
     - [Manual installation](#Manual-installation)
     - [Install using pip](#Install-using-pip)
-    - [Install CheRRI Conda package](#Install-CheRRI-Conda-package
+    - [Install CheRRI Conda package](#Install-CheRRI-Conda-package)
 2. [Usage](#Usage)
     - [Evaluation of RRIs](#Evaluation-of-RRIs)
     * [RRI input format in evaluation mode](#RRI-input-format-in-evaluation-mode)
