@@ -107,6 +107,10 @@ tmp |>
   geom_text(aes(label = n),
             position = position_stack(vjust = 0.5), col="black") +
   scale_y_continuous(breaks=cumsum(tmp$n) - tmp$n / 2, labels= tmp$tool) +
+  theme (
+    axis.title.x=element_blank (),
+    axis.title.y=element_blank ()
+  )+
   coord_polar("y", start=0) 
 
 ggsave("overlap.png",width=5,height=5)
