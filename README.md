@@ -152,7 +152,7 @@ work in progress
 
 ## Usage
 
-You can use CheRRI in two modes. The **eval** mode predicts whether an RRI site of interest is biologically relevant. Pre-computed human and mouse models exist and can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.6533932). If you would like to build a model based on novel RRI interactome data, you can use the **train** mode.
+You can use CheRRI in two modes. The **eval** mode predicts whether an RRI site of interest is biologically relevant. Pre-computed human and mouse models exist and can be downloaded from [Zenodo](https://zenodo.org/doi/10.5281/zenodo.6533931). If you would like to build a model based on novel RRI interactome data, you can use the **train** mode.
 
 ### Evaluation of RRIs
 
