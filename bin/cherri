@@ -8,6 +8,8 @@ import sys
 import rrieval.lib as rl
 from scipy.sparse import csr_matrix, vstack, hstack, load_npz, save_npz
 from ubergauss.tools import loadfile, dumpfile
+import csv
+import sys
 #import logging
 ## DeBug, INFO
 # import subprocess
@@ -231,6 +233,53 @@ def setup_argument_parser():
 
 ################################################################################
 
+def test_eval_input(input):
+    # check header line
+    issue = 'no'
+    header = ['chrom1','start1','stop1','strand1','chrom2','start2','stop2','strand2']
+    if not check_header_line(input, header):
+        print(f'Input ERROR:\nplease proved the headerline:\n{header}\n')
+        issue = 'yes'
+    else:
+        print('You provided the corret input header line')
+
+    # check if order of the provided start stop positions are correct
+    if not check_positive_difference(input, 'stop1', 'start1'):
+        issue = 'yes'
+        print(f'Input ERROR:\nPlease provied a start1 smaller then stop1')
+    if not check_positive_difference(input, 'stop2', 'start2'):
+        issue = 'yes'
+        print(f'Input ERROR:\Please provied a start2 smaller then stop2')
+    
+
+    if issue == 'yes':
+        sys.exit(1)
+
+
+def check_header_line(input,required_headers):
+    
+    with open(input, newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        # reads fist line into headers
+        headers = next(reader, None)  
+
+        if headers:
+            return all(header in headers for header in required_headers)
+        else:
+            return False
+
+def check_positive_difference(csv_file_path, pos_end, pos_start):
+    # Read the CSV file into a DataFrame
+    df = pd.read_csv(csv_file_path)
+
+    # Calculate the difference
+    difference = df[pos_end] - df[pos_start]
+
+    # Check if there is a negative value
+    has_negatives = (difference < 0).any()
+
+    # returns True if there is no and False if there is at least one negative value
+    return not has_negatives
 
 def read_RRI_table(file):
     """
@@ -341,6 +390,9 @@ def main_eval(args):
         print('Error: please set the path to your feature file of your model')
     if not os.path.exists(model_params):
         print('Error: please set the path to your feature file of your model')
+
+    # test input data: RRIs_table
+    test_eval_input(RRIs_table)
 
 
     # define output folder
