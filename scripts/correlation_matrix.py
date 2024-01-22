@@ -31,7 +31,7 @@ def main():
     # Convert the numpy array to a pandas DataFrame
     df = pd.DataFrame(X, columns=ftname)
 
-    # Calculate the correlation matrix
+    # Calculate the correlation matrix - todo: method='spearman',
     corr_matrix = df.corr()
 
     # Cluster the features
