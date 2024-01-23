@@ -98,7 +98,7 @@ def setup_argument_parser():
     # Optional arguments for evaluate.
     p_ex.add_argument("-i2", "--occupied_regions",
                       default="non",
-                      help= "Path to occupied regions python object file containing a dictionary")
+                      help= "Path to occupied regions python object. This file should be used if there are regions which that should be blocked from interactions. One can create this file with the find_occupied_regions.py")
     p_ex.add_argument("-c", "--context",
                       nargs='?',
                       type=int,
@@ -345,9 +345,6 @@ def main_eval(args):
     Output files:
     ├── date_Cherri_evaluation_mode
     |   ├── evaluate_RRIs.csv
-    |   ├── date_occ_out
-    |       ├── occupied_regions.obj
-    |       ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.csv
     |   ├── positive_instance
     |       ├── {name}_context_{context}pos.csv
     |       ├── {name}_context_{context}_block_ends_0_RRI_dataset.csv
