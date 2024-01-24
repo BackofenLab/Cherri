@@ -1,13 +1,13 @@
 # Usage
 
-You can use CheRRI in two modes. The **eval** mode predicts whether an RRI site of interest is biologically relevant. Pre-computed human and mouse models exist and can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.8422010). If you would like to build a model based on novel RRI interactome data, you can use the **train** mode.
+You can use CheRRI in two modes. The **eval** mode predicts whether an RRI site of interest is biologically relevant. Pre-computed human and mouse models exist and can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.10555733). If you would like to build a model based on novel RRI interactome data, you can use the **train** mode.
 
 ## Evaluation of RRIs
 
 Based on a tabular file containing chromosomal position data of the RRIs, CheRRI classifies if the interaction region is likely to be a biologically relevant one.
 
 For the **eval** mode, a model and the filtered feature set have to be specified.
-CheRRI has pre-trained models for human and mouse, which can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.8422010) (see `content.txt` inside the zip folder for details).
+CheRRI has pre-trained models for human and mouse, which can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.10555733) (see `content.txt` inside the zip folder for details).
 If there exists an RNA-RNA-interactome dataset for your preferred organism, we recommend to train your own organism-specific model using CheRRI's **train** mode. After training, the model can be than used in **eval** mode for the classification of your predicted RRI positions.
 
 
@@ -33,7 +33,7 @@ X,109054541,109054590,+,9,89178539,89178562,-
 
 ### Example call for CheRRI's evaluation mode
 
-For the test call please download the [Cherri_models_data](https://doi.org/10.5281/zenodo.8422010) zip folder. The human model is needed to execute the call. Be sure to provide the correct location for the model and its feature set (`-m`, `-mp`). For example, assuming the data (zip folder extracted to folder `Cherri_models_data`) is stored inside the CheRRI folder:
+For the test call please download the [Cherri_models_data](https://doi.org/10.5281/zenodo.10555733) zip folder. The human model is needed to execute the call. Be sure to provide the correct location for the model and its feature set (`-m`, `-mp`). For example, assuming the data (zip folder extracted to folder `Cherri_models_data`) is stored inside the CheRRI folder:
 
 ```
 cherri eval -i1 test_data/evaluate/test_evaluate_rris.csv -g human -l human -o ./ -n test_eval -c 150 -st on -m Cherri_models_data/Model_with_graph_features/human/full_human_context_150.model -mp Cherri_models_data/Model_with_graph_features/human/training_data_human_context_150.npz 
