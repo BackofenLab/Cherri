@@ -1,19 +1,19 @@
 # Usage
 
-You can use CheRRI in two modes. The **eval** mode predicts whether an RRI site of interest is biologically relevant. Pre-computed human and mouse models exist and can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.6533932). If you would like to build a model based on novel RRI interactome data, you can use the **train** mode.
+You can use CheRRI in two modes. The **eval** mode predicts whether an RRI site of interest is biologically relevant. Pre-computed human and mouse models exist and can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.10555733). If you would like to build a model based on novel RRI interactome data, you can use the **train** mode.
 
 ## Evaluation of RRIs
 
 Based on a tabular file containing chromosomal position data of the RRIs, CheRRI classifies if the interaction region is likely to be a biologically relevant one.
 
 For the **eval** mode, a model and the filtered feature set have to be specified.
-CheRRI has pre-trained models for human and mouse, which can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.6533932) (see `content.txt` inside the zip folder for details).
+CheRRI has pre-trained models for human and mouse, which can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.10555733) (see `content.txt` inside the zip folder for details).
 If there exists an RNA-RNA-interactome dataset for your preferred organism, we recommend to train your own organism-specific model using CheRRI's **train** mode. After training, the model can be than used in **eval** mode for the classification of your predicted RRI positions.
 
 
 ### RRI input format in evaluation mode
 
-The RRI instances to be evaluated need to be given in tabular format (parameter `--RRIs_table`). The table needs the following header line:
+The RRI instances to be evaluated need to be given in CSV format (parameter `--RRIs_table`). The table needs the following header line:
 
 ```
 chrom1,start1,stop1,strand1,chrom2,start2,stop2,strand2
@@ -27,21 +27,19 @@ X,109054541,109054590,+,9,89178539,89178562,-
 10,123136102,123136122,+,5,1245880,1245902,+
 ```
 
-We recommend that the user also specifies the occupied regions used to train the model provided via `--model_file`. For example, for the PARIS_human model without graph features, the occupied regions data object is located at 
-`Model_without_graph_features/PARIS_human/occupied_regions/occupied_regions.obj` (inside the mentioned zip file from [Zenodo](https://doi.org/10.5281/zenodo.6533932)).
 
 
 
 
 ### Example call for CheRRI's evaluation mode
 
-For the test call please download the [Cherri_models_data](https://doi.org/10.5281/zenodo.6533932) zip folder. The PARIS_human model is needed to execute the call. Be sure to provide the correct location for the model and its feature set (`-m`, `-mp`). For example, assuming the data (zip folder extracted to folder `Cherri_models_data`) is stored inside the CheRRI folder:
+For the test call please download the [Cherri_models_data](https://doi.org/10.5281/zenodo.10555733) zip folder. The human model is needed to execute the call. Be sure to provide the correct location for the model and its feature set (`-m`, `-mp`). For example, assuming the data (zip folder extracted to folder `Cherri_models_data`) is stored inside the CheRRI folder:
 
 ```
-cherri eval -i1 test_data/evaluate/test_evaluate_rris.csv -g human -l human -o ./ -n test_eval -c 150 -st on -m Cherri_models_data/Model_with_graph_features/PARIS_human/model/full_PARIS_human_context_150.model -mp Cherri_models_data/Model_with_graph_features/PARIS_human/feature_files/training_data_PARIS_human_context_150.npz -i2 Cherri_models_data/Model_with_graph_features/PARIS_human/occupied_regions/occupied_regions.obj
+cherri eval -i1 test_data/evaluate/test_evaluate_rris.csv -g human -l human -o ./ -n test_eval -c 150 -st on -m Cherri_models_data/Model_with_graph_features/human/full_human_context_150.model -mp Cherri_models_data/Model_with_graph_features/human/training_data_human_context_150.npz 
 ```
 
-
+If you would like to preform a test evaluation you can use the [test_file](https://github.com/BackofenLab/Cherri/blob/master/test_data/evaluate/test_evaluate_rris.csv) stored in CheRRIs github repository. 
 
 ### Input parameters in evaluation mode
 
@@ -59,7 +57,7 @@ Input parameters for CheRRI's **eval** mode (`cherri eval`):
 #### Optional:
 | ID | name | description |
 |---|---|-----|
-| `-i2` | `--occupied_regions` | Path to occupied regions python object file containing a dictionary |
+| `-i2` | `--occupied_regions` | Path to occupied regions python object. This file should be used if there are regions which that should be blocked from interactions. One can create this file with the find_occupied_regions.py |
 | `-c` | `--context` | How much context should be added at up- and downstream of the sequence. Default: 150 |
 | `-n` | `--experiment_name` | Name of the data source of the RRIs, e.g. experiment and organism. Default: eval_rri |
 | `-p` | `--param_file` | IntaRNA parameter file. Default: file in path_to_cherri_folder/Cherri/rrieval/IntaRNA_param |
@@ -72,17 +70,14 @@ Input parameters for CheRRI's **eval** mode (`cherri eval`):
 ### Output in evaluation mode
 
 At the end of the run the location of the results table is given.
-The final results table will have your the query and target ID's or your input sequences (`target_ID`,`query_ID`), the score of your instance (`instance_score`), the predicted class of each RRI (0 or 1) (`predicted_label`), if you are running the validation mode with `-ef on` the positive or negative label is given (`true_lable`), and finally all features of the instance are provided.
+The final results table will have a query and target ID of your input sequences (`target_ID`,`query_ID`), the score of your instance (`instance_score`), the predicted class of each RRI (0 or 1) (`predicted_label`), if you are running the validation mode with `-ef on` the positive or negative label (`true_lable`), and subsequent all features of the instance are provided.
 
-The Ids are a summary of `chromosme;strand;start;stop` oft the first (target) and the second (query) sequence.
+The IDs are a summary of `chromosome;strand;start;stop` oft the first (target) and the second (query) sequence.
 
 Throughout the program, several output files are generated and stored in the following structure:
 
     ├── date_Cherri_evaluation_mode
     |   ├── evaluate_RRIs.csv
-    |   ├── date_occ_out
-    |       ├── occupied_regions.obj
-    |       ├── rri_occupied_regions_overlapTH_0.3_scoreTH_1.csv
     |   ├── positive_instance
     |       ├── {name}_context_{context}pos.csv
     |       ├── {name}_context_{context}_block_ends_0_RRI_dataset.csv
@@ -96,29 +91,32 @@ Throughout the program, several output files are generated and stored in the fol
 ### Validate your model using the **eval** mode
 You can also use CheRRIs **eval** mode to create a validation result table and than use the [compute_f1](https://github.com/BackofenLab/Cherri/blob/master/scripts/plots/compute_f1.py) to get the F1 score.
 
-In the following is a example call to validate a theoretical model build from DataA with data form a different source e.g. DataB
-```
-cherri eval -i1 /path/to/Model_folder/<DataB>/feature_files/feature_filtered_<DataB>_context_<150>_pos_occ -g human -l human -o /path/to/Model_folder -n <eval_modelA_using_DataB> -c 150 -st on -m  /path/to/Model_folder/DataA/model/full_<DataA>_context_<150>.model -mp  /path/to/Model_folder/DataA/feature_files/training_data_<DataA>_context_<150>.npz -j 10 -on evaluation -ef on
-```
+In the following a example call to validate a theoretical model build from DataA with data form a different source e.g. DataB is given.
 
-In the following is a example call to cross validate a theoretical model build from DataA. The biofilm-cv will split the data into 5 parts used 4 to retrain a model and the left out to evaluate. 
-
+You can set a MODELPATH leading to your models e.g. of DataA and DataB. Here we assume that DataA and DataB will in the same MODELPATH location.
 
 ```
-python -m biofilm.biofilm-cv --infile /path/to/Model_folder/DataA/feature_files/training_data_<DataA>_context_<150>.npz --foldselect 0 --model /path/to/Model_folder/DataA/model/optimized/full_<DataA>_context_<150>.model --out /path/to/Model_folder
+cherri eval -i1 $MODELPATH/<DataB>/feature_files/feature_filtered_<DataB>_context_<150>_pos_occ -g human -l human -o $MODELPATH -n <eval_modelA_using_DataB> -c 150 -st on -m  $MODELPATH/DataA/model/full_<DataA>_context_<150>.model -mp  $MODELPATH/DataA/feature_files/training_data_<DataA>_context_<150>.npz -j 10 -on evaluation -ef on
+```
+
+In the following is a example call to cross validate a theoretical model build from DataA. The biofilm-cv will split the data into 5 parts, use 4 to retrain a model and the 5th, left out part to evaluate the trained model. 
+
+
+```
+python -m biofilm.biofilm-cv --infile $MODELPATH/DataA/feature_files/training_data_<DataA>_context_<150>.npz --foldselect 0 --model $MODELPATH/DataA/model/optimized/full_<DataA>_context_<150>.model --out $MODELPATH
 ```
 
 ```
-python -m biofilm.biofilm-cv --infile /path/to/Model_folder/DataA/feature_files/training_data_<DataA>_context_<150>.npz --foldselect 1 --model /path/to/Model_folder/DataA/model/optimized/full_<DataA>_context_<150>.model --out /path/to/Model_folder
+python -m biofilm.biofilm-cv --infile $MODELPATH/DataA/feature_files/training_data_<DataA>_context_<150>.npz --foldselect 1 --model $MODELPATH/DataA/model/optimized/full_<DataA>_context_<150>.model --out $MODELPATH
 ```
 ```
-python -m biofilm.biofilm-cv --infile /path/to/Model_folder/DataA/feature_files/training_data_<DataA>_context_<150>.npz --foldselect 2 --model /path/to/Model_folder/DataA/model/optimized/full_<DataA>_context_<150>.model --out /path/to/Model_folder
+python -m biofilm.biofilm-cv --infile $MODELPATH/DataA/feature_files/training_data_<DataA>_context_<150>.npz --foldselect 2 --model $MODELPATH/DataA/model/optimized/full_<DataA>_context_<150>.model --out $MODELPATH
 ```
 ```
-python -m biofilm.biofilm-cv --infile /path/to/Model_folder/DataA/feature_files/training_data_<DataA>_context_<150>.npz --foldselect 3 --model /path/to/Model_folder/DataA/model/optimized/full_<DataA>_context_<150>.model --out /path/to/Model_folder
+python -m biofilm.biofilm-cv --infile $MODELPATH/DataA/feature_files/training_data_<DataA>_context_<150>.npz --foldselect 3 --model $MODELPATH/DataA/model/optimized/full_<DataA>_context_<150>.model --out $MODELPATH
 ```
 ```
-python -m biofilm.biofilm-cv --infile /path/to/Model_folder/DataA/feature_files/training_data_<DataA>_context_<150>.npz --foldselect 4 --model /path/to/Model_folder/DataA/model/optimized/full_<DataA>_context_<150>.model --out /path/to/Model_folder
+python -m biofilm.biofilm-cv --infile $MODELPATH/DataA/feature_files/training_data_<DataA>_context_<150>.npz --foldselect 4 --model $MODELPATH/DataA/model/optimized/full_<DataA>_context_<150>.model --out $MODELPATH
 ```
 
 
@@ -141,18 +139,18 @@ Starting from the RRI site information, CheRRI will build a model based on featu
 ChiRA RRI output files are needed as input for CheRRI **train** mode. `--RRI_path` (`-i1`) demands the path to the the ChiRA interaction summary files, and `--list_of_replicates` (`-r`) demands the ChiRA interaction summary file names of the replicates used by CheRRI inside the `-i1` folder.
 
 ### Build RRI interactome file as input for CheRRI
-You can add your own interaction data in a tabular of csv format. Please follow the specific guides given below to build the table. 
+You can add your own interaction data in a tabular CSV format. Please follow the specific guides given below to build the table. 
 You would need to provide the position information on an interaction using the following header line:
 ```
 ['chrom_1st','start_1st','end_1st','strand_1st','chrom_2end','start_2end','end_2end','strand_2end']
 ```
 
-If you want to add the result of an interaction you should set all interaction position by using the following header names:
+If you want to add the result of an interaction you should set all interaction positions by using the following header names:
 predicted interaction positions:
 ```
 'chrom_seq_1st_site', 'start_seq_1st_site','stop_seq_1st_site','strand_seq_1st_site','chrom_seq_2end_site', 'start_seq_2end_site', 'stop_seq_2end_site','strand_seq_2end_site'
 ```
-This information of the interaction need to be complete or not provided at all. If they are not provided the RRI position information from above are used as score for finding overlaps between replicates. 
+The information of the interaction need to be complete or not provided at all. If they are not provided the RRI position information from above are used as score for finding overlaps between replicates. 
 
 If you have a score for the interactions you can also provide it in the following columns:
 ```
@@ -163,10 +161,10 @@ You can check the [example file](https://github.com/BackofenLab/Cherri/blob/mast
 
 ### Example call for CheRRI's training mode
 
-This is an example call to evoke CheRRI's model training mode inside the CheRRI folder:
+This is an example call to evoke CheRRI's model training mode. If you download the Cherri github folder you can use the files for a test call:
 
 ```
-cherri train -i1 test_data/training/Paris/ -r miRNA_human_1.tabular miRNA_human_2.tabular miRNA_human_3.tabular -g human -l human -o ./ -n paris_human_test -c 50 -st on -t 600 -me 8000 -j 7
+cherri train -i1 test_data/training/Paris/ -r miRNA_human_1.tabular miRNA_human_2.tabular miRNA_human_3.tabular -g human -l human -o ./ -n human_test -c 50 -st on -t 600 -me 8000 -j 7
 ```
 
 
@@ -234,11 +232,11 @@ Throughout the program, several output files are generated inside the output fol
 
 ### Run train in mixed model mode
 
-CheRRI is able to build on model based on different datasets. Is the mixed parameter is set to 'on' CheRRI will connect training data for different datasets. However before running the mixed mode one would create the training data for the individual datasets.
+CheRRI is able to build one model based on different datasets. Is the mixed parameter is set to 'on' CheRRI will connect training data for different datasets. However before running the mixed mode one would create the training data for the individual datasets.
 Next we have a theoretical example of DataA, DataB and DataC, which should be trained together
 Therefore best create an dedicated output folder e.g. CheRRI_build_model
 
-Than build you first model:
+Then build you first model:
 ```
 cherri train -i1 /path/to/CheRRI_build_model/ -r dataA_1.tabular dataA_2.tabular -g human -l human -o ./ -n Data_A -c 150 -st on -t 600 -me 8000 -j 7
 ```
@@ -248,7 +246,7 @@ Next rename the output folder created by CheRRI to the name you gave to the Data
 mv /path/to/CheRRI_build_model/<date>_CheRRI_build_model /path/to/CheRRI_build_model/Data_A
 ```
 
-Than run the next dataset:
+Then run the next dataset:
 ```
 cherri train -i1 /path/to/CheRRO_build_model/ -r dataB_1.tabular dataB_2.tabular -g human -l human -o ./ -n Data_B -c 150 -st on -t 600 -me 8000 -j 7
 ```
@@ -257,7 +255,7 @@ Next rename the output folder created by CheRRI to the name you gave to the Data
 mv /path/to/CheRRI_build_model/<date>_CheRRI_build_model /path/to/CheRRI_build_model/Data_B
 ```
 
-Than run the last dataset:
+Then run the last dataset:
 ```
 cherri train -i1 /path/to/CheRRI_build_model/ -r dataC_1.tabular dataC_2.tabular -g mouse -l mouse -o ./ -n Data_C -c 150 -st on -t 600 -me 8000 -j 7
 ```
