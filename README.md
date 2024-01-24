@@ -12,27 +12,27 @@ It is an open source project [hosted on GitHub](https://github.com/BackofenLab/C
     - [Create environment manually](#Create-environment-manually)
     - [Manual installation](#Manual-installation)
     - [Install using pip](#Install-using-pip)
-    - [Install CheRRI Conda package](#Install-CheRRI-Conda-package
+    - [Install CheRRI Conda package](#Install-CheRRI-Conda-package)
 2. [Usage](#Usage)
     - [Evaluation of RRIs](#Evaluation-of-RRIs)
     * [RRI input format in evaluation mode](#RRI-input-format-in-evaluation-mode)
-    * [Example call for CheRRI's evaluation mode](#Example-call-for-CheRRI's-evaluation-mode)
+    * [Example call for CheRRI's evaluation mode](#Example-call-for-CheRRIs-evaluation-mode)
     * [Input parameters in evaluation mode](#Input-parameters-in-evaluation-mode)
     * [Output in evaluation mode](#Output-in-evaluation-mode)
-    * [Validate your model using the **eval** mode](#Validate-your-model-using-the-**eval**-mode)
+    * [Validate your model using the **eval** mode](#Validate-your-model-using-the-eval-mode)
     - [Build a new CheRRI model in training mode](#Build-a-new-CheRRI-model-in-training-mode)
     * [Retrieve RNA-RNA interactome files using ChiRA](#Retrieve-RNA-RNA-interactome-files-using-ChiRA)
     * [Build RRI interactome file as input for CheRRI](#Build-RRI-interactome-file-as-input-for-CheRRI)
-    * [Example call for CheRRI's training mode](#Example-call-for-CheRRI's-training-mode)
+    * [Example call for CheRRI's training mode](#Example-call-for-CheRRIs-training-mode)
     * [Input parameters in training mode](#Input-parameters-in-training-mode)
     * [Run train in mixed model mode](#Run-train-in-mixed-model-mode)
-3. [CheRRI's core method scripts](#CheRRI's-core-method-scripts)
-    - [RRI detection with find_trusted_RRI.py](#RRI-detection-with-find_trusted_RRI.py)
-    - [Compute occupied regions with find_occupied_regions.py](#Compute-occupied-regions-with find_occupied_regions.py)
-    - [Interaction predictions with generate_pos_neg_with_context.py](#Interaction-predictions with-generate_pos_neg_with_context.py)
-    * [IntaRNA parameters used within CheRRI](#IntaRNA-parameters-used-within-CheRRI)
-    - [Feature extraction with get_features.py](#Feature-extraction-with-get_features.py)
-    - [Feature selection and optimization](#Feature-selection-and-optimization)
+3. [CheRRI's core method scripts](#cherris-core-method-scripts))
+    - [RRI detection with find_trusted_RRI.py](#rri-detection-with-find_trusted_rripy))
+    - [Compute occupied regions with find_occupied_regions.py](#compute-occupied-regions-with-find_occupied_regionspy))
+    - [Interaction predictions with generate_pos_neg_with_context.py](#interaction-predictions-with-generate_pos_neg_with_contextpy))
+    * [IntaRNA parameters used within CheRRI](#intarna-parameters-used-within-cherri))
+    - [Feature extraction with get_features.py](#feature-extraction-with-get_featurespy))
+    - [Feature selection and optimization](#feature-selection-and-optimization)
     
 
 ## CheRRI's workflow
@@ -152,7 +152,7 @@ work in progress
 
 ## Usage
 
-You can use CheRRI in two modes. The **eval** mode predicts whether an RRI site of interest is biologically relevant. Pre-computed human and mouse models exist and can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.6533932). If you would like to build a model based on novel RRI interactome data, you can use the **train** mode.
+You can use CheRRI in two modes. The **eval** mode predicts whether an RRI site of interest is biologically relevant. Pre-computed human and mouse models exist and can be downloaded from [Zenodo](https://zenodo.org/doi/10.5281/zenodo.6533931). If you would like to build a model based on novel RRI interactome data, you can use the **train** mode.
 
 ### Evaluation of RRIs
 
