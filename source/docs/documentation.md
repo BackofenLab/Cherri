@@ -12,12 +12,12 @@ Here we search for trusted RRIs, so RRIs which can be found in all replicates. I
 | ID | name | description |
 |---|---|-----|
 | `-i` | `--input_path` | Path to folder storing input data (containing all replicates) |
-|`-r`| `--list_of_replicats` | List of file names for all replicates |
+|`-r`| `--list_of_replicates` | List of file names for all replicates |
 | `-o` | `--overlap_th` | Overlap threshold to find trusted RRIs |
 | `-d` | `--output_path` | Path where output folder should be stored |
 |`-n` | `--experiment_name` | Name of the data source of positive trusted RRIs |
 | `-s` | `--score_th` | Threshold for EM score from ChiRA |
-| `-fh` | `--filter_hybrid` | Filter the data for hyprids alrady detected by ChiRA |
+| `-fh` | `--filter_hybrid` | Filter the data for hybrids already detected by ChiRA |
 
 #### Output of find_trusted_RRI.py
 The filtered set of trusted RRI sites in tabular format. 
@@ -91,7 +91,7 @@ To generate the current features IntaRNA parameters by default are set to:
 | intLoopMax |  3  | number of unpaired bases between inter molecular base pairs |
 
 
-IntaRNA parameters can be changed by specifying a custom IntaRNA parameter file.
+IntaRNA parameters can be changed by specifying a custom IntaRNA parameter file. CheRRIs default parameter set can be found [here](https://github.com/BackofenLab/Cherri/tree/master/rrieval/IntaRNA_param).
 
 
 

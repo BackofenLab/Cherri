@@ -1,13 +1,15 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Welcome &mdash; CheRRI 2023 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -51,10 +53,10 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#installation">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#install-conda">Install Conda</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-cherri-conda-package">Install CheRRI Conda package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#create-environment-manually">Create environment manually</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#manual-installation">Manual installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#install-using-pip">Install using pip</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#install-cherri-conda-package">Install CheRRI Conda package</a></li>
 </ul>
 </li>
 </ul>
@@ -109,15 +111,41 @@ To train a novel model, an RNA-RNA interactome dataset specifying all RRI sites 
 <p>CheRRI was developed in Linux and tested on Ubuntu (18.04 LTS). Conda is required to install CheRRI.</p>
 <section id="install-conda">
 <h2>Install Conda<a class="headerlink" href="#install-conda" title="Link to this heading"></a></h2>
-<p>If you do not have Conda yet, you can e.g. install miniconda, a free + lightweight Conda installer. Get miniconda <a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html">here</a>, choose the newest Python 3 Miniconda3 Linux 64-bit installer and follow the installation instructions. In the end, Conda should be accessed on the command line via (note that your version can be different):</p>
+<p>If you do not have Conda yet, you can e.g. install miniconda, a free + lightweight Conda installer. Get miniconda <a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html">here</a>, choose the newest Python 3 Miniconda3 Linux 64-bit installer and follow the installation instructions. To test if Conda is accessed on the command line check the Conda version (note that your version can be different):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ conda --version
 conda 4.10.3
 </pre></div>
 </div>
 </section>
+<section id="install-cherri-conda-package">
+<h2>Install CheRRI Conda package<a class="headerlink" href="#install-cherri-conda-package" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">run_cherri</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">bioconda</span> <span class="n">cherri</span>
+
+</pre></div>
+</div>
+<p>You additionally need to set a fixed python hash seed within the conda environment:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">config</span> <span class="nb">vars</span> <span class="nb">set</span> <span class="n">PYTHONHASHSEED</span><span class="o">=</span><span class="mi">31337</span>
+</pre></div>
+</div>
+<p>After setting the environment variable, reactivate your environment:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">deactivate</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">run_cherri</span>
+</pre></div>
+</div>
+<p>Or set it only for your current session:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">PYTHONHASHSEED</span><span class="o">=</span><span class="mi">31337</span>
+</pre></div>
+</div>
+<p>The seed is used by CheRRI and if it is not set like this your results will be not correct.</p>
+</section>
 <section id="create-environment-manually">
 <h2>Create environment manually<a class="headerlink" href="#create-environment-manually" title="Link to this heading"></a></h2>
 <p>To manually install CheRRI, first create a Conda environment:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">cherri</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">bioconda</span> <span class="n">scikit</span><span class="o">-</span><span class="n">learn</span> <span class="n">networkx</span> <span class="n">numpy</span> <span class="n">bedtools</span> <span class="n">biopython</span> <span class="n">interlap</span> <span class="n">pandas</span> <span class="n">intarna</span> <span class="n">eden</span><span class="o">-</span><span class="n">kernel</span> <span class="n">biofilm</span> <span class="n">python</span><span class="o">-</span><span class="n">wget</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">cherri</span>
+</pre></div>
+</div>
+<p>Or you can create an environment and install the dependencies after each other</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">cherri</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.8</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">bioconda</span>
 <span class="n">conda</span> <span class="n">activate</span> <span class="n">cherri</span>
 </pre></div>
@@ -136,12 +164,7 @@ conda 4.10.3
 <span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">python</span><span class="o">-</span><span class="n">wget</span>
 </pre></div>
 </div>
-<p>Or create the environment with all dependencies at once:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">cherri</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">bioconda</span> <span class="n">scikit</span><span class="o">-</span><span class="n">learn</span> <span class="n">networkx</span> <span class="n">numpy</span> <span class="n">bedtools</span> <span class="n">biopython</span> <span class="n">interlap</span> <span class="n">pandas</span> <span class="n">intarna</span> <span class="n">eden</span><span class="o">-</span><span class="n">kernel</span> <span class="n">biofilm</span> <span class="n">python</span><span class="o">-</span><span class="n">wget</span>
-<span class="n">conda</span> <span class="n">activate</span> <span class="n">cherri</span>
-</pre></div>
-</div>
-<p>You additionally need to set a fixed python hash seed within the conda environment:</p>
+<p>After setting up the environment, you additionally need to set a fixed python hash seed within the conda environment:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">config</span> <span class="nb">vars</span> <span class="nb">set</span> <span class="n">PYTHONHASHSEED</span><span class="o">=</span><span class="mi">31337</span>
 </pre></div>
 </div>
@@ -162,7 +185,7 @@ conda 4.10.3
 </pre></div>
 </div>
 <p>Make sure you are inside the CheRRI’s conda environment and you are inside the tools folder.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">acivate</span> <span class="n">cherri</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">cherri</span>
 <span class="n">cd</span> <span class="n">Cherri</span>
 </pre></div>
 </div>
@@ -174,6 +197,7 @@ conda 4.10.3
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cherri</span> <span class="o">-</span><span class="n">h</span>
 </pre></div>
 </div>
+<p>If you get the CheRRI help text you successfully installed cherri locally.</p>
 </section>
 <section id="install-using-pip">
 <h2>Install using pip<a class="headerlink" href="#install-using-pip" title="Link to this heading"></a></h2>
@@ -181,13 +205,7 @@ conda 4.10.3
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">cherri</span>
 </pre></div>
 </div>
-</section>
-<section id="install-cherri-conda-package">
-<h2>Install CheRRI Conda package<a class="headerlink" href="#install-cherri-conda-package" title="Link to this heading"></a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">bioconda</span> <span class="n">cherri</span>
-
-</pre></div>
-</div>
+<p><em><strong>the pip package is an older version of cherri</strong></em></p>
 </section>
 </section>
 
@@ -202,7 +220,7 @@ conda 4.10.3
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, Teresa Müller.</p>
+    <p>&#169; Copyright 2024, Teresa Müller.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -228,7 +228,7 @@ def decode_Intarna_output(out):
 
     # out, err = process.communicate()
     out = out.decode('utf-8').strip().split('\n')
-    # print(f'IntaRNAout:\n{out}')
+    #print(f'IntaRNAout:\n{out}')
     for idx, line in enumerate(out):
         #print(idx)
         line = line.strip().split(';')
@@ -478,6 +478,9 @@ def decode_IntaRNA_call(call, lost_inst, row, list_rows_add, df_data, no_sub_opt
         """
     # print(f'####\nIntRNA call: \n{call}####\n')
     out = rl.call_script(call,reprot_stdout=True)
+    #print(out.decode('utf-8').strip().split('\n'))
+    if 'ERROR' in out.decode('utf-8'):
+        print(f'\n####\nIntaRNA is complining:\n{out}\nFor call:\n{call}\n####')
     #print(call)
     df = decode_Intarna_output(out)
     #print(df)
@@ -526,6 +529,7 @@ def get_context_added(input_rris, output_path, genome_file, context,
 
     # adding context by including infors into the df
     df_RRIs = extention_df(df_RRIs)
+    print(f'output dataframe:\ndf_RRIs')
     df_target = rl.get_context('target', df_RRIs, output_path,
                                 genome_file, context, chrom_len_file)
         #print(df_target)

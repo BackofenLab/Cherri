@@ -25,18 +25,50 @@ CheRRI was developed in Linux and tested on Ubuntu (18.04 LTS). Conda is require
 
 ## Install Conda
 
-If you do not have Conda yet, you can e.g. install miniconda, a free + lightweight Conda installer. Get miniconda [here](https://docs.conda.io/en/latest/miniconda.html), choose the newest Python 3 Miniconda3 Linux 64-bit installer and follow the installation instructions. In the end, Conda should be accessed on the command line via (note that your version can be different):
+If you do not have Conda yet, you can e.g. install miniconda, a free + lightweight Conda installer. Get miniconda [here](https://docs.conda.io/en/latest/miniconda.html), choose the newest Python 3 Miniconda3 Linux 64-bit installer and follow the installation instructions. To test if Conda is accessed on the command line check the Conda version (note that your version can be different):
 
 ```
 $ conda --version
 conda 4.10.3
 ```
 
+## Install CheRRI Conda package
 
+```
+conda create -n run_cherri -c conda-forge -c bioconda cherri
+
+```
+
+You additionally need to set a fixed python hash seed within the conda environment:
+
+```
+conda env config vars set PYTHONHASHSEED=31337
+```
+
+After setting the environment variable, reactivate your environment:
+```
+conda deactivate
+conda activate run_cherri
+```
+
+Or set it only for your current session:
+
+```
+export PYTHONHASHSEED=31337
+```
+The seed is used by CheRRI and if it is not set like this your results will be not correct.
 
 ## Create environment manually
 
 To manually install CheRRI, first create a Conda environment:
+
+
+```
+conda create -n cherri -c conda-forge -c bioconda scikit-learn networkx numpy bedtools biopython interlap pandas intarna eden-kernel biofilm python-wget
+conda activate cherri
+```
+
+Or you can create an environment and install the dependencies after each other
 
 ```
 conda create -n cherri python=3.8 -c conda-forge -c bioconda
@@ -59,15 +91,9 @@ conda install -c conda-forge biofilm
 conda install -c conda-forge python-wget
 ```
 
-Or create the environment with all dependencies at once:
-
-```
-conda create -n cherri -c conda-forge -c bioconda scikit-learn networkx numpy bedtools biopython interlap pandas intarna eden-kernel biofilm python-wget
-conda activate cherri
-```
 
 
-You additionally need to set a fixed python hash seed within the conda environment:
+After setting up the environment, you additionally need to set a fixed python hash seed within the conda environment:
 
 ```
 conda env config vars set PYTHONHASHSEED=31337
@@ -94,7 +120,7 @@ git clone https://github.com/BackofenLab/Cherri.git
 Make sure you are inside the CheRRI's conda environment and you are inside the tools folder. 
 
 ```
-conda acivate cherri
+conda activate cherri
 cd Cherri
 ```
 
@@ -110,16 +136,12 @@ Now you can run CheRRI from any given folder:
 ```
 cherri -h
 ```
+If you get the CheRRI help text you successfully installed cherri locally.
 
 ## Install using pip
 If you don't want to download the CheRRI's git folder you can also use the pipy package. 
 ```
 pip install cherri
 ```
+***the pip package is an older version of cherri***
 
-## Install CheRRI Conda package
-
-```
-conda install -c bioconda cherri
-
-```
