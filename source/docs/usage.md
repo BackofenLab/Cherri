@@ -93,7 +93,11 @@ You can also use CheRRIs **eval** mode to create a validation result table and t
 
 In the following a example call to validate a theoretical model build from DataA with data form a different source e.g. DataB is given.
 
-You can set a MODELPATH leading to your models e.g. of DataA and DataB. Here we assume that DataA and DataB will in the same MODELPATH location.
+You can set a MODELPATH leading to your models e.g. of DataA and DataB. Here we assume that DataA and DataB will in the same MODELPATH location (e.g. `MODELPATH=~/myproject/cherri_models`).
+You can set the MODELPATH on a linux based system like this:
+```
+export MODELPATH=$PATH:~/myproject/cherri_models
+```
 
 ```
 cherri eval -i1 $MODELPATH/<DataB>/feature_files/feature_filtered_<DataB>_context_<150>_pos_occ -g human -l human -o $MODELPATH -n <eval_modelA_using_DataB> -c 150 -st on -m  $MODELPATH/DataA/model/full_<DataA>_context_<150>.model -mp  $MODELPATH/DataA/feature_files/training_data_<DataA>_context_<150>.npz -j 10 -on evaluation -ef on

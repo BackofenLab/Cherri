@@ -68,11 +68,24 @@ def main():
     print(df_importance_temp)
     print(df_importance)
 
+    # Pivot the DataFrame to have features as indexes, datasets as columns, and values as cell values
+    df_pivot = df_importance.pivot(index='Features', columns='Dataset', values='Value')
+
+    # Calculate the difference in values between dataA and dataB
+    df_pivot['difference'] = (df_pivot['human'] - df_pivot['mouse']).abs()
+
+    # Sort the DataFrame based on the difference
+    df_pivot_sorted = df_pivot.sort_values(by='difference', ascending=False)
+
+    # Reset index to make Feature_name a column again and prepare for plotting
+    df_sorted_for_plot = df_pivot_sorted.reset_index().melt(id_vars='Features', value_vars=['human', 'mouse'])
+
+# Plot
     # Plotting
     plt.figure(figsize=(15, 8))
     sns.set_context("notebook")
     sns.set_theme(style="whitegrid")
-    sns.barplot(x='Features', y='Value', hue='Dataset', data=df_importance)
+    sns.barplot(data=df_sorted_for_plot, x='Features', y='Value', hue='Dataset')
     plt.xticks(rotation=90)
     plt.title('Compare feature importance')
     plt.xlabel('Data Points')
@@ -80,6 +93,21 @@ def main():
     plt.tight_layout()
     plt.show()
     plt.savefig(out_path + 'feature_importance_barplot_mouse_human.png', dpi=300) # Saving as PNG with high resolution
+
+
+
+    # Plotting
+    #plt.figure(figsize=(15, 8))
+    #sns.set_context("notebook")
+    #sns.set_theme(style="whitegrid")
+    #sns.barplot(x='Features', y='Value', hue='Dataset', data=df_importance)
+    #plt.xticks(rotation=90)
+    #plt.title('Compare feature importance')
+    #plt.xlabel('Data Points')
+    #plt.ylabel('Values')
+    #plt.tight_layout()
+    #plt.show()
+    #plt.savefig(out_path + 'feature_importance_barplot_mouse_human.png', dpi=300) # Saving as PNG with high resolution
 
     #print(len(human_importance))
     #print(len(mouse_importance))

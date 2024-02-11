@@ -16,7 +16,7 @@ import sys
 
 #logging.basicConfing(filenema='cherri.log'level=logging.DEBUG)
 
-__version__ = "0.8"
+__version__ = "0.9"
 
 """
 
@@ -540,10 +540,14 @@ def main_eval(args):
         # get ID_df for not full evaluation data
         df_ID = rl.get_ids(pos_data_file)
         df_eval = rl.classify(X_filterd, model_file, eval_file, df_ID, False, 'off', True)
+        print(f'length of dataframe: {len(df_eval)}')
+        rl.extend_eval_with_empty_entries(df_eval, pos_neg_out_path, eval_file)
 
         #df_eval = df_eval_temp.groupby(['target_ID', 'query_ID']).agg({'instance_score': 'max'}).reset_index()
     elif eval_features == 'on':
         df_eval = rl.classify(X_filterd, model_file, eval_file, 'off', True, y, False)
+
+    # extend the missing sequences 
 
 
 

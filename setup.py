@@ -11,7 +11,7 @@ with open('LICENSE') as f:
 
 setup(
     name='cherri',
-    version='0.8',
+    version='0.9',
     description='Cherri is a tool for classification of RNA-RNA interactions.',
     long_description=readme,
     long_description_content_type='text/markdown',
