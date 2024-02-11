@@ -249,7 +249,11 @@ The final results table will have a query and target ID of your input sequences 
 <h3>Validate your model using the <strong>eval</strong> mode<a class="headerlink" href="#validate-your-model-using-the-eval-mode" title="Link to this heading"></a></h3>
 <p>You can also use CheRRIs <strong>eval</strong> mode to create a validation result table and than use the <a class="reference external" href="https://github.com/BackofenLab/Cherri/blob/master/scripts/plots/compute_f1.py">compute_f1</a> to get the F1 score.</p>
 <p>In the following a example call to validate a theoretical model build from DataA with data form a different source e.g. DataB is given.</p>
-<p>You can set a MODELPATH leading to your models e.g. of DataA and DataB. Here we assume that DataA and DataB will in the same MODELPATH location.</p>
+<p>You can set a MODELPATH leading to your models e.g. of DataA and DataB. Here we assume that DataA and DataB will in the same MODELPATH location (e.g. <code class="docutils literal notranslate"><span class="pre">MODELPATH=~/myproject/cherri_models</span></code>).
+You can set the MODELPATH on a linux based system like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export MODELPATH=$PATH:~/myproject/cherri_models
+</pre></div>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>cherri eval -i1 $MODELPATH/&lt;DataB&gt;/feature_files/feature_filtered_&lt;DataB&gt;_context_&lt;150&gt;_pos_occ -g human -l human -o $MODELPATH -n &lt;eval_modelA_using_DataB&gt; -c 150 -st on -m  $MODELPATH/DataA/model/full_&lt;DataA&gt;_context_&lt;150&gt;.model -mp  $MODELPATH/DataA/feature_files/training_data_&lt;DataA&gt;_context_&lt;150&gt;.npz -j 10 -on evaluation -ef on
 </pre></div>
 </div>
