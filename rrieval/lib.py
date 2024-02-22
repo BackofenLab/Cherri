@@ -1370,6 +1370,52 @@ def classify(df_eval,in_model_filepath, output_path, df_ID='off',
     return df_result
 
 
+def extend_eval_with_empty_entries(df_eval, pos_neg_out_path, output_path, substract_numbers=4):
+    """
+    Extend the final output table with all instances that had no IntaRNA 
+    prediction and can therefore not be predicted.
+
+        Parameters
+        ----------
+        df_eval: dataframe with interaction features of to evaluate instances
+        pos_neg_out_path: path to positive neg data where the json file is stored
+        output_path: location where to save the final evaluation table
+        substract_numbers: number of additional colums that are not feature  
+                           (instance_score, prediction, ...)
+        
+
+    """
+    num_feat_cols = len(df_eval.columns) - substract_numbers  
+
+    na_rows_feat = [np.nan] * num_feat_cols
+    #print(len(df_eval))
+    header = df_eval.columns
+
+    # read jason file 
+    with open(f'{pos_neg_out_path}/missed_list.json', 'r') as file:
+        id_list = json.load(file)
+    extend_list = []
+    print(f'Length of missed IDs: {len(id_list)}')
+    for id in id_list:
+        # print(type(id))
+        new_row = []
+        id_temp = id.split('_')
+        # print(id_temp)
+        new_row = [id_temp[0], id_temp[1], 0, 0] + na_rows_feat
+        print(f'new row: {new_row}')
+        extend_list.append(new_row)
+        #print(len(df_eval))
+        #df_eval.loc[(len(df_eval)+1)] = new_row
+        # df_eval = df_eval.append(new_row, ignore_index=True)
+    print(df_eval)
+    df_extention = pd.DataFrame(extend_list, columns=df_eval.columns)
+    print(df_extention)   
+    df_concat = pd.concat([df_eval, df_extention], ignore_index=True)
+
+    df_concat.to_csv(output_path,index=False)
+
+
+
 ################################################################################
 
 def classify2(X,in_model_filepath,score_flag):
@@ -1550,8 +1596,24 @@ def write_json_index(list_dfs, file_json):
     data_ID_dict = data_df['ID'].to_dict()
 
     # print(len(data_ID_dict))
+    write_json_file(data_ID_dict, file_json)
+    #with open(file_json, 'w') as file:
+        #json.dump(data_ID_dict, file)
+
+
+def write_json_file(content, file_json):
+    """
+    takes a python object and dumps it into a json file
+        Parameters
+        ----------
+        content: python object
+        file_json: file pathe to the output json file
+
+
+    """
     with open(file_json, 'w') as file:
-        json.dump(data_ID_dict, file)
+        json.dump(content, file)
+
 
 
 ################################################################################

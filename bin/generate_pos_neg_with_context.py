@@ -19,6 +19,7 @@ import os
 import time
 import rrieval.lib as rl
 import pickle
+#import json
 
 def check_context_extention(df, context, output_path, context_not_full):
     """
@@ -476,9 +477,11 @@ def decode_IntaRNA_call(call, lost_inst, row, list_rows_add, df_data, no_sub_opt
         no_less_sub_opt
             no of suboptimal that could not be predicted so fare!
         """
-    # print(f'####\nIntRNA call: \n{call}####\n')
+    #print(row['ID'])
+    print(f'##\nIntRNA call for: \n{call}\n')
     out = rl.call_script(call,reprot_stdout=True)
-    #print(out.decode('utf-8').strip().split('\n'))
+    temp_out = out.decode('utf-8').strip().split('\n')
+    print(f'##\nOUTPUT:\n{temp_out}\n')
     if 'ERROR' in out.decode('utf-8'):
         print(f'\n####\nIntaRNA is complining:\n{out}\nFor call:\n{call}\n####')
     #print(call)
@@ -847,6 +850,7 @@ def main():
         no_neg = False
     elif mode == 'eval':
         no_neg = True
+        lost_inst_list = []
     else:
         print('ERROR: please specify train or eval as cherri mode')
 
@@ -920,6 +924,8 @@ def main():
         strand_t = row['strand_1st']
         strand_q = row['strand_2end']
 
+        
+
         #t_chr = check_convert_chr_id(row['target_key'].split(';')[0])
         #q_chr = check_convert_chr_id(row['query_key'].split(';')[0])
 
@@ -942,7 +948,8 @@ def main():
         #print('### RRI genome positions ########')
         #print('target site infos: ',target_seed_s,target_seed_e)
         #print('query site infos: ',query_seed_s,query_seed_e)
-        #print('### sequence genome positions ########')
+        #print('###################################################')
+        #print('### sequence genome positions ####################')
         #print('target sequence infos: ',target_pos_s,target_pos_e)
         #print('query sequence infos: ',query_pos_s,query_pos_e)
         #occupied_regions_target = []
@@ -984,6 +991,7 @@ def main():
             call_pos = call_general + pos_param + pos_param_occ + output_columns
         else:
             print('not using occupied regions for pos data!')
+            #print('')
             call_pos = call_general + pos_param + output_columns
 
         df_pos_data_old = df_pos_data
@@ -1031,18 +1039,28 @@ def main():
                 lost_inst_neg = lost_i_neg_new
             elif lost_i_neg_new > lost_inst_neg:
                 lost_inst_neg = lost_i_neg_new
+        
+        if lost_inst_pos_new > lost_inst_pos and mode == 'eval':
+            # print(row['ID'])
+            lost_inst_list.append(row['ID'])
         lost_inst_pos = lost_inst_pos_new
 
 
         print_status(index, data_100, data_25, data_50, date_75)
 
     #print(df_result_neg['start1'], df_result_neg['end1'])
-    #print(df_pos_data['start1'],  df_result_neg['end1'])
+    print(df_pos_data['start1'],  df_pos_data['end1'])
     json_file = f'{output_path}/index_dict.json'
+
     result_file = output_path + experiment_name +  context_info
     if no_neg:
         df_pos_data.to_csv(result_file + 'pos.csv', index=False)
         rl.write_json_index([df_pos_data],json_file)
+        if mode == 'eval':
+            rl.write_json_file(lost_inst_list, f'{output_path}/missed_list.json')
+            #with open(f'{output_path}/missed_list.json', 'w') as file:
+                #json.dump(lost_inst_list, file)
+
     else:
         df_neg_data.to_csv(result_file + 'neg.csv', index=False)
         df_pos_data.to_csv(result_file + 'pos.csv', index=False)
