@@ -11,7 +11,7 @@ import seaborn as sns
 def get_feature_importances(file_zip):
     file = ut.nloadfile(file_zip)
     X,y, ftname, _ = file
-    m = RF().fit(X,y)
+    m = RF(random_state=30).fit(X,y)
     feature_importance = m.feature_importances_
     return feature_importance, ftname
 
@@ -23,16 +23,16 @@ def main():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument("-ih", "--human_input_file",
                         help= "",
-                        default="/vol/scratch/data_storage/Cherri_Zenodo/Cherri_models_v4/Model_without_graph_features/human/training_data_human_context_150.npz")
+                        default="/vol/scratch/data_storage/Cherri_Zenodo/Cherri_models_v4/Model_without_graph_features/human_without_graph_features/training_data_human_context_150.npz")
     parser.add_argument("-ir", "--human_rbp_input_file",
                         help= "",
-                        default="/vol/scratch/data_storage/Cherri_Zenodo/Cherri_models_v4/Model_without_graph_features/human_rbp/training_data_human_rbp_context_150.npz")
+                        default="/vol/scratch/data_storage/Cherri_Zenodo/Cherri_models_v4/Model_without_graph_features/human_rbp__without_graph_features//training_data_human_rbp_context_150.npz")
     parser.add_argument("-in", "--mouse_input_file",
                         help= "",
-                        default="/vol/scratch/data_storage/Cherri_Zenodo/Cherri_models_v4/Model_without_graph_features/mouse/training_data_mouse_context_150.npz")
+                        default="/vol/scratch/data_storage/Cherri_Zenodo/Cherri_models_v4/Model_without_graph_features/mouse__without_graph_features/training_data_mouse_context_150.npz")
     parser.add_argument("-if", "--full_input_file",
                         help= "",
-                        default="/vol/scratch/data_storage/Cherri_Zenodo/Cherri_models_v4/Model_without_graph_features/Full/training_data_Full_context_150.npz")
+                        default="/vol/scratch/data_storage/Cherri_Zenodo/Cherri_models_v4/Model_without_graph_features/Full_without_graph_features/training_data_Full_context_150.npz")
 
     args = parser.parse_args()
     # get input files
@@ -65,8 +65,12 @@ def main():
 
     # Melting the DataFrame for easier plotting with seaborn
     df_importance = df_importance_temp.melt(id_vars='Features', var_name='Dataset', value_name='Value')
-    print(df_importance_temp)
-    print(df_importance)
+    #print(df_importance_temp)
+    #print(df_importance)
+
+    df_importance['Features'] = df_importance['Features'].replace({'mfe_normby_GC_len': 'E_normby_GC_len'})
+    df_importance['Features'] = df_importance['Features'].replace({'mfe_normby_len': 'E_normby_len'})
+    df_importance['Features'] = df_importance['Features'].replace({'mfe_normby_GC': 'E_normby_GC'})
 
     # Pivot the DataFrame to have features as indexes, datasets as columns, and values as cell values
     df_pivot = df_importance.pivot(index='Features', columns='Dataset', values='Value')
@@ -79,20 +83,22 @@ def main():
 
     # Reset index to make Feature_name a column again and prepare for plotting
     df_sorted_for_plot = df_pivot_sorted.reset_index().melt(id_vars='Features', value_vars=['human', 'mouse'])
+    print(df_sorted_for_plot)
 
 # Plot
     # Plotting
     plt.figure(figsize=(15, 8))
     sns.set_context("notebook")
     sns.set_theme(style="whitegrid")
-    sns.barplot(data=df_sorted_for_plot, x='Features', y='Value', hue='Dataset')
-    plt.xticks(rotation=90)
-    plt.title('Compare feature importance')
-    plt.xlabel('Data Points')
-    plt.ylabel('Values')
+    sns.barplot(data=df_sorted_for_plot, x='Features', y='value', hue='Dataset', palette=['#F0E442','#009E73'])
+    plt.xticks(rotation=70, ha='right')
+    #plt.title('Compare feature importance')
+    plt.xlabel('')
+    plt.ylabel('Feature importance')
     plt.tight_layout()
     plt.show()
     plt.savefig(out_path + 'feature_importance_barplot_mouse_human.png', dpi=300) # Saving as PNG with high resolution
+    plt.savefig(out_path + 'feature_importance_barplot_mouse_human.pdf', format="pdf")
 
 
 
@@ -126,10 +132,29 @@ def main():
     # Melting the DataFrame for easier plotting with seaborn
     df_importance_full = df_importance_temp_all.melt(id_vars='Features', var_name='Dataset', value_name='Value')
 
+    # Pivot the DataFrame to have features as indexes, datasets as columns, and values as cell values
+    df_pivot_full = df_importance_full.pivot(index='Features', columns='Dataset', values='Value')
+    print(df_pivot_full)
+    # Calculate the difference in values between dataA and dataB
+    df_pivot_full['difference'] = ((((df_pivot_full['human'] - df_pivot_full['mouse']).abs())
+                               +((df_pivot_full['human'] - df_pivot_full['human_rbp']).abs())
+                               +((df_pivot_full['human_rbp'] - df_pivot_full['mouse']).abs())
+                               +((df_pivot_full['human'] - df_pivot_full['Full']).abs())
+                               +((df_pivot_full['Full'] - df_pivot_full['mouse']).abs())
+                               +((df_pivot_full['human_rbp'] - df_pivot_full['Full']).abs()))/6)
+
+    # Sort the DataFrame based on the difference
+    df_pivot_sorted_full = df_pivot_full.sort_values(by='difference', ascending=False)
+
+    # Reset index to make Feature_name a column again and prepare for plotting
+    df_sorted_for_plot_full = df_pivot_sorted_full.reset_index().melt(id_vars='Features', value_vars=['human', 'mouse', 'human_rbp', 'Full'])
+    print(df_sorted_for_plot_full)
+
     # Plotting
     plt.figure(figsize=(15, 8))
     sns.set_context("notebook")
-    sns.barplot(x='Features', y='Value', hue='Dataset', data=df_importance_full)
+    sns.set_theme(style="whitegrid")
+    sns.barplot(data=df_sorted_for_plot_full, x='Features', y='value', hue='Dataset')
     plt.xticks(rotation=90)
     plt.title('Compare feature importance')
     plt.xlabel('Data Points')
